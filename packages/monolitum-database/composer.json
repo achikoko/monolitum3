@@ -1,0 +1,21 @@
+{
+    "name": "monolitum/database",
+    "require": {
+        "php": "^8.2",
+        "monolitum/core": "*",
+        "monolitum/backend": "*",
+        "monolitum/model": "*",
+        "ext-pdo": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "monolitum\\database\\": "src"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "oomphinc/composer-installers-extender": true
+        }
+    }
+}

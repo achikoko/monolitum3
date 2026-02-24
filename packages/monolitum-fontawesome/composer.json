@@ -1,0 +1,14 @@
+{
+    "name": "monolitum/fontawesome",
+    "require": {
+        "php": "^8.2",
+        "monolitum/core": "*",
+        "monolitum/backend": "*",
+        "monolitum/frontend": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "monolitum\\fontawesome\\": "src"
+        }
+    }
+}

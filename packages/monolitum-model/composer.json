@@ -1,0 +1,19 @@
+{
+    "name": "monolitum/model",
+    "require": {
+        "php": "^8.2",
+        "monolitum/core": "*",
+        "monolitum/i18n": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "monolitum\\model\\": "src"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "oomphinc/composer-installers-extender": true
+        }
+    }
+}

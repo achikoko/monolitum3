@@ -1,0 +1,21 @@
+{
+    "name": "monolitum/auth",
+    "require": {
+        "php": "^8.2",
+        "fightbulc/moment": "@stable",
+        "monolitum/core": "*",
+        "monolitum/model": "*",
+        "monolitum/database": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "monolitum\\auth\\": "src"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "oomphinc/composer-installers-extender": true
+        }
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "name": "monolitum/core",
+    "require": {
+        "php": "^8.2"
+    },
+    "autoload": {
+        "files": [
+            "src/m.php"
+        ],
+        "psr-4": {
+            "monolitum\\core\\": "src"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "oomphinc/composer-installers-extender": true
+        }
+    }
+}

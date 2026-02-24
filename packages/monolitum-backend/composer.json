@@ -1,0 +1,21 @@
+{
+    "name": "monolitum/backend",
+    "require": {
+        "php": "^8.2",
+        "monolitum/core": "*",
+        "monolitum/model": "*",
+        "ext-openssl": "*",
+        "ext-fileinfo": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "monolitum\\backend\\": "src"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "oomphinc/composer-installers-extender": true
+        }
+    }
+}

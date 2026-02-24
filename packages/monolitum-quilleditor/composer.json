@@ -1,0 +1,19 @@
+{
+    "name": "monolitum/quilleditor",
+    "require": {
+        "php": "^8.2",
+        "monolitum/core": "*",
+        "monolitum/model": "*",
+        "monolitum/database": "*",
+        "monolitum/backend": "*",
+        "monolitum/frontend": "*",
+        "monolitum/bootstrap": "*",
+        "monolitum/i18n": "*",
+        "nadar/quill-delta-parser": "3.5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "monolitum\\quilleditor\\": "src"
+        }
+    }
+}

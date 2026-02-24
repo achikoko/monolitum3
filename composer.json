@@ -1,0 +1,53 @@
+{
+    "name": "monolitum/monolitum",
+    "require": {
+        "ext-fileinfo": "*",
+        "ext-openssl": "*",
+        "ext-pdo": "*",
+        "fightbulc/moment": "@stable",
+        "nadar/quill-delta-parser": "3.5.0",
+        "php": "^8.2",
+        "phpmailer/phpmailer": "v6.10.0"
+    },
+    "require-dev": {
+        "rector/rector": "^2.0",
+        "symplify/monorepo-builder": "^12.4.5"
+    },
+    "replace": {
+        "monolitum/auth": "self.version",
+        "monolitum/backend": "self.version",
+        "monolitum/bootstrap": "self.version",
+        "monolitum/core": "self.version",
+        "monolitum/database": "self.version",
+        "monolitum/fontawesome": "self.version",
+        "monolitum/frontend": "self.version",
+        "monolitum/i18n": "self.version",
+        "monolitum/mailer": "self.version",
+        "monolitum/model": "self.version",
+        "monolitum/quilleditor": "self.version"
+    },
+    "autoload": {
+        "psr-4": {
+            "monolitum\\auth\\": "packages/monolitum-auth/src",
+            "monolitum\\backend\\": "packages/monolitum-backend/src",
+            "monolitum\\bootstrap\\": "packages/monolitum-bootstrap/src",
+            "monolitum\\core\\": "packages/monolitum-core/src",
+            "monolitum\\database\\": "packages/monolitum-database/src",
+            "monolitum\\fontawesome\\": "packages/monolitum-fontawesome/src",
+            "monolitum\\frontend\\": "packages/monolitum-frontend/src",
+            "monolitum\\i18n\\": "packages/monolitum-i18n/src",
+            "monolitum\\mailer\\": "packages/monolitum-mailer/src",
+            "monolitum\\model\\": "packages/monolitum-model/src",
+            "monolitum\\quilleditor\\": "packages/monolitum-quilleditor/src"
+        },
+        "files": [
+            "packages/monolitum-core/src/m.php"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "oomphinc/composer-installers-extender": true
+        }
+    }
+}

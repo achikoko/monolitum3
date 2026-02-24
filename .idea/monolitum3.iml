@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-backend/src" isTestSource="false" packagePrefix="monolitum\backend\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-core/src" isTestSource="false" packagePrefix="monolitum\core\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-model/src" isTestSource="false" packagePrefix="monolitum\model\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-frontend/src" isTestSource="false" packagePrefix="monolitum\frontend\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-bootstrap/src" isTestSource="false" packagePrefix="monolitum\bootstrap\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-database/src" isTestSource="false" packagePrefix="monolitum\database\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-auth/src" isTestSource="false" packagePrefix="monolitum\auth\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-fontawesome/src" isTestSource="false" packagePrefix="monolitum\fontawesome\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-quilleditor/src" isTestSource="false" packagePrefix="monolitum\quilleditor\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-i18n/src" isTestSource="false" packagePrefix="monolitum\i18n\" />
+      <sourceFolder url="file://$MODULE_DIR$/packages/monolitum-mailer/src" isTestSource="false" packagePrefix="monolitum\mailer\" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/fightbulc/moment" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/nadar/quill-delta-parser" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/nette/utils" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phar-io/version" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpstan/phpstan" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/container" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/event-dispatcher" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/log" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/rector/rector" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/sebastian/diff" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/config" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/console" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/dependency-injection" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/deprecation-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/error-handler" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/event-dispatcher" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/event-dispatcher-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/filesystem" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/finder" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/http-foundation" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/http-kernel" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-ctype" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-intl-grapheme" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-intl-normalizer" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-mbstring" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php85" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/process" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/service-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/string" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/var-dumper" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/var-exporter" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symplify/monorepo-builder" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/webmozart/assert" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpmailer/phpmailer" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

@@ -1,0 +1,19 @@
+{
+    "name": "monolitum/i18n",
+    "require": {
+        "php": "^8.2",
+        "fightbulc/moment": "@stable",
+        "monolitum/core": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "monolitum\\i18n\\": "src"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "oomphinc/composer-installers-extender": true
+        }
+    }
+}
