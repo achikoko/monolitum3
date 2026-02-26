@@ -4,8 +4,11 @@ namespace monolitum\backend\router;
 
 use monolitum\backend\params\ValidatedValueGetter;
 use monolitum\core\MNode;
+use monolitum\core\panic\DevPanic;
 
 class StringParamRouter extends AbstractConstantRouter {
+
+    private ?ValidatedValueGetter $param = null;
 
     /**
      * @var callable
@@ -16,8 +19,16 @@ class StringParamRouter extends AbstractConstantRouter {
      * @param ValidatedValueGetter $param
      * @param callable|null $builder
      */
-    function __construct(private readonly ValidatedValueGetter $param, callable $builder = null){
+    function __construct(callable $builder = null){
         parent::__construct($builder);
+    }
+
+    /**
+     * @param ValidatedValueGetter $param
+     */
+    public function setParam(ValidatedValueGetter $param): void
+    {
+        $this->param = $param;
     }
 
     public function setOnSelected(callable $onSelected): self
@@ -35,6 +46,9 @@ class StringParamRouter extends AbstractConstantRouter {
     protected function onBuild(): void
     {
         parent::onBuild();
+
+        if($this->param == null)
+            throw new DevPanic("Param must be specified in StringParamRouter");
 
         $validatedValue = $this->param->getValidatedValue();
 

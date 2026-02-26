@@ -8,14 +8,11 @@ use monolitum\core\MObject;
 
 abstract class AbstractInstanceOfRouter extends AbstractMappedRouter implements MObject {
 
-    /**
-     * @param callable|null $builder
-     */
     function __construct(?Closure $builder = null){
         parent::__construct($builder);
     }
 
-    protected function select(string $class): ?MNode
+    protected function select(string $class): MNode|Closure|null
     {
         if($class != null && array_key_exists($class, $this->map)){
             return $this->map[$class];

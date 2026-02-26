@@ -26,10 +26,6 @@ class HistoryManager extends MNode
      */
     private array $pushParameters = [];
 
-    /**
-     * @param Param $readPathParam
-     * @param callable $builder
-     */
     public function __construct(public readonly ValidatedValueGetter $readPathParam, ?Closure $builder = null)
     {
         parent::__construct($builder);
