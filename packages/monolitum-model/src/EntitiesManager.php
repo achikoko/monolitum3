@@ -48,15 +48,29 @@ class EntitiesManager extends MNode implements EntityPersister
      * @param bool $forInsert
      * @return Entity
      */
-    public function instance(Model|string $entityModel, bool $forInsert = false): Entity
+    public function instance(Model|string $entityModel, bool $forInsert = false, ?Entity $cloneOf = null): Entity
     {
         $model = $this->getModel($entityModel);
         $class = $model->getInstanceableClass();
+
+        if($cloneOf !== null){
+            if($cloneOf->getModel() !== $model){
+                throw new DevPanic("Only identical model is allowed for cloning an Entity");
+            }
+        }
+
         /** @var Entity $inst */
         $inst = new $class();
         $inst->_setModel($model);
         if($forInsert)
             $inst->_setManager($this);
+
+        if($cloneOf !== null){
+            foreach($model->getAttrs() as $attr){
+                $inst->setValue($attr, $cloneOf->getValue($attr));
+            }
+        }
+
         return $inst;
     }
 

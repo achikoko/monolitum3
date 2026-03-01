@@ -182,9 +182,9 @@ abstract class Entity
         $this->manager->_executeDeleteEntity($this);
     }
 
-    public static function instance(bool $forInsert = false): static
+    public static function instance(bool $forInsert = false, Entity $cloneOf = null): static
     {
-        return EntitiesManager::findSelf()->instance(static::class, $forInsert);
+        return EntitiesManager::findSelf()->instance(static::class, $forInsert, $cloneOf);
     }
 
 }
