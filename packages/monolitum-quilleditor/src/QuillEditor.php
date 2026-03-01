@@ -8,11 +8,13 @@ use monolitum\bootstrap\BSPage;
 use monolitum\core\Find;
 use monolitum\frontend\component\CSSLink;
 use monolitum\frontend\component\JSScript;
+use monolitum\frontend\Head;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\html\HtmlElementContent;
 use monolitum\frontend\HtmlElementNode;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Rendered;
+use function monolitum\core\m;
 
 class QuillEditor extends HtmlElementNode
 {
@@ -27,10 +29,21 @@ class QuillEditor extends HtmlElementNode
 
     private ?string $placeholder = null;
 
+    private int $initialHeight = 500;
+
     public function __construct($builder = null)
     {
         parent::__construct(new HtmlElement("input"), $builder);
         $this->getElement()->setAttribute("type", "hidden");
+    }
+
+    /**
+     * @param int $initialHeight
+     */
+    public function setInitialHeight(int $initialHeight): self
+    {
+        $this->initialHeight = $initialHeight;
+        return $this;
     }
 
     public function setValue($content): self
@@ -72,8 +85,10 @@ class QuillEditor extends HtmlElementNode
         /** @var BSPage $page */
         $page = Find::pushAndGet(BSPage::class);
         if(!$page->getConstant("quilleditor-js-css")){
+            CSSLink::of(Path::fromRelativeToClass(QuillEditor::class,"res", "quill.custom.css"))->pushSelf();
             CSSLink::of(Path::fromRelativeToClass(QuillEditor::class,"res", "quill.snow.css"))->pushSelf();
             JSScript::of(Path::fromRelativeToClass(QuillEditor::class,"res", "quill.js"))->pushSelf();
+            M(new QuillHead());
             $page->setConstant("quilleditor-js-css");
         }
 
@@ -98,43 +113,13 @@ class QuillEditor extends HtmlElementNode
 //                ->setAttribute("style", "border: 1px solid #ccc;z-index: 100;")
                 ->addChildElement((new HtmlElement("div"))
                     ->setId($this->container_id)
-                    ->setAttribute("style", "height: 500px;")
+                    ->setAttribute("style", "height: {$this->initialHeight}px;")
                     ->setRequireEndTag(true)
                 )
                 ->addChildElement((new HtmlElement("script"))
                     ->setContent((new HtmlElementContent("
                     
-                        const BlockEmbed = Quill.import('blots/block/embed');
-                        
-//                        class Hr extends BlockEmbed {
-//                          static blotName = 'divider';
-//                          static className = 'my-hr';
-//                          static tagName = 'hr';
-//                            static create(value) {
-//                                let node = super.create(value);
-//                                // give it some margin
-//                                node.setAttribute('style', \"height:0px; margin-top:10px; margin-bottom:10px;\");
-//                                return node;
-//                            }
-//                        }
-//                        var customHrHandler = function(){
-//                            // get the position of the cursor
-//                            var range = quill.getSelection();
-//                            if (range) {
-//                                // insert the <hr> where the cursor is
-//                                quill.insertEmbed(range.index,\"hr\",\"null\")
-//                            }
-//                        }
-//                        
-//                        Quill.register({
-//                            'formats/hr': Hr
-//                        });
-                        class DividerBlot extends BlockEmbed {
-                            static blotName = 'divider';
-                            static tagName = 'hr';
-                        }
-                        Quill.register(DividerBlot);
-                        
+                    (function(){
                         var icons = Quill.import('ui/icons');
 //                        icons['divider'] = '<i class=\"fa fa-grip-lines\" aria-hidden=\"true\"></i>';
                         icons['divider'] = '<i class=\"fa fa-slash\" style=\"-webkit-transform: rotate(142deg);transform: rotate(142deg);\" aria-hidden=\"true\"></i>';
@@ -212,6 +197,7 @@ class QuillEditor extends HtmlElementNode
                                 JSON.parse(contents)
                             //)
                             );
+                            })();
                     ", true)))
                 )
         ]);

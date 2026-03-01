@@ -3,22 +3,47 @@
 namespace monolitum\quilleditor;
 
 use monolitum\bootstrap\form\BSFormLabel;
+use monolitum\core\MObject;
 use monolitum\frontend\component\Div;
 use monolitum\frontend\form\AbstractHtmlElementNodeFormAttr;
 use monolitum\frontend\form\AbstractRenderableNodeFormAttr;
 use monolitum\frontend\form\FormControl_Hidden;
 use monolitum\frontend\HtmlElementNode;
+use monolitum\frontend\HtmlElementNodeExtension;
 use monolitum\i18n\TS;
+use function monolitum\core\m;
 
 class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
 {
 
-    private HtmlElementNode $component;
+    /**
+     * @var array<HtmlElementNodeExtension>
+     */
+    private array $extensions = [];
+
+    private ?int $initialHeight = null;
 
     public function __construct($attrId, $builder = null)
     {
         parent::__construct($attrId, $builder);
 //        $this->experimental_letBuildChildsAfterBuild = true;
+    }
+
+    /**
+     * @param int|null $initialHeight
+     */
+    public function setInitialHeight(int $initialHeight): void
+    {
+        $this->initialHeight = $initialHeight;
+    }
+
+    public function doAcceptChild(MObject $object): bool
+    {
+        if($object instanceof HtmlElementNodeExtension){
+            $this->extensions[] = $object;
+            return true;
+        }
+        return parent::doAcceptChild($object);
     }
 
     public function getValue(): mixed
@@ -36,7 +61,7 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
     {
 
         if($this->hidden){
-            $this->component = new FormControl_Hidden(function (FormControl_Hidden $it){
+            $component = new FormControl_Hidden(function (FormControl_Hidden $it){
                 $it->setId($this->getFullFieldName());
                 $it->setName($this->getFullFieldName());
                 if($this->hasValue())
@@ -44,24 +69,29 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
             });
         }else{
 
-            $this->component = new Div(function (Div $it){
+            $component = new Div(function (Div $it){
                 $it->addClass("form-group");
 
-//                $it->push(...$this->getCatchedExtensions());
+                foreach ($this->extensions as $extension) {
+                    M($extension);
+                }
 
                 $it->append(new BSFormLabel(function(BSFormLabel $it){
                     $it->setFor($this->getFullFieldName());
-                    $it->setContent(TS::unwrap($this->getLabel()));
+                    $it->setContent($this->getLabel());
                 }, "form-label"));
 
                 $it->append(new QuillEditor(function (QuillEditor $it) {
                     $it->setId($this->getFullFieldName());
                     $it->setName($this->getFullFieldName());
+                    if($this->initialHeight !== null){
+                        $it->setInitialHeight($this->initialHeight);
+                    }
                     if($this->hasValue())
                         $it->setValue($this->getValue());
 
                     if($this->getPlaceholder() != null)
-                        $it->setPlaceholder(TS::unwrap($this->getPlaceholder()));
+                        $it->setPlaceholder($this->getPlaceholder());
 
                     if($this->disabled !== null ? $this->disabled : $this->getForm()->isDisabled())
                         $it->setDisabled();
@@ -72,7 +102,7 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
 
         }
 
-        $this->append($this->component);
+        $this->append($component);
 
     }
 
