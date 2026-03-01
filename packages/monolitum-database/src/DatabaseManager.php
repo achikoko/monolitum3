@@ -46,6 +46,47 @@ class DatabaseManager extends MNode implements EntityPersister
         $this->prefix = $prefix;
     }
 
+    /**
+     * @param mixed $value
+     * @param Attr $attr
+     * @param string $sql
+     * @param array $values
+     * @return array
+     */
+    public function appendValue(mixed $value, Attr $attr, string $sign, array &$values): string
+    {
+        if (is_string($value)) {
+            if (!($attr instanceof Attr_String))
+                throw new DevPanic("Illegal string value type");
+            $sql = " $sign ?";
+            $values[] = $value;
+        } else if (is_int($value)) {
+            if (!($attr instanceof Attr_Int) && !($attr instanceof Attr_Decimal))
+                throw new DevPanic("Illegal int value type");
+            $sql = " $sign ?";
+            $values[] = $value;
+        } else if (is_bool($value)) {
+            if (!($attr instanceof Attr_Bool))
+                throw new DevPanic("Illegal bool value type");
+            $sql = " $sign ?";
+            $values[] = $value;
+        } else if ($value instanceof Color) {
+            if (!($attr instanceof Attr_Color))
+                throw new DevPanic("Illegal color value type");
+            $sql = " $sign ?";
+            $values[] = $value->getHexValue();
+        } else if ($value instanceof DateTime) {
+            if (!($attr instanceof Attr_Date) && !($attr instanceof Attr_DateTime))
+                throw new DevPanic("Illegal string value type");
+            $sql = " $sign ?";
+            $values[] = $value;
+        } else {
+            $sql = " $sign ?";
+            $values[] = $value;
+        }
+        return $sql;
+    }
+
     protected function onBuild(): void
     {
         $this->entitiesManager = Find::pushAndGet(EntitiesManager::class);
@@ -610,7 +651,7 @@ class DatabaseManager extends MNode implements EntityPersister
 
         if($filter === null){
             $sql .= " IS NULL ";
-        }else if($filter instanceof Query_NotNull){
+        }else if($filter instanceof Query_NotNull) {
             $sql .= " IS NOT NULL ";
         }else if($filter instanceof Query_CMP){
             $sql .= " IS NOT NULL AND " . $alias . "." . $attr->getId();
@@ -657,37 +698,10 @@ class DatabaseManager extends MNode implements EntityPersister
             $sql .= " LIKE ? ESCAPE '!' ";
             $values[] = $processedString;
 
-        }else{
-            if(is_string($filter)){
-                if(!($attr instanceof Attr_String))
-                    throw new DevPanic("Illegal string value type");
-                $sql .= " = ?";
-                $values[] = $filter;
-            }else if(is_int($filter)){
-                if(!($attr instanceof Attr_Int) && !($attr instanceof Attr_Decimal))
-                    throw new DevPanic("Illegal int value type");
-                $sql .= " = ?";
-                $values[] = $filter;
-            }else if(is_bool($filter)){
-                if(!($attr instanceof Attr_Bool))
-                    throw new DevPanic("Illegal bool value type");
-                $sql .= " = ?";
-                $values[] = $filter;
-            }else if($filter instanceof Color){
-                if(!($attr instanceof Attr_Color))
-                    throw new DevPanic("Illegal color value type");
-                $sql .= " = ?";
-                $values[] = $filter->getHexValue();
-            }else if($filter instanceof DateTime){
-                if(!($attr instanceof Attr_Date) && !($attr instanceof Attr_DateTime))
-                    throw new DevPanic("Illegal string value type");
-                $sql .= " = ?";
-                $values[] = $filter;
-            }else{
-                $sql .= " = ?";
-                $values[] = $filter;
-            }
-
+        }else if($filter instanceof Query_Different){
+            $sql .= $this->appendValue($filter->value, $attr, "<>", $values);
+        }else {
+            $sql .= $this->appendValue($filter, $attr, "=", $values);
         }
 
         return $sql;
