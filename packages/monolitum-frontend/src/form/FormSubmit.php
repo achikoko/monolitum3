@@ -91,10 +91,6 @@ abstract class FormSubmit extends HtmlElementNode
         $this->link = $link;
     }
 
-    /**
-     *
-     * @param callable $onValidated void(Form $form, string $action)
-     */
     public function setOnValidated(?Closure $onValidated): void
     {
         $this->onValidated = $onValidated;

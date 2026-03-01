@@ -135,7 +135,7 @@ class ParamsManager extends MNode implements Validator
 
         $validatedValue = $this->validateOnlyFormat($model, $attr, $prefix, $sourceIfAnonymous);
 
-        if($validatedValue->isValid()){
+//        if(!$validatedValue->isValid()){
 
             /** @var AttrExt_Validate|null $attrExt_Validate */
             $attrExt_Validate = $attr->findExtension(AttrExt_Validate::class);
@@ -144,7 +144,7 @@ class ParamsManager extends MNode implements Validator
                 $validatedValue = $attrExt_Validate->validate($validatedValue);
             }
 
-        }
+//        }
 
         return $validatedValue;
 
