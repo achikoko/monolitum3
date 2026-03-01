@@ -3,15 +3,19 @@
 namespace monolitum\bootstrap\container;
 
 use monolitum\backend\globals\Request_NewId;
+use monolitum\core\ExplicitAcceptChildNode;
 use monolitum\core\MObject;
 use monolitum\core\panic\DevPanic;
 use monolitum\frontend\component\Div;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\HtmlElementNode;
+use monolitum\frontend\HtmlElementNodeExtension;
 use monolitum\frontend\Renderable_Node;
 
 class Accordion extends HtmlElementNode
 {
+
+    private bool $canOpenMultiple = false;
 
     /** @var array<Accordion_Item> */
     private array $items = [];
@@ -26,13 +30,24 @@ class Accordion extends HtmlElementNode
         $this->addClass("accordion");
     }
 
+    /**
+     * @param bool $canOpenMultiple
+     */
+    public function setCanOpenMultiple(bool $canOpenMultiple = true): Accordion
+    {
+        $this->canOpenMultiple = $canOpenMultiple;
+        return $this;
+    }
+
     public function doAcceptChild(MObject $object): bool
     {
         if($object instanceof Accordion_Item){
             $this->items[] = $object;
             return true;
-        }else if($object instanceof Renderable_Node){
+        }else if($object instanceof Renderable_Node && !($object instanceof ExplicitAcceptChildNode)){
             throw new DevPanic("Accordion only accepts Accordion_Item children.");
+        }else if($object instanceof HtmlElementNodeExtension){
+            return parent::doAcceptChild($object);
         }
         // We return false to tell the acceptor to forward a not recognized object to the parent.
         // (If we called the parent, it would accept it mistakenly)
@@ -71,7 +86,9 @@ class Accordion extends HtmlElementNode
             $divCollapse->addClass("accordion-collapse", "collapse");
             if(!$item->isCollapsed())
                 $divCollapse->addClass("show");
-            $divCollapse->setAttribute("data-bs-parent", "#" . $id);
+
+            if(!$this->canOpenMultiple)
+                $divCollapse->setAttribute("data-bs-parent", "#" . $id);
 
             $divBody = new Div();
             $divBody->addClass("accordion-body");
