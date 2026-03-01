@@ -8,6 +8,7 @@ use monolitum\backend\params\AttrExt_Param;
 use monolitum\backend\params\Link;
 use monolitum\backend\params\ParamsManager;
 use monolitum\backend\params\Path;
+use monolitum\backend\params\Source;
 use monolitum\backend\resources\HrefResolver;
 use monolitum\backend\resources\Request_HrefResolver;
 use monolitum\core\Find;
@@ -175,13 +176,13 @@ class Form extends Renderable_Node
     }
 
     /**
-     * @param string ...$attrs
+     * @param string ...$attrsIds
      */
-    public function validate_all_except(string ...$attrs): void
+    public function validate_all_except(string ...$attrsIds): void
     {
 
         if($this->validator !== null){
-            $this->validator->validate_all_except(...$attrs);
+            $this->validator->validate_all_except(...$attrsIds);
         }else{
             throw new DevPanic("Setting attributes to validate is not supported without validator.");
         }
@@ -189,13 +190,13 @@ class Form extends Renderable_Node
     }
 
     /**
-     * @param string ...$attrs
+     * @param string ...$attrsIds
      */
-    public function validate_only(?string ...$attrs): void
+    public function validate_only(?string ...$attrsIds): void
     {
 
         if($this->validator !== null){
-            $this->validator->validate_only(...$attrs);
+            $this->validator->validate_only(...$attrsIds);
         }else{
             throw new DevPanic("Setting attributes to validate is not supported without validator.");
         }
@@ -740,6 +741,13 @@ class Form extends Renderable_Node
         }
     }
 
+    public static function fromValidator(Form_Validator $validator, ?Closure $builder): Form
+    {
+        /** @var ParamsManager $manager_params */
+        $manager_params = Find::pushAndGet(ParamsManager::class);
+        return new Form($validator, null, $builder);
+    }
+
     /**
      * Creates a Form using Manager_Params as provider and a Model as model.
      */
@@ -750,7 +758,7 @@ class Form extends Renderable_Node
         return new Form(new Form_Validator_Entity(
             $manager_params,
             $model,
-            true
+            Source::POST
         ), null, $builder);
     }
 
@@ -764,7 +772,7 @@ class Form extends Renderable_Node
         return new Form((new Form_Validator_Entity(
             $manager_params,
             $model,
-            true
+            Source::POST
         ))->setCurrentEntity($entity), null, $builder);
     }
 
@@ -778,7 +786,7 @@ class Form extends Renderable_Node
         return new Form(new Form_Validator_Entity(
             $manager_params,
             $model,
-            true
+            Source::POST
         ), $formId, $builder);
     }
 

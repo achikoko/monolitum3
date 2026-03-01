@@ -2,6 +2,7 @@
 
 namespace monolitum\frontend\form;
 
+use monolitum\backend\params\Source;
 use monolitum\backend\params\Validator;
 use monolitum\model\AnonymousModel;
 use monolitum\model\attr\Attr;
@@ -26,23 +27,18 @@ class Form_Validator_Entity extends Form_Validator
      */
     private ?Entity $currentEntity = null;
 
-    /**
-     * @var bool|null
-     */
-    private ?bool $post = null;
+    private ?Source $sourceIfAnonymous = null;
 
     /**
      * @param Validator $validator
      * @param class-string|AnonymousModel|Model $model
      * @param mixed|null $post
      */
-    public function __construct(Validator $validator, string|AnonymousModel|Model $model, mixed $post = null)
+    public function __construct(Validator $validator, string|AnonymousModel|Model $model, ?Source $sourceIfAnonymous = null)
     {
         $this->validator = $validator;
         $this->model = $model;
-        if($model instanceof AnonymousModel){
-            $this->post = $post ?? true;
-        }
+        $this->sourceIfAnonymous = $sourceIfAnonymous ?? Source::POST;
     }
 
     /**
@@ -69,8 +65,7 @@ class Form_Validator_Entity extends Form_Validator
             if($ext === null)
                 continue;
 
-            $inArray = in_array($attr->getId(), $this->validate_attrs);
-            if($this->validate_attrs_all ^ $inArray){
+            if($this->isValidatable($attr)){
 
                 $validatedValue = $this->getValidatedValue($attr);
 
@@ -105,7 +100,7 @@ class Form_Validator_Entity extends Form_Validator
         }else{
 
             // Validate the value that comes from outside
-            $validatedValue = $this->validator->validate($this->model, $attr, $this->form->_getValidatePrefix(), $this->post);
+            $validatedValue = $this->validator->validate($this->model, $attr, $this->form->_getValidatePrefix(), $this->sourceIfAnonymous);
 
             // If not valid, try to substitute with a valid value
             if(!$validatedValue->isValid()){
@@ -126,8 +121,7 @@ class Form_Validator_Entity extends Form_Validator
 //                $validatedValue = new ValidatedValue(true, true, $this->currentEntity->getValue($attr));
 
             // Store it if the value must be validated, if not, then the dev only wanted to check some foreign value.
-            $inArray = in_array($attr->getId(), $this->validate_attrs);
-            if($this->validate_attrs_all ^ $inArray){
+            if($this->isValidatable($attr)){
                 $this->build_validatedValues[$attr->getId()] = $validatedValue;
             }
 
@@ -184,8 +178,7 @@ class Form_Validator_Entity extends Form_Validator
         $this->model = Model::pushFindByName($this->model);
 
         foreach($this->model->getAttrs() as $attr){
-            $inArray = in_array($attr->getId(), $this->validate_attrs);
-            if(!($this->validate_attrs_all ^ $inArray))
+            if(!$this->isValidatable($attr))
                 continue;
             $validatedValue = $this->build_validatedValues[$attr->getId()];
             if($validatedValue !== null && $validatedValue->isValid())
@@ -195,7 +188,7 @@ class Form_Validator_Entity extends Form_Validator
     }
 
     /**
-     * @param $attrId
+     * @param Attr|string $attrId
      * @return Attr
      */
     public function getAttr(Attr|string $attrId): Attr

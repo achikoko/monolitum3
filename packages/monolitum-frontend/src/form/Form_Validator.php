@@ -2,9 +2,7 @@
 
 namespace monolitum\frontend\form;
 
-use monolitum\backend\params\Manager_Params;
 use monolitum\backend\params\ParamsManager;
-use monolitum\core\Find;
 use monolitum\core\panic\DevPanic;
 use monolitum\i18n\TS;
 use monolitum\model\attr\Attr;

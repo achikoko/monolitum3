@@ -14,10 +14,19 @@ interface Validator
      * @param AnonymousModel|Model|string $model
      * @param Attr|string $attr
      * @param string|null $prefix
-     * @param bool $anonymousIsPost
+     * @param Source|null $sourceIfAnonymous
      * @return ValidatedValue
      */
-    function validate(AnonymousModel|Model|string $model, Attr|string $attr, ?string $prefix=null, ?bool $anonymousIsPost=null): ValidatedValue;
+    function validate(AnonymousModel|Model|string $model, Attr|string $attr, ?string $prefix=null, ?Source $sourceIfAnonymous=null): ValidatedValue;
+
+    /**
+     * @param AnonymousModel|Model|string $model
+     * @param Attr|string $attr
+     * @param string|null $prefix
+     * @param Source|null $sourceIfAnonymous
+     * @return ValidatedValue
+     */
+    function validateOnlyFormat(AnonymousModel|Model|string $model, Attr|string $attr, ?string $prefix=null, ?Source $sourceIfAnonymous=null): ValidatedValue;
 
     /**
      * @param string $name

@@ -126,19 +126,14 @@ class ParamsManager extends MNode implements Validator
 
     }
 
-    public function validate(string|AnonymousModel|Model $model, Attr|string $attr, ?string $prefix = null, ?bool $anonymousIsPost=null): ValidatedValue
+    public function validate(string|AnonymousModel|Model $model, Attr|string $attr, ?string $prefix = null, ?Source $sourceIfAnonymous=null): ValidatedValue
     {
-
         /** @var Model $model */
         if(is_string($model))
             $model = Model::pushFindByName($model);
         $attr = $model->getAttr($attr);
 
-        if($model instanceof Model){
-            $validatedValue = $this->validateOnlyFormat($model, $attr, $prefix);
-        } else {
-            $validatedValue = $this->validateOnlyFormatAnonymous($model, $attr, $prefix, $anonymousIsPost);
-        }
+        $validatedValue = $this->validateOnlyFormat($model, $attr, $prefix, $sourceIfAnonymous);
 
         if($validatedValue->isValid()){
 
@@ -155,54 +150,62 @@ class ParamsManager extends MNode implements Validator
 
     }
 
-    /**
-     * @param AnonymousModel $model
-     * @param string|Attr $attr
-     * @param string|null $prefix
-     * @param bool $post
-     * @return ValidatedValue
-     */
-    public function validateOnlyFormatAnonymous(AnonymousModel $model, Attr|string $attr, ?string $prefix, ?bool $post): ValidatedValue
+//    public function validateOnlyFormatAnonymous(AnonymousModel $model, Attr|string $attr, ?string $prefix, ?bool $post): ValidatedValue
+//    {
+//
+//        $attr = $model->getAttr($attr);
+//
+//        if($post)
+//            $globalArray = $_POST;
+//        else
+//            $globalArray = $_GET;
+//
+//        /** @var AttrExt_Param|null $attrExt_Param */
+//        $attrExt_Param = $attr->findExtension(AttrExt_Param::class);
+//        if($attrExt_Param != null){
+//            $name = $attrExt_Param->getName();
+//        }else{
+//            $name = $attr->getId();
+//        }
+//        if($prefix !== null)
+//            $name = $prefix . $name;
+//
+//        return $this->validateAttributeFromGlobalArray($attr, $name, $globalArray);
+//    }
+
+    public function validateOnlyFormat(AnonymousModel|string $model, Attr|string $attr, ?string $prefix=null, ?Source $sourceIfAnonymous = null): ValidatedValue
     {
-
-        $attr = $model->getAttr($attr);
-
-        if($post)
-            $globalArray = $_POST;
-        else
-            $globalArray = $_GET;
-
-        /** @var AttrExt_Param|null $attrExt_Param */
-        $attrExt_Param = $attr->findExtension(AttrExt_Param::class);
-        if($attrExt_Param != null){
-            $name = $attrExt_Param->getName();
-        }else{
-            $name = $attr->getId();
-        }
-        if($prefix !== null)
-            $name = $prefix . $name;
-
-        return $this->validateAttributeFromGlobalArray($attr, $name, $globalArray);
-    }
-
-    /**
-     * @param Model|string $model
-     * @param Attr|string $attr
-     * @param string $prefix
-     * @return ValidatedValue
-     */
-    public function validateOnlyFormat($model, $attr, $prefix=null){
         /** @var Model $model */
         if(is_string($model))
             $model = Model::pushFindByName($model);
         $attr = $model->getAttr($attr);
 
-        if(array_key_exists($model->getIdOrClass(), $this->postModels))
-            $globalArray = $_POST;
-        else if(array_key_exists($model->getIdOrClass(), $this->getModels))
-            $globalArray = $_GET;
-        else
-            throw new DevPanic("No declared model as params: " . $model->getIdOrClass() . ".");
+        if ($model instanceof Model){
+
+            if(array_key_exists($model->getIdOrClass(), $this->postModels)){
+//                if($sourceIfAnonymous !== null && $sourceIfAnonymous !== Source::POST)
+//                    throw new DevPanic("Called validateOnlyFormat() with a Model and source restriction: " . $model->getIdOrClass() . ". Models source must be set in advance.");
+
+                $globalArray = $_POST;
+            } else if(array_key_exists($model->getIdOrClass(), $this->getModels)){
+//                if($sourceIfAnonymous !== null && $sourceIfAnonymous !== Source::GET)
+//                    throw new DevPanic("Called validateOnlyFormat() with a Model and source restriction: " . $model->getIdOrClass() . ". Models source must be set in advance.");
+
+                $globalArray = $_GET;
+            } else {
+                throw new DevPanic("No declared model as params: " . $model->getIdOrClass() . ".");
+            }
+
+        }else{
+
+            $sourceIfAnonymous = $sourceIfAnonymous ?? Source::GET;
+            $globalArray = match($sourceIfAnonymous){
+                Source::GET => $_GET,
+                Source::POST => $_POST,
+                default => throw new DevPanic("Not supported params method: " . $sourceIfAnonymous->value)
+            };
+
+        }
 
         /** @var AttrExt_Param|null $attrExt_Param */
         $attrExt_Param = $attr->findExtension(AttrExt_Param::class);
