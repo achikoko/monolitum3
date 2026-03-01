@@ -10,6 +10,7 @@ use monolitum\model\attr\Attr;
 use monolitum\model\attr\Attr_Bool;
 use monolitum\model\attr\Attr_Color;
 use monolitum\model\attr\Attr_Date;
+use monolitum\model\attr\Attr_DateTime;
 use monolitum\model\attr\Attr_Decimal;
 use monolitum\model\attr\Attr_Int;
 use monolitum\model\attr\Attr_String;
@@ -156,13 +157,16 @@ class DatabaseManager extends MNode implements EntityPersister
                 }else if($attr instanceof Attr_String){
                     /** @var AttrExt_Validate_String $validateString */
                     $validateString = $attr->findExtension(AttrExt_Validate_String::class);
-                    $limit = null;
-                    if($validateString != null){
-                        $limit = $validateString->getMaxChars();
-                    }
+                    $limit = $validateString?->computeMaxChars();
 
-                    if($limit == null || $limit < 65535/4){
+                    if($limit == null){
                         $sql .= " TEXT";
+                    }else if($limit < 65535/4){
+                        if($validateString?->computeAsciiness()){
+                            $sql .= " VARCHAR(" . $limit . ") CHARACTER SET ascii";
+                        }else{
+                            $sql .= " VARCHAR(" . (int)($limit*4) . ")";
+                        }
                     }else if($limit < 16777215/4){
                         $sql .= " MEDIUMTEXT";
                     }else{
@@ -173,6 +177,8 @@ class DatabaseManager extends MNode implements EntityPersister
                     $sql .= " TINYINT(1)";
                 }else if($attr instanceof Attr_Date){
                     $sql .= " DATE";
+                }else if($attr instanceof Attr_DateTime){
+                    $sql .= " DATETIME";
                 }else if($attr instanceof Attr_Color){
                     $sql .= " CHAR(10)";
                 }else if($attr instanceof DatabaseableAttr){
@@ -616,7 +622,7 @@ class DatabaseManager extends MNode implements EntityPersister
                 $sql .= " " . $sign . " ?";
                 $values[] = $value;
             }else if($value instanceof DateTime){
-                if(!($attr instanceof Attr_Date))
+                if(!($attr instanceof Attr_Date) && !($attr instanceof Attr_DateTime))
                     throw new DevPanic("Illegal datetime value type");
                 $sql .= " " . $sign . " ?";
                 $values[] = $value;
@@ -673,7 +679,7 @@ class DatabaseManager extends MNode implements EntityPersister
                 $sql .= " = ?";
                 $values[] = $filter->getHexValue();
             }else if($filter instanceof DateTime){
-                if(!($attr instanceof Attr_Date))
+                if(!($attr instanceof Attr_Date) && !($attr instanceof Attr_DateTime))
                     throw new DevPanic("Illegal string value type");
                 $sql .= " = ?";
                 $values[] = $filter;
@@ -694,6 +700,15 @@ class DatabaseManager extends MNode implements EntityPersister
         $query = $this->newInsert($entity->getModel());
 
         // TODO check autoincrement is null and rest of ids are not null
+
+        // Default values
+        foreach ($entity->getModel()->getAttrs() as $attr){
+            /** @var ?AttrExt_DB $databaseExt */
+            $databaseExt = $attr->findExtension(AttrExt_DB::class);
+            if($databaseExt !== null && $databaseExt->isDefaultSet()){
+                $query->addValue($attr, $databaseExt->getDef());
+            }
+        }
 
         foreach ($entity->getUpdateAttrs() as $attrName => $value){
             $query->addValue($attrName, $value);

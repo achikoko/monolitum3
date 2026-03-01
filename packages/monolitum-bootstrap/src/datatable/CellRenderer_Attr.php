@@ -16,6 +16,7 @@ use monolitum\i18n\TSLang;
 use monolitum\model\attr\Attr;
 use monolitum\model\attr\Attr_Bool;
 use monolitum\model\attr\Attr_Date;
+use monolitum\model\attr\Attr_DateTime;
 use monolitum\model\attr\Attr_Decimal;
 use monolitum\model\attr\Attr_Int;
 use monolitum\model\attr\Attr_String;
@@ -74,7 +75,7 @@ class CellRenderer_Attr implements CellRenderer
                 return Text::of(strval($entity->getInt($attr)));
             }else if($attr instanceof Attr_Decimal){
                 return Text::of(strval($entity->getInt($attr) / pow(10, $attr->getDecimals())));
-            }else if($attr instanceof Attr_Date){
+            }else if($attr instanceof Attr_Date || $attr instanceof Attr_DateTime){
                 $val = $entity->getDate($attr);
 
                 //if(PHP_MAJOR_VERSION == 8 && PHP_MINOR_VERSION > 1 || PHP_MAJOR_VERSION > 8){
@@ -90,10 +91,9 @@ class CellRenderer_Attr implements CellRenderer
                         ($this->format !== null ? $this->format : "%Y-%m-%d"), $val->getTimestamp()
                     ) : "");
                 }*/
-
             }else if($attr instanceof Attr_Bool){
                 $ch = new FormControl_CheckBox();
-                $ch->setDisabled(true);
+                $ch->setDisabled();
                 $ch->setValue($entity->getBool($attr)); // TODO intermediate
                 return $ch;
             }else{

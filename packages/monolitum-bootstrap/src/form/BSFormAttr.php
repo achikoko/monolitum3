@@ -9,6 +9,7 @@ use monolitum\frontend\form\AbstractHtmlElementNodeFormAttr;
 use monolitum\frontend\form\AttrExt_Form_String;
 use monolitum\frontend\form\FormControl_CheckBox;
 use monolitum\frontend\form\FormControl_Date;
+use monolitum\frontend\form\FormControl_DateTime;
 use monolitum\frontend\form\FormControl_File;
 use monolitum\frontend\form\FormControl_Number;
 use monolitum\frontend\form\FormControl_Password;
@@ -24,6 +25,7 @@ use monolitum\i18n\TSLang;
 use monolitum\model\attr\Attr;
 use monolitum\model\attr\Attr_Bool;
 use monolitum\model\attr\Attr_Date;
+use monolitum\model\attr\Attr_DateTime;
 use monolitum\model\attr\Attr_Decimal;
 use monolitum\model\attr\Attr_File;
 use monolitum\model\attr\Attr_Int;
@@ -455,6 +457,27 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                     $datetime = $this->getValue();
                     if($datetime !== null)
                         $it->setValue(date_format($datetime, "Y-m-d"));
+                }
+                if($isValid !== null)
+                    $it->addClass($isValid ? "is-valid" : "is-invalid");
+
+                if($this->hidden === true)
+                    $it->convertToHidden();
+
+                if($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
+                    $it->setDisabled(true);
+
+            });
+
+        }else if($attr instanceof Attr_DateTime){
+
+            $formControl = new FormControl_DateTime(function(FormControl_DateTime $it) use ($isValid) {
+                $it->setId($this->getFullFieldName());
+                $it->setName($this->getFullFieldName());
+                if($this->hasValue()){
+                    $datetime = $this->getValue();
+                    if($datetime !== null)
+                        $it->setValue(date_format($datetime, "Y-m-d H:i:s"));
                 }
                 if($isValid !== null)
                     $it->addClass($isValid ? "is-valid" : "is-invalid");

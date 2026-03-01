@@ -15,6 +15,9 @@ class AttrExt_DB extends AttrExt
     private string|Model|null $foreignModel = null;
     private string|Attr|null $foreignAttr = null;
 
+    private bool $isDefaultSet = false;
+    private mixed $def = null;
+
     public function primaryKey(): self
     {
         $this->primaryKey = true;
@@ -32,6 +35,18 @@ class AttrExt_DB extends AttrExt
     {
         $this->foreignModel = $model;
         $this->foreignAttr = $attr;
+        return $this;
+    }
+
+    /**
+     * @param mixed $value
+     * @param bool $substituteNotValid
+     * @return $this
+     */
+    public function def(mixed $value): self
+    {
+        $this->isDefaultSet = true;
+        $this->def = $value;
         return $this;
     }
 
@@ -53,6 +68,16 @@ class AttrExt_DB extends AttrExt
     public function getForeignAttr(): Attr|string|null
     {
         return $this->foreignAttr;
+    }
+
+    public function isDefaultSet(): bool
+    {
+        return $this->isDefaultSet;
+    }
+
+    public function getDef()
+    {
+        return $this->def;
     }
 
 }

@@ -22,6 +22,7 @@ class BSPage extends HTMLPage{
         BSBounds::of()->height(BSSize::s100())->pushSelf();
 
         $this->includePopperIfNot();
+//        $this->includeBootstrapDatetimeIfNot();
 
         CSSLink::of(Path::fromRelativeToClass(BSPage::class,"res","bootstrap-reboot.css"))->pushSelf();
         CSSLink::of(Path::fromRelativeToClass(BSPage::class,"res","bootstrap.css"))->pushSelf();
@@ -29,6 +30,16 @@ class BSPage extends HTMLPage{
 
         JSScript::of(Path::fromRelativeToClass(BSPage::class,"res","bootstrap.js"))->pushSelf();
 
+    }
+
+    public function includeBootstrapDatetimeIfNot(): void
+    {
+        $this->includeJQueryIfNot();
+        if(!$this->getConstant("bootstrap-datetime-js-css")){
+            CSSLink::of(Path::fromRelativeToClass(BSPage::class,"res", "bs5-datetime.min.css"))->pushSelf();
+            JSScript::of(Path::fromRelativeToClass(BSPage::class,"res", "bs5-datetime.min.js"))->pushSelf();
+            $this->setConstant("bootstrap-datetime-js-css");
+        }
     }
 
     public function includeBootstrapSelect2IfNot(): void

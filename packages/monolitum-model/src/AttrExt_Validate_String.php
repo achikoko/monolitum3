@@ -5,6 +5,7 @@ use Closure;
 use monolitum\core\panic\DevPanic;
 use monolitum\i18n\TS;
 
+// For the future me: https://stackoverflow.com/questions/4147646/determine-if-utf-8-text-is-all-ascii
 class AttrExt_Validate_String extends AttrExt_Validate
 {
 
@@ -228,29 +229,33 @@ class AttrExt_Validate_String extends AttrExt_Validate
         return $this->maxChars;
     }
 
-    public function getEnumString(mixed $value): string|TS|null
+    public function computeMaxChars(): ?int
     {
+        if($this->maxChars !== null){
+            return $this->maxChars;
+        }
+
         if($this->enums !== null){
-            foreach ($this->enums as $enumKey => $enumValue){
-                if(is_string($enumKey)){
-                    if($value == $enumKey){
-                        return $enumValue;
-                    }
-                }else if(is_string($enumValue)){
-                    if($value == $enumValue){
-                        return $enumValue;
-                    }
-                }else if(is_array($enumValue)){
-                    if($value == $enumValue[0]){
-                        return  $enumValue[1];
-                    }
-                }else{
-                    throw new DevPanic("Enum constant not found");
-                }
+            $maxLen = 64; // Set a minimum of 64 when enums, to let space for new values
+            foreach (EnumUtils::iterateKeys($this->enums) as $enumKey){
+                $maxLen = max($maxLen, strlen($enumKey));
             }
+            return $maxLen;
         }
 
         return null;
+    }
+
+    public function computeAsciiness(): bool
+    {
+        if($this->enums !== null)
+            return true;
+        return false;
+    }
+
+    public function getEnumString(mixed $value): string|TS|null
+    {
+        return EnumUtils::getStringFromEnumArray($this->enums, $value);
     }
 
 }

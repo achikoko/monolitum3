@@ -7,6 +7,7 @@ use monolitum\core\util\MClosableIterator;
 use monolitum\model\attr\Attr;
 use monolitum\model\attr\Attr_Bool;
 use monolitum\model\attr\Attr_Date;
+use monolitum\model\attr\Attr_DateTime;
 use monolitum\model\attr\Attr_Decimal;
 use monolitum\model\attr\Attr_Int;
 use monolitum\model\attr\Attr_String;
@@ -97,7 +98,7 @@ class Query_Result implements MClosableIterator
                     else if($rowValue === "false")
                         $rowValue = false;
                     $entity->setBool($attr, $rowValue);
-                }else if($attr instanceof Attr_Date){
+                }else if($attr instanceof Attr_Date || $attr instanceof Attr_DateTime){
                     $entity->setDate($attr, date_create($rowValue));
                 }else if($attr instanceof DatabaseableAttr){
                     $entity->setValue($attr, $attr->parseValue($rowValue));
