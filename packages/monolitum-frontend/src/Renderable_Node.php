@@ -49,6 +49,8 @@ abstract class Renderable_Node extends MNode {
             return Rendered::of($renderable);
         }else if(is_string($renderable)){
             return Rendered::of($renderable);
+        }else if($renderable instanceof TS){
+            return Rendered::of(TS::unwrapAuto($renderable));
         }else {
             return $renderable;
         }
