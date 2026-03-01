@@ -141,7 +141,7 @@ abstract class Entity
         return $this->_set($attr, $value);
     }
 
-    abstract function buildModel();
+    abstract function buildModel(EntitiesManager $manager): Model;
 
     public function _protectWrite(): void
     {

@@ -52,5 +52,14 @@ class Model extends AnonymousModel
         return $entities->instance($class, $forInsert);
     }
 
+    public function clone(string $instanceableEntityClass, ?string $id = null): Model
+    {
+        $model = new Model($instanceableEntityClass, $id);
+        foreach ($this->attrs as $attr){
+            $model->attr($attr->getId(), $attr);
+        }
+        return $model;
+    }
+
 }
 

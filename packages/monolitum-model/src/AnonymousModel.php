@@ -10,7 +10,7 @@ class AnonymousModel
     /**
      * @var array<string, Attr>
      */
-    private array $attrs = [];
+    protected array $attrs = [];
 
     /**
      * @param string $attrId

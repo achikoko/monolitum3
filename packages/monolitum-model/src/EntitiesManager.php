@@ -37,7 +37,7 @@ class EntitiesManager extends MNode implements EntityPersister
         if(!($entity instanceof Entity)){
             throw new DevPanic("Expected " . $class . " to be an instance of Entity.");
         }
-        $model = $entity->buildModel();
+        $model = $entity->buildModel($this);
         $this->models[$class] = $model;
         return $model;
 
@@ -90,6 +90,11 @@ class EntitiesManager extends MNode implements EntityPersister
         /** @var EntityPersister $face */
         $face = Find::push(EntityPersister::class)->getResponse();
         return $face->_executeDeleteEntity($entity);
+    }
+
+    public function extendModel(Model|string $baseModel, string $instanceableEntityClass, ?string $id = null): Model
+    {
+        return $this->getModel($baseModel)->clone($instanceableEntityClass, $id);
     }
 
 }
