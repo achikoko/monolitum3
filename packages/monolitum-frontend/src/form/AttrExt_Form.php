@@ -14,6 +14,7 @@ class AttrExt_Form extends AttrExt
     private bool $isDefaultSet = false;
     private mixed $def = null;
     private bool $substituteNotValid = false;
+    private bool $substituteNullValues = false;
 
     function label(TS|string $label): self {
         $this->label = $label;
@@ -34,11 +35,12 @@ class AttrExt_Form extends AttrExt
      * @param bool $substituteNotValid
      * @return $this
      */
-    public function def(mixed $value, bool $substituteNotValid = false): self
+    public function def(mixed $value, bool $substituteNotValid = false, bool $substituteNullValues = false): self
     {
         $this->isDefaultSet = true;
         $this->def = $value;
         $this->substituteNotValid = $substituteNotValid;
+        $this->substituteNullValues = $substituteNullValues;
         return $this;
     }
 
@@ -68,6 +70,14 @@ class AttrExt_Form extends AttrExt
     public function isSubstituteNotValid(): bool
     {
         return $this->substituteNotValid;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSubstituteNullValues(): bool
+    {
+        return $this->substituteNullValues;
     }
 
 //    public function makeDefault(ValidatedValue $validated)

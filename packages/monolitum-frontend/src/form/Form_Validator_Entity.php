@@ -110,7 +110,16 @@ class Form_Validator_Entity extends Form_Validator
                 $ext = $attr->findExtension(AttrExt_Form::class);
                 if($ext !== null && $ext->isSubstituteNotValid()){
                     $value = $ext->getDef();
-                    return new ValidatedValue(true, true, $ext->getDef(), $attr->stringValue($value));
+                    $validatedValue = new ValidatedValue(true, true, $ext->getDef(), $attr->stringValue($value));
+                }
+
+            }else if($validatedValue->isNull()){
+                // Skip attribute without Form specification
+                /** @var AttrExt_Form $ext */
+                $ext = $attr->findExtension(AttrExt_Form::class);
+                if($ext !== null && $ext->isSubstituteNullValues()){
+                    $value = $ext->getDef();
+                    $validatedValue = new ValidatedValue(true, true, $ext->getDef(), $attr->stringValue($value));
                 }
 
             }
