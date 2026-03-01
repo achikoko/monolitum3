@@ -11,7 +11,7 @@ use monolitum\core\util\ListUtils;
 class MNode implements MObject
 {
 
-    private ?MNode $parent;
+    private ?MNode $parent = null;
 
     private bool $building = false;
 
@@ -48,6 +48,8 @@ class MNode implements MObject
 
     public function getParent(): ?MNode
     {
+        if(!$this->building && !$this->built)
+            throw new DevPanic("Trying to get parent of a not building node");
         return $this->parent;
     }
 
