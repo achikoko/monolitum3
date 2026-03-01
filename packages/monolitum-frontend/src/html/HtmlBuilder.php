@@ -24,7 +24,7 @@ class HtmlBuilder
      * @var         array                   elements require end tag
      */
     protected $_elementsRequireEndTag = array(
-        'select','script','i'
+        'select','script','i','div','span'
     );
 
     /**
