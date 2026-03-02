@@ -72,16 +72,16 @@ class NavBar extends HtmlElementNode implements Menu_Item_Holder
 
     public function brandTitle(HtmlElementNode|string $brandTitle): self
     {
-        if($brandTitle instanceof HtmlElementNode)
-            $this->buildAndAppendChild($brandTitle);
+//        if($brandTitle instanceof HtmlElementNode)
+//            $this->buildAndAppendChild($brandTitle);
         $this->brandTitle = $brandTitle;
         return $this;
     }
 
     public function brandIcon(HtmlElementNode|Path|null $brandIcon): self
     {
-        if($brandIcon instanceof HtmlElementNode)
-            $this->buildAndAppendChild($brandIcon);
+//        if($brandIcon instanceof HtmlElementNode)
+//            $this->buildAndAppendChild($brandIcon);
         $this->brandIcon = $brandIcon;
         return $this;
     }
@@ -276,7 +276,9 @@ class NavBar extends HtmlElementNode implements Menu_Item_Holder
                         $component->receive(BSVerticalAlign::middle());
                     }
                     else
+                    {
                         $component = $this->brandTitle;
+                    }
 
                     if($this->brandIcon !== null)
                         $component->receive(BSMargin::left(2));
