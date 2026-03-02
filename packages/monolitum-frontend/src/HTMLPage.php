@@ -37,10 +37,18 @@ class HTMLPage extends MNode {
 //     */
 //    private $body_components = [];
 
-    private HtmlElementNode $body;
+    private ?HtmlElementNode $body = null;
 
     function __construct(?Closure $builder = null){
         parent::__construct($builder);
+    }
+
+    /**
+     * @return HtmlElementNode
+     */
+    public function getBody(): ?HtmlElementNode
+    {
+        return $this->body;
     }
 
     public function doAcceptChild(MObject $object): bool

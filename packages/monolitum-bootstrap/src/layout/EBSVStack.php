@@ -2,16 +2,18 @@
 
 namespace monolitum\bootstrap\layout;
 
+use Closure;
+use monolitum\bootstrap\style\BSVStack;
 use monolitum\frontend\component\Div;
 
 class EBSVStack extends Div
 {
-    private \monolitum\bootstrap\style\BSVStack $layout;
+    private BSVStack $layout;
 
-    public function __construct()
+    public function __construct(?Closure $builder = null)
     {
-        parent::__construct();
-        $this->layout = \monolitum\bootstrap\style\BSVStack::of();
+        parent::__construct($builder);
+        $this->layout = BSVStack::of();
     }
 
     public function gap(int $gap): self

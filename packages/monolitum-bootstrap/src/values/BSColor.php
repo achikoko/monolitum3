@@ -5,11 +5,9 @@ namespace monolitum\bootstrap\values;
 class BSColor
 {
 
-    private string $value;
-
-    private function __construct(string $value)
+    private function __construct(private readonly string $value)
     {
-        $this->value = $value;
+
     }
 
     public static function primary(): BSColor
@@ -57,6 +55,16 @@ class BSColor
         return new BSColor("body");
     }
 
+    public static function bodySecondary(): BSColor
+    {
+        return new BSColor("body-secondary");
+    }
+
+    public static function bodyTertiary(): BSColor
+    {
+        return new BSColor("body-tertiary");
+    }
+
     public static function muted(): BSColor
     {
         return new BSColor("muted");
@@ -65,6 +73,11 @@ class BSColor
     public static function white(): BSColor
     {
         return new BSColor("white");
+    }
+
+    public static function black(): BSColor
+    {
+        return new BSColor("black");
     }
 
     public static function transparent(): BSColor

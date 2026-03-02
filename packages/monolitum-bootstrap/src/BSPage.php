@@ -70,15 +70,14 @@ class BSPage extends HTMLPage{
         }
     }
 
-    /**
-     * @param HtmlElement $html
-     * @return void
-     */
-    protected function onBeforeEcho(HtmlElement $html): void
-    {
-        parent::onBeforeEcho($html);
-        $html->setAttribute("class", "h-100");
-//        echo "<!DOCTYPE html>"; // See https://getbootstrap.com/docs/5.3/getting-started/introduction/
-    }
+//    /**
+//     * @param HtmlElement $html
+//     * @return void
+//     */
+//    protected function onBeforeEcho(HtmlElement $html): void
+//    {
+//        parent::onBeforeEcho($html);
+////        echo "<!DOCTYPE html>"; // See https://getbootstrap.com/docs/5.3/getting-started/introduction/
+//    }
 
 }
