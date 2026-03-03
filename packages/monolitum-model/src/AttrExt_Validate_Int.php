@@ -14,6 +14,14 @@ class AttrExt_Validate_Int extends AttrExt_Validate
 
     private TS|string|null $maxError = null;
 
+    private bool $adjustMinMaxIfInvalid = false;
+
+    public function adjustMinMaxIfInvalid($adjustMinMaxIfInvalid = true): self
+    {
+        $this->adjustMinMaxIfInvalid = $adjustMinMaxIfInvalid;
+        return $this;
+    }
+
     /**
      * @param int $int
      * @param string|TS|null $minError
@@ -67,14 +75,21 @@ class AttrExt_Validate_Int extends AttrExt_Validate
 
         if(!$validatedValue->isNull()){
 
+            /** @var int $val */
             $val = $validatedValue->getValue();
 
             if($this->min !== null && $val < $this->min){
+                if($this->adjustMinMaxIfInvalid){
+                    return new ValidatedValue(true, true, $this->min, null, strval($this->min));
+                }
                 $error = true;
                 $errorMessage = $this->minError;
             }
 
             if($this->max !== null && $val > $this->max){
+                if($this->adjustMinMaxIfInvalid){
+                    return new ValidatedValue(true, true, $this->max, null, strval($this->max));
+                }
                 $error = true;
                 $errorMessage = $this->maxError;
             }
