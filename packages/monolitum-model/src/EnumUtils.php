@@ -34,6 +34,35 @@ enum EnumUtils
         }
     }
 
+    public static function keyExistsFromEnumArray(?array $enums, mixed $itemKey): bool
+    {
+
+        if($enums !== null){
+            foreach ($enums as $enumKey => $enumValue){
+                if(is_string($enumKey)){
+                    // Case [KEY => VALUE]
+                    if($itemKey == $enumKey){
+                        return true;
+                    }
+                }else if(is_string($enumValue)){
+                    // Case [KEY...]
+                    if($itemKey == $enumValue){
+                        return true;
+                    }
+                }else if(is_array($enumValue)){
+                    // Case [[KEY, VALUE]...]
+                    if($itemKey == $enumValue[0]){
+                        return  true;
+                    }
+                }else{
+                    throw new DevPanic("Enum constant not found");
+                }
+            }
+        }
+
+        return false;
+    }
+
     public static function getValueFromEnumArray(?array $enums, mixed $itemKey): mixed
     {
 

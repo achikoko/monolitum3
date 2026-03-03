@@ -143,27 +143,7 @@ class AttrExt_Validate_String extends AttrExt_Validate
 
         if(!$validatedValue->isNull()){
             if($this->enums !== null){
-                $found = false;
-                foreach ($this->enums as $enumKey => $enumValue){
-                    if(is_string($enumKey)){
-                        if($validatedValue->getValue() == $enumKey){
-                            $found = true;
-                            break;
-                        }
-                    }else if(is_string($enumValue)){
-                        if($validatedValue->getValue() == $enumValue){
-                            $found = true;
-                            break;
-                        }
-                    }else if(is_array($enumValue)){
-                        if($validatedValue->getValue() == $enumValue[0]){
-                            $found = true;
-                            break;
-                        }
-                    }else{
-                        throw new DevPanic("Enum constant not found");
-                    }
-                }
+                $found = EnumUtils::keyExistsFromEnumArray($this->enums, $validatedValue->getValue());
                 if(!$found){
                     $error = true;
                     $errorMessage = $this->enumsError;
