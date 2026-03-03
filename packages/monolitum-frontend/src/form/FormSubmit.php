@@ -4,6 +4,7 @@ namespace monolitum\frontend\form;
 
 
 use Closure;
+use monolitum\backend\globals\Request_NewId;
 use monolitum\backend\params\Link;
 use monolitum\backend\params\Path;
 use monolitum\backend\resources\HrefResolver;
@@ -121,7 +122,7 @@ abstract class FormSubmit extends HtmlElementNode
      * @param Form_Validator $validator
      * @return bool true if set
      */
-    public function _setValidateAttrs(Form_Validator $validator): bool
+    function _setValidateAttrsInto(Form_Validator $validator): bool
     {
         if($this->validate_attrs_hasBeenSet){
             if($this->validate_attrs_all){
@@ -140,6 +141,17 @@ abstract class FormSubmit extends HtmlElementNode
         $this->form->_registerFormSubmit($this);
 
         parent::onBuild();
+    }
+
+    protected function onAfterBuild(): void
+    {
+        parent::onAfterBuild();
+
+        if($this->onValidated !== null && $this->submitKey === null){
+            // Has own onValidated, but not a submit key
+            $this->submitKey = Request_NewId::pushAndGet("formsubmit");
+        }
+
     }
 
     public function getForm(): Form

@@ -206,7 +206,7 @@ class DatabaseManager extends MNode implements EntityPersister
                         if($validateString?->computeAsciiness()){
                             $sql .= " VARCHAR(" . $limit . ") CHARACTER SET ascii";
                         }else{
-                            $sql .= " VARCHAR(" . (int)($limit*4) . ")";
+                            $sql .= " VARCHAR(" . intval($limit*4) . ")";
                         }
                     }else if($limit < 16777215/4){
                         $sql .= " MEDIUMTEXT";

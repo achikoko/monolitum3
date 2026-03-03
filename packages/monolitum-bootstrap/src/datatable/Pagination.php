@@ -255,7 +255,7 @@ class Pagination extends HtmlElementNode
         return new EBSInlineFlex(function (EBSInlineFlex $it) {
             BSMargin::bottom(2)->pushSelf();
 
-            M(Form::fromAnonymous(function (Form $it) {
+            M(Form::fromAnonymousModel(function (Form $it) {
 
                 $it->setMethodGET();
                 $it->setDefaultValue($this->param_page, $this->page);

@@ -27,18 +27,18 @@ class Form_Validator_Entity extends Form_Validator
      */
     private ?Entity $currentEntity = null;
 
-    private ?Source $sourceIfAnonymous = null;
+    private Source $sourceIfAnonymousModel;
 
     /**
      * @param Validator $validator
      * @param class-string|AnonymousModel|Model $model
      * @param mixed|null $post
      */
-    public function __construct(Validator $validator, string|AnonymousModel|Model $model, ?Source $sourceIfAnonymous = null)
+    public function __construct(Validator $validator, string|AnonymousModel|Model $model, ?Source $sourceIfAnonymousModel = null)
     {
         $this->validator = $validator;
         $this->model = $model;
-        $this->sourceIfAnonymous = $sourceIfAnonymous ?? Source::POST;
+        $this->sourceIfAnonymousModel = $sourceIfAnonymousModel ?? Source::POST;
     }
 
     /**
@@ -100,7 +100,7 @@ class Form_Validator_Entity extends Form_Validator
         }else{
 
             // Validate the value that comes from outside
-            $validatedValue = $this->validator->validate($this->model, $attr, $this->form->_getValidatePrefix(), $this->sourceIfAnonymous);
+            $validatedValue = $this->validator->validate($this->model, $attr, $this->form->_getValidatePrefix(), $this->sourceIfAnonymousModel);
 
             // If not valid, try to substitute with a valid value
             if(!$validatedValue->isValid()){
@@ -173,9 +173,14 @@ class Form_Validator_Entity extends Form_Validator
      * @param string $prefix
      * @return ValidatedValue|null
      */
-    public function validateSubmissionKey(string $prefix): ?ValidatedValue
+    public function validateSubmissionKey(string $prefix): ValidatedValue
     {
         return $this->validator->validateStringPost_NameStartingWith_ReturnEnding($prefix);
+    }
+
+    public function validateStringPost(string $key): ValidatedValue
+    {
+        return $this->validator->validateStringPost($key);
     }
 
     /**

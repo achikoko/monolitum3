@@ -7,12 +7,13 @@ use Closure;
 use monolitum\core\Find;
 use monolitum\core\MNode;
 use monolitum\core\panic\DevPanic;
+use monolitum\core\security\CSRFTokenProvider;
 use monolitum\database\DatabaseManager;
 use monolitum\model\EntitiesManager;
 use monolitum\model\Entity;
 use monolitum\model\Model;
 
-class AuthManager extends MNode
+class AuthManager extends MNode implements CSRFTokenProvider
 {
 
     private string $entityClass;
@@ -70,6 +71,18 @@ class AuthManager extends MNode
         return $this;
     }
 
+    /**
+     * @return void
+     */
+    private function sessionStartOrFail(): void
+    {
+        if (!session_id()){
+            $result = session_start();
+            if(!$result)
+                throw new AuthPanic("Panic: Session not working!");
+        }
+    }
+
     protected function onBuild(): void
     {
         $this->entitiesManager = Find::pushAndGet(EntitiesManager::class);
@@ -104,8 +117,7 @@ class AuthManager extends MNode
             if(!password_verify($password, $userPassword))
                 return false;
 
-            if(! session_id())
-                session_start();
+            $this->sessionStartOrFail();
 
             $_SESSION['username'] = $this->user->getString($this->usernameAttr);
 
@@ -146,8 +158,7 @@ class AuthManager extends MNode
     {
         if($this->user == null){
 
-            if(! session_id())
-                session_start();
+            $this->sessionStartOrFail();
 
             if(!isset($_SESSION['username']) || $_SESSION['username'] == null)
                 return null;
@@ -162,9 +173,34 @@ class AuthManager extends MNode
             /** @var Entity|null $user */
             $this->user = $userIterable->firstAndClose();
 
+            // TODO when user have a lifetime, update the cookie
+//            setcookie(session_name(),session_id(),time()+$lifetime);
+
         }
 
         return $this->user;
+    }
+
+    public function isCSRFSystemAvailable(): bool
+    {
+        // We can send the session cookie at any time, so we are available
+        return true;
+    }
+
+    public function getCurrentCSRFToken(): string
+    {
+
+        $this->sessionStartOrFail();
+
+        if(!isset($_SESSION['csrf_token']) || $_SESSION['csrf_token'] == null){
+            $token = bin2hex(openssl_random_pseudo_bytes(32));
+            if(!$token)
+                throw new AuthPanic("Panic: RNG not working!");
+            $_SESSION['csrf_token'] = $token;
+        }
+
+        return $_SESSION['csrf_token'];
+
     }
 
     public function requirePermission(string $permissionId): void

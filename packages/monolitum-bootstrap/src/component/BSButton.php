@@ -114,16 +114,19 @@ class BSButton extends AbstractTextNode
 
             }else{
 
-                $this->form = Form::anonymous(function (Form $it) {
+                $this->form = Form::fromAnonymousModel(function (Form $it) {
 
                     $it->setLink($this->pathOrLink);
 
-                    $this->formSubmit = new BSFormSubmit(function (BSFormSubmit $it) {
+                    $it->receive($this->formSubmit = new BSFormSubmit(function (BSFormSubmit $it) {
 
-                        $it->setId($this->getId());
+                        $buttonId = $this->getId();
+                        if($buttonId !== null){
+                            $it->setId($buttonId);
+                        }
                         $it->addClass(...$this->getClasses());
 
-                    });
+                    }));
 
                 });
                 $this->buildChildManually($this->form);

@@ -103,7 +103,7 @@ class HTMLPage extends MNode {
             }
 
         });
-        $this->buildAndInsertChild($this->body);
+        $this->buildChildManually($this->body);
 
         parent::onAfterBuild();
 
@@ -133,7 +133,7 @@ class HTMLPage extends MNode {
         }
         $html->addChildElement($head);
 
-        $this->body->doExecute();
+        $this->executeChildManually($this->body);
 
         /** @var Rendered $renderedBody */
         $renderedBody = $this->body->render();

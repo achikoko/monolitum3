@@ -90,7 +90,7 @@ class PathManager extends MNode
                 $writeAsParam = $this->writeAsParam;
 
             $isAppendUrlPrefix = $object->isAppendUrlPrefix();
-            $paramsAlone = [];
+            $priorityParamsAlone = [];
 
             if($object->link instanceof Path){
                 $path = $object->link;
@@ -109,7 +109,7 @@ class PathManager extends MNode
             if($stringPath != null){
                 if($writeAsParam){
                     if($object->obtainParamsAlone){
-                        $paramsAlone[$writeAsParam] = $stringPath;
+                        $priorityParamsAlone[$writeAsParam] = $stringPath;
                     }else{
                         $url .= '/?' . $writeAsParam . "=" . urlencode($stringPath);
                         $querySign = true;
@@ -121,6 +121,7 @@ class PathManager extends MNode
                 $url .= '/';
             }
 
+            $paramsAlone = [];
             if($object->link instanceof Link){
 
                 $copy = $object->link->isCopyParams();
@@ -128,30 +129,30 @@ class PathManager extends MNode
                 if($copy !== false){
 
                     $activeGetParams = new Request_FindParameters(
-                        Request_FindParameters::CATEGORY_GET, is_bool($copy) ? null : $copy, $object->link->getRemoveParams()
+                        Request_FindParameters::CATEGORY_GET,
+                        is_bool($copy) ? null : $copy,
+                        $object->link->getRemoveParams()
                     );
                     Monolitum::getInstance()->push($activeGetParams);
-                    $currentParams = $activeGetParams->getFoundParams();
+                    $paramsAlone = $activeGetParams->getFoundParams();
 
-                }else{
-                    $currentParams = [];
                 }
 
                 foreach($object->link->getRemoveParams() as $key => $value){
-                    unset($currentParams[$key]);
+                    unset($paramsAlone[$key]);
                 }
 
                 foreach($object->link->getAddParams() as $key => $value){
-                    $currentParams[$key] = $value;
+                    $paramsAlone[$key] = $value;
                 }
 
                 if($object->obtainParamsAlone){
-                    foreach ($currentParams as $key => $value) {
+                    foreach ($priorityParamsAlone as $key => $value) {
                         $paramsAlone[$key] = $value;
                     }
                 }else{
 
-                    foreach ($currentParams as $key => $value){
+                    foreach ($paramsAlone as $key => $value){
                         if($key === $writeAsParam || $value === null)
                             continue;
 

@@ -14,6 +14,7 @@ use monolitum\backend\resources\Request_HrefResolver;
 use monolitum\core\Find;
 use monolitum\core\Monolitum;
 use monolitum\core\panic\DevPanic;
+use monolitum\core\security\CSRFTokenProvider;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Renderable_Node;
@@ -29,6 +30,7 @@ class Form extends Renderable_Node
 {
     use Trait_Form_Validate_Attrs;
 
+    private const SUFFIX_CSRF_TOKEN = "csrf_token";
     private ?Form_Validator $validator;
 
     /**
@@ -65,6 +67,8 @@ class Form extends Renderable_Node
 
     private bool $methodGET = false;
 
+//    private bool $csrfValidatePolicy = false;
+
     private Path|Link|null $linkOrPath = null;
 
     private ?HrefResolver $linkResolver = null;
@@ -99,10 +103,14 @@ class Form extends Renderable_Node
     private array $addParams = [];
 
     /**
-     * TODO Compute
      * @var array<string, string>
      */
-    private array|null $computedParamsAlone = null;
+    private array|null $userComputedParamsAlone = null;
+
+    /**
+     * @var array<string, string>
+     */
+    private array|null $internalComputedParamsAlone = null;
 
     ///
     /// INTERNAL FIELDS
@@ -114,9 +122,9 @@ class Form extends Renderable_Node
     private ?Form $rootForm = null;
 
     /**
-     * @var HtmlElement
+     * @var ?HtmlElement
      */
-    private HtmlElement $formElement;
+    private ?HtmlElement $formElement = null;
 
     /**
      * @var bool
@@ -141,6 +149,12 @@ class Form extends Renderable_Node
      * @var array<string, ValidatedValue>
      */
     protected array $build_displayValidatedValues = [];
+
+    /**
+     * Null means not validated. True means valid. False means not valid.
+     * @var bool|null
+     */
+    private ?bool $csrfTokenIsValid = null;
 
     public function __construct(?Form_Validator $validator, ?string $formId, ?Closure $builder = null)
     {
@@ -173,6 +187,32 @@ class Form extends Renderable_Node
     public function setDefaultValue(string $attrString, mixed $value): void
     {
         $this->defaultValues[$attrString] = $value;
+    }
+
+    /**
+     * @return void
+     */
+    private function validateCSRFToken(): void
+    {
+        // Get submits don't validate csrf, only posts (this is why all database modifications must be under post forms)
+        if($this->methodGET)
+            return;
+
+        /** @var CSRFTokenProvider $provider */
+        $provider = Find::pushAndGet(CSRFTokenProvider::class, dontThrowIfNotReceived: true);
+        if ($provider !== null && $provider->isCSRFSystemAvailable()) {
+            $currentToken = $provider->getCurrentCSRFToken();
+
+            // Single underscore means internal
+            $validated = $this->validator->validateStringPost($this->formId . "_" . self::SUFFIX_CSRF_TOKEN);
+
+            if (!$validated->isValid()) {
+                $this->csrfTokenIsValid = false;
+            }
+
+            $this->csrfTokenIsValid = $currentToken === strval($validated->getValue());
+
+        }
     }
 
     /**
@@ -339,11 +379,12 @@ class Form extends Renderable_Node
      * @param FormSubmit $form_submit
      * @return string
      */
-    function _getSubmitPrefix(FormSubmit $form_submit): ?string
+    function _getSubmitPrefix(FormSubmit $formSubmit): ?string
     {
         if($this->anonymousAttributesNames)
             return null;
-        return $this->formId . "_submit__";
+        $form = $formSubmit->getForm();
+        return $form->formId . "_submit__";
     }
 
     /**
@@ -371,7 +412,7 @@ class Form extends Renderable_Node
     }
 
     /**
-     * @return string
+     * @return ?string
      */
     public function _getValidatePrefix(): ?string
     {
@@ -392,7 +433,7 @@ class Form extends Renderable_Node
     /**
      * Read the value from the external source, validate it and return it.
      * @param string|Attr $attr
-     * @return ValidatedValue
+     * @return ?ValidatedValue
      */
     public function getValidatedValue(Attr|string $attr): ?ValidatedValue
     {
@@ -460,9 +501,9 @@ class Form extends Renderable_Node
      * @param Form $form
      * @param string $key
      * @param string $value
-     * @return HtmlElement
+     * @return ?HtmlElement
      */
-    public function createHiddenInput(Form $form, string $key, string $value): ?HtmlElement
+    public function createHiddenInput(Form $form, string $key, string $value, bool $internal): ?HtmlElement
     {
         $exists = false;
         foreach ($form->formAttrs as $attr => $formAttr) {
@@ -475,7 +516,12 @@ class Form extends Renderable_Node
             $elem = new HtmlElement("input");
             $elem->setAttribute("type", "hidden");
             if (!$this->anonymousAttributesNames && $form->formId !== null) {
-                $elem->setAttribute("name", $form->formId . "__" . $key);
+                if($internal){
+                    // Single underscore means internal
+                    $elem->setAttribute("name", $form->formId . "_" . $key);
+                }else{
+                    $elem->setAttribute("name", $form->formId . "__" . $key);
+                }
             } else {
                 $elem->setAttribute("name", $key);
             }
@@ -539,10 +585,20 @@ class Form extends Renderable_Node
     public function isAllValid(): bool
     {
         if($this->validator !== null){
+            if($this->csrfTokenIsValid !== null && !$this->csrfTokenIsValid)
+                return false; // CSRF token was invalid
             return $this->validator->isAllValid();
         }else{
             throw new DevPanic("Asking if all is valid is not supported without a validator defined.");
         }
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function isCSRFTokenValid(): ?bool
+    {
+        return $this->csrfTokenIsValid;
     }
 
 
@@ -569,9 +625,17 @@ class Form extends Renderable_Node
 
         if($validatedValueKey !== null && $validatedValueKey->isValid()) {
             $this->build_isValidating = true;
+            if($parentForm !== null){
+                // Validate CSRF token from parent form
+                $parentForm->validateCSRFToken();
+                $this->csrfTokenIsValid = $parentForm->csrfTokenIsValid;
+            }else{
+                // Validate my csrf token
+                $this->validateCSRFToken();
+            }
         }
 
-        parent::onBuild(); // TODO: Change the autogenerated stub
+        parent::onBuild();
     }
 
     protected function onAfterBuild(): void
@@ -600,15 +664,17 @@ class Form extends Renderable_Node
 
                 $this->validator->_validateAll();
 
+                $isFormSubmitValidatedCalled = false;
                 if($submitFound !== null){
                     $onValidated = $submitFound->getOnValidated();
                     if($onValidated !== null){
+                        $isFormSubmitValidatedCalled = true;
                         $onValidated($this, $action);
                     }
                 }
 
                 // Execute validation callback
-                if($this->onValidated != null){
+                if(!$isFormSubmitValidatedCalled && $this->onValidated != null){
 
                     $callback = $this->onValidated;
                     $callback($this, $action);
@@ -645,10 +711,22 @@ class Form extends Renderable_Node
             $this->formElement = new HtmlElement("form");
             $this->formElement->setAttribute("enctype", "multipart/form-data");
 
-            if($this->methodGET)
+            if($this->methodGET) {
                 $this->formElement->setAttribute("method", "get");
-            else
+            } else {
                 $this->formElement->setAttribute("method", "post");
+
+                /** @var CSRFTokenProvider $provider */
+                $provider = Find::pushAndGet(CSRFTokenProvider::class, dontThrowIfNotReceived: true);
+                if ($provider !== null && $provider->isCSRFSystemAvailable()) {
+//                    if($this->internalComputedParamsAlone === null){
+//                        $this->userComputedParamsAlone = [];
+//                    }
+                    // If it is null PHP denullifies it (amazing)
+                    $this->internalComputedParamsAlone[self::SUFFIX_CSRF_TOKEN] = $provider->getCurrentCSRFToken();
+                }
+
+            }
 
             if($this->hasNestedForms){
 
@@ -692,39 +770,60 @@ class Form extends Renderable_Node
     protected function onExecute(): void
     {
 
-        // Append to the beginning the path parameters
-        if($this->linkResolver !== null){
-            $this->formElement->setAttribute("action", $this->linkResolver->resolve());
+        // Only root Form executes this code
+        if($this->formElement !== null){
 
-            $paramsAlone = $this->linkResolver->getAloneParamValues();
-            if(is_array($paramsAlone)){
-                foreach ($paramsAlone as $key => $value) {
-                    $input = $this->createHiddenInput($this, $key, $value);
+            // Append to the beginning the path parameters
+            if($this->linkResolver !== null){
+                $this->formElement->setAttribute("action", $this->linkResolver->resolve());
+
+                $paramsAlone = $this->linkResolver->getAloneParamValues();
+                if(is_array($paramsAlone)){
+                    foreach ($paramsAlone as $key => $value) {
+                        $input = $this->createHiddenInput($this, $key, $value, false);
+                        if ($input !== null)
+                            $this->append($input);
+                    }
+                }
+
+            }
+
+            if($this->internalComputedParamsAlone !== null) {
+                foreach ($this->internalComputedParamsAlone as $key => $value) {
+                    $input = $this->createHiddenInput($this, $key, $value, true);
                     if ($input !== null)
-                        $this->formElement->addChildElement($input);
+                        $this->append($input);
                 }
             }
 
-        }
-
-        if($this->computedParamsAlone !== null) {
-            foreach ($this->computedParamsAlone as $key => $value) {
-                $input = $this->createHiddenInput($this, $key, $value);
-                if ($input !== null)
-                    $this->formElement->addChildElement($input);
+            if($this->userComputedParamsAlone !== null) {
+                foreach ($this->userComputedParamsAlone as $key => $value) {
+                    $input = $this->createHiddenInput($this, $key, $value, false);
+                    if ($input !== null)
+                        $this->append($input);
+                }
             }
-        }
 
-        foreach ($this->nestedForms as $form){
-            $computedParamsAlone = $form->computedParamsAlone;
-            if($computedParamsAlone !== null){
-                foreach($computedParamsAlone as $key => $value){
-                    $input = $this->createHiddenInput($form, $key, $value);
-                    if($input !== null)
-                        $this->formElement->addChildElement($input);
+            foreach ($this->nestedForms as $form){
+                $computedParamsAlone = $form->internalComputedParamsAlone;
+                if($computedParamsAlone !== null){
+                    foreach($computedParamsAlone as $key => $value){
+                        $input = $this->createHiddenInput($form, $key, $value, true);
+                        if($input !== null)
+                            $this->append($input);
+                    }
                 }
 
+                $computedParamsAlone = $form->userComputedParamsAlone;
+                if($computedParamsAlone !== null){
+                    foreach($computedParamsAlone as $key => $value){
+                        $input = $this->createHiddenInput($form, $key, $value, false);
+                        if($input !== null)
+                            $this->append($input);
+                    }
+                }
             }
+
         }
 
         parent::onExecute();
@@ -793,10 +892,12 @@ class Form extends Renderable_Node
     /**
      * Creates a Form without validator.
      */
-    public static function fromAnonymous(?Closure $builder): Form
+    public static function fromAnonymousModel(?Closure $builder): Form
     {
-        $fc = new Form(null, null, $builder);
-        $fc->setAnonymousAttributesNames();
+        /** @var ParamsManager $manager_params */
+        $manager_params = Find::pushAndGet(ParamsManager::class);
+        $fc = new Form(new Form_Validator_Anonymous($manager_params), null, $builder);
+//        $fc->setAnonymousAttributesNames();
         return $fc;
     }
 
@@ -805,19 +906,21 @@ class Form extends Renderable_Node
      */
     public function getSubmissionKey(): ?ValidatedValue
     {
-        if($this->validator !== null && $this->formId !== null){
+        if($this->formId !== null && $this->validator !== null){
+            // Single underscore means internal
             return $this->validator->validateSubmissionKey($this->formId . "_submit__");
         }
         return null;
     }
 
     /**
+     * Resets the values to validate with those in the FormSubmit element. If it fails, values set in the form are restored.
      * @param FormSubmit|null $submit
      * @return void
      */
     private function setValidateAttrsIntoValidator(?FormSubmit $submit): void
     {
-        if($submit !== null && $submit->_setValidateAttrs($this->validator)){
+        if($submit !== null && $submit->_setValidateAttrsInto($this->validator)){
             return;
         }
 

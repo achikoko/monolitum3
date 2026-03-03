@@ -270,10 +270,9 @@ class ParamsManager extends MNode implements Validator
     {
 
         $globalArray = $_POST;
+        $prefixLength = strlen($prefix);
 
         foreach ($globalArray as $name => $value){
-
-            $prefixLength = strlen($prefix);
 
             // php <8 starts_with
             if(strncmp($name, $prefix, $prefixLength) === 0){

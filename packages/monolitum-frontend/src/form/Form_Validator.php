@@ -85,9 +85,15 @@ abstract class Form_Validator
 
     /**
      * @param string $prefix prefix of the attribute that must be set
-     * @return ?ValidatedValue if found, executed action string
+     * @return ValidatedValue if found, executed action string
      */
-    abstract function validateSubmissionKey(string $prefix): ?ValidatedValue;
+    abstract function validateSubmissionKey(string $prefix): ValidatedValue;
+
+    /**
+     * @param string $key
+     * @return ValidatedValue
+     */
+    abstract function validateStringPost(string $key): ValidatedValue;
 
     /**
      * @param Entity $entity
@@ -152,7 +158,7 @@ abstract class Form_Validator
      * @param string|Attr $attrId
      * @param string|TS $errorString
      */
-    public function invalidate(Attr|string $attrId, TS|string $errorString)
+    public function invalidate(Attr|string $attrId, TS|string $errorString): void
     {
         $attr = $this->getAttr($attrId);
         $validatedValue = $this->getValidatedValue($attr->getId());

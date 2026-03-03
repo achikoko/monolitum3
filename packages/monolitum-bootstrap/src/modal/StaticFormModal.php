@@ -5,9 +5,11 @@ namespace monolitum\bootstrap\modal;
 use Closure;
 use monolitum\backend\globals\Request_NewId;
 use monolitum\backend\params\ParamsManager;
+use monolitum\backend\params\Source;
 use monolitum\core\Find;
 use monolitum\frontend\form\Form;
 use monolitum\frontend\form\Form_Validator;
+use monolitum\frontend\form\Form_Validator_Anonymous;
 use monolitum\frontend\form\Form_Validator_Entity;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\Renderable;
@@ -53,7 +55,7 @@ use monolitum\model\Model;
 <a class="btn btn-primary" data-bs-toggle="modal" href="#exampleModalToggle" role="button">Open first modal</a>
  */
 
-class StaticFormModal extends Form
+class StaticFormModal extends Form implements HasModalId
 {
 
     use ModalHeaderTrait;
@@ -107,7 +109,7 @@ class StaticFormModal extends Form
         $modalBody = new HtmlElement("div");
         $modalBody->addClass("modal-body");
 
-        Renderable_Node::renderRenderedTo(parent::renderChilds(), $modalBody);
+        Renderable_Node::renderRenderedTo(parent::renderChildren(), $modalBody);
 
         $modalFooter = $this->createModalFooterElement();
 
@@ -128,7 +130,7 @@ class StaticFormModal extends Form
         return new StaticFormModal(new Form_Validator_Entity(
             $manager_params,
             $model,
-            true
+            Source::POST
         ), null, $builder);
     }
 
@@ -142,7 +144,7 @@ class StaticFormModal extends Form
         return new StaticFormModal((new Form_Validator_Entity(
             $manager_params,
             $model,
-            true
+            Source::POST
         ))->setCurrentEntity($entity), null, $builder);
     }
 
@@ -156,16 +158,18 @@ class StaticFormModal extends Form
         return new StaticFormModal(new Form_Validator_Entity(
             $manager_params,
             $model,
-            true
+            Source::POST
         ), $formId, $builder);
     }
 
     /**
      * Creates a Form without validator.
      */
-    public static function fromAnonymous(?Closure $builder): StaticFormModal
+    public static function fromAnonymousModel(?Closure $builder): StaticFormModal
     {
-        $fc = new StaticFormModal(null, null, $builder);
+        /** @var ParamsManager $manager_params */
+        $manager_params = Find::pushAndGet(ParamsManager::class);
+        $fc = new StaticFormModal(new Form_Validator_Anonymous($manager_params), null, $builder);
         $fc->setAnonymousAttributesNames();
         return $fc;
     }
