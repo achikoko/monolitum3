@@ -2,8 +2,6 @@
 
 namespace monolitum\backend\crypto;
 
-use monolitum\core\Node;
-
 class SymmetricKey
 {
 

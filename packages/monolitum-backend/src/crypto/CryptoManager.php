@@ -2,9 +2,9 @@
 
 namespace monolitum\backend\crypto;
 
+use monolitum\auth\AuthPanic;
 use monolitum\core\MNode;
 use monolitum\core\panic\DevPanic;
-use Random\RandomException;
 
 class CryptoManager extends MNode
 {
@@ -97,14 +97,7 @@ class CryptoManager extends MNode
 
     }
 
-    /**
-     * @param string $keyname
-     * @param string $data
-     * @param bool $randomInitializationVector
-     * @return string|null
-     * @throws DevPanic|RandomException
-     */
-    public function encrypt(string $keyname, string $data, bool $randomInitializationVector = true): ?string
+    public function encrypt(string $keyname, ?string $data, bool $randomInitializationVector = true): ?string
     {
         if($data === null)
             return null;
@@ -112,24 +105,26 @@ class CryptoManager extends MNode
         if(array_key_exists($keyname, $this->symmetricKeys)){
             $key = $this->symmetricKeys[$keyname];
 
-            $algorithm = $key->getAlgorithm();
+            $algorithm = $key->algorithm;
             if($algorithm === null)
                 $algorithm = self::DEFAULT_SYMMETRIC_ALG;
 
             if($randomInitializationVector){
-
-                $iv = random_bytes(16);
-                return pack("C", strlen($iv)) . $iv . openssl_encrypt($data, $algorithm, $key->getPassword(), OPENSSL_RAW_DATA, $iv);
-
+                $iv = openssl_random_pseudo_bytes(16);
+                if(!$iv)
+                    throw new AuthPanic("Panic: RNG not working!");
+                $prefix = pack("C", strlen($iv)) . $iv;
             }else{
-
-                $iv = $key->getDefaultInitializationVector();
+                $iv = $key->defaultInitializationVector;
                 if($iv == null)
                     $iv = self::DEFAULT_SYMMETRIC_IV;
-
-                return pack("C", 0) . openssl_encrypt($data, $algorithm, $key->getPassword(), OPENSSL_RAW_DATA, $iv);
-
+                $prefix = pack("C", 0);
             }
+
+            $encrypted = openssl_encrypt($data, $algorithm, $key->password, OPENSSL_RAW_DATA, $iv);
+            if(!$encrypted)
+                throw new AuthPanic("Panic: OpenSSL not working!");
+            return $prefix . $encrypted;
 
         }else if(array_key_exists($keyname, $this->asymmetricKeys)){
             // Encrypt with my public key, so later I can decrypt it
@@ -149,13 +144,7 @@ class CryptoManager extends MNode
 
     }
 
-    /**
-     * @param $keyname
-     * @param $data
-     * @param $randomInitializationVector
-     * @return string|null
-     */
-    public function decrypt(string $keyname, string $data): ?string
+    public function decrypt(string $keyname, ?string $data): ?string
     {
 
         if($data === null)
@@ -164,7 +153,7 @@ class CryptoManager extends MNode
         if(array_key_exists($keyname, $this->symmetricKeys)){
             $key = $this->symmetricKeys[$keyname];
 
-            $algorithm = $key->getAlgorithm();
+            $algorithm = $key->algorithm;
             if($algorithm === null)
                 $algorithm = self::DEFAULT_SYMMETRIC_ALG;
 
@@ -179,14 +168,14 @@ class CryptoManager extends MNode
                 if($iv === "")
                     throw new DevPanic("IV not found in data.");
             }else{
-                $iv = $key->getDefaultInitializationVector();
+                $iv = $key->defaultInitializationVector;
                 if($iv === null)
                     $iv = self::DEFAULT_SYMMETRIC_IV;
             }
 
             $data = substr($data, $lenOfIv+1);
 
-            $decrypt_result = openssl_decrypt($data, $algorithm, $key->getPassword(), OPENSSL_RAW_DATA, $iv);
+            $decrypt_result = openssl_decrypt($data, $algorithm, $key->password, OPENSSL_RAW_DATA, $iv);
 
             if($decrypt_result === false){
                 return null;
@@ -220,10 +209,10 @@ class CryptoManager extends MNode
     /**
      * Signs a data with a private key
      * @param string $keyname
-     * @param string $data
+     * @param ?string $data
      * @return string|null
      */
-    public function sign(string $keyname, string $data): ?string
+    public function sign(string $keyname, ?string $data): ?string
     {
         if($data === null)
             return null;
@@ -253,11 +242,11 @@ class CryptoManager extends MNode
      * Signs the hash of a data with a private key.
      * Returns or the signature, or the data with the signature appended (default).
      * @param string $keyname
-     * @param string $data
+     * @param ?string $data
      * @param bool $includeDataInOutput
      * @return string|null
      */
-    public function hashSign(string $keyname, string $data, bool $includeDataInOutput=true): ?string
+    public function hashSign(string $keyname, ?string $data, bool $includeDataInOutput=true): ?string
     {
         if($data === null)
             return null;
@@ -292,10 +281,10 @@ class CryptoManager extends MNode
     /**
      * Decodes data with public key to verify
      * @param string $keyname
-     * @param string $data
+     * @param ?string $data
      * @return string|null
      */
-    public function verify(string $keyname, string $data): ?string
+    public function verify(string $keyname, ?string $data): ?string
     {
         if($data === null)
             return null;
@@ -324,11 +313,11 @@ class CryptoManager extends MNode
     /**
      * Verifies the hash of a data, if signature is null, it will assume it's appended in data.
      * @param string $keyname
-     * @param string $data
+     * @param ?string $data
      * @param string|null $signature
      * @return bool|null
      */
-    public function hashVerify(string $keyname, string $data, ?string $signature=null): bool|null
+    public function hashVerify(string $keyname, ?string $data, ?string $signature=null): bool|null
     {
         if($data === null)
             return null;
