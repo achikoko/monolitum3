@@ -11,6 +11,12 @@ class AttrExt_Validate extends AttrExt
 
     private string|TS|null $nullableError = null;
 
+    private bool $isDefaultSet = false;
+    private mixed $def = null;
+    private string|null $defStrValue = null;
+    private bool $substituteNotValid = false;
+    private bool $substituteNullValues = false;
+
 //    private $isDefaultSet = false;
 //    private $def = null;
 //    private $substituteNotValid = false;
@@ -28,6 +34,25 @@ class AttrExt_Validate extends AttrExt
         return $this;
     }
 
+    /**
+     * @param mixed $value
+     * @param bool $substituteNotValid
+     * @return $this
+     */
+    public function replaceIf(bool $substituteNotValid, bool $substituteNullValues, mixed $value, string $strValue = null): self
+    {
+        $this->isDefaultSet = true;
+        $this->def = $value;
+        if($strValue === null){
+            $this->defStrValue = strval($this->def);
+        }else{
+            $this->defStrValue = $strValue;
+        }
+        $this->substituteNotValid = $substituteNotValid;
+        $this->substituteNullValues = $substituteNullValues;
+        return $this;
+    }
+
     public function isNullable(): bool
     {
         return $this->nullable;
@@ -40,8 +65,21 @@ class AttrExt_Validate extends AttrExt
     public function validate(ValidatedValue $validatedValue): ValidatedValue
     {
 
-        if($validatedValue->isValid() && !$this->isNullable() && $validatedValue->isNull())
-            return new ValidatedValue(false, true, $validatedValue->getValue(), $this->nullableError, $validatedValue->getStrValue());
+        if($validatedValue->isValid()){
+
+            if($validatedValue->isNull()) {
+                if($this->isDefaultSet && $this->substituteNullValues){
+                    return new ValidatedValue(true, true, $this->def, null, $this->defStrValue);
+                }
+
+                if(!$this->isNullable())
+                    return new ValidatedValue(false, true, $validatedValue->getValue(), $this->nullableError, $validatedValue->getStrValue());
+
+            }
+
+        }else if($this->isDefaultSet && $this->substituteNotValid){
+            return new ValidatedValue(true, true, $this->def, null, $this->defStrValue);
+        }
 
         return $validatedValue;
 
