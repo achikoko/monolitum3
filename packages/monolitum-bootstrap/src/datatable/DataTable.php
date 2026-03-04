@@ -39,7 +39,12 @@ class DataTable extends HtmlElementNode
     private ?Closure $rowRetriever = null;
 
     /**
-     * @var Rendered
+     * @var ?Closure (DataTable, TableRow) -> void
+     */
+    private ?Closure $onConfigureRow = null;
+
+    /**
+     * @var TableRow[]
      */
     private array $rowComponents = [];
 
@@ -75,6 +80,11 @@ class DataTable extends HtmlElementNode
     public function retrieveRows(Closure $rowRetriever): void
     {
         $this->rowRetriever = $rowRetriever;
+    }
+
+    public function setOnConfigureRow(?Closure $onConfigureRow): void
+    {
+        $this->onConfigureRow = $onConfigureRow;
     }
 
     public function setSortableParams(Model|string $class, Attr|string $sort, Attr|string $desc=null): void
@@ -200,13 +210,21 @@ class DataTable extends HtmlElementNode
             if($iterator instanceof MClosableIterator){
                 while ($iterator->hasNext()){
                     $entity = $iterator->next();
-                    $row = $this->createRow($entity);
+                    $row = $this->createRow(count($this->rowComponents), $entity);
+                    if($this->onConfigureRow !== null){
+                        $onConfigureRowCallable = $this->onConfigureRow;
+                        $onConfigureRowCallable($this, $row);
+                    }
                     $this->rowComponents[] = $row;
                 }
                 $iterator->close();
             }else if(is_array($iterator)){
                 foreach ($iterator as $item) {
-                    $row = $this->createRow($item);
+                    $row = $this->createRow(count($this->rowComponents), $item);
+                    if($this->onConfigureRow !== null){
+                        $onConfigureRowCallable = $this->onConfigureRow;
+                        $onConfigureRowCallable($this, $row);
+                    }
                     $this->rowComponents[] = $row;
                 }
             }
@@ -216,7 +234,7 @@ class DataTable extends HtmlElementNode
         parent::onAfterBuild();
     }
 
-    public function createRow(mixed $entity): array
+    public function createRow(int $index, mixed $entity): TableRow
     {
         $row = [];
 
@@ -248,7 +266,8 @@ class DataTable extends HtmlElementNode
             $row[] = $rendered;
 
         }
-        return $row;
+
+        return new TableRow($index, $entity, $row);
     }
 
     public function render(): Renderable|array|null
@@ -300,7 +319,12 @@ class DataTable extends HtmlElementNode
 
             $tbodyrow = new HtmlElement("tr");
 
-            foreach ($row as $cell) {
+            $configuratedColor = $row->getConfiguratedColor();
+            if($configuratedColor !== null){
+                $tbodyrow->addClass("table-" . $configuratedColor->getValue());
+            }
+
+            foreach ($row->getRow() as $cell) {
 
                 $td = new HtmlElement("td");
                 if(is_string($cell)){
