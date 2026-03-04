@@ -81,7 +81,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
             $invalidFeedback = null;
             if($this->isValid() === false){
-                $invalidText = TS::unwrap($this->getInvalidText(), TSLang::findWithOverwritten($this->overwrittenLanguage));
+                $invalidText = TS::unwrapAuto($this->getInvalidText(), $this->overwrittenLanguage);
                 if($invalidText !== null){
                     $invalidFeedback = new Div(function (Div $it) use ($invalidText) {
                         $it->addClass("invalid-feedback");
@@ -110,7 +110,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
                 $this->formWrapper->append($this->createFormControl());
 
-                $label = TS::unwrap($this->getLabel(), TSLang::findWithOverwritten($this->overwrittenLanguage));
+                $label = TS::unwrap($this->getLabel(), TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage));
                 if(is_string($label) && strlen($label) > 0){
                     $this->formWrapper->append(
                         new BSFormLabel(function(BSFormLabel $it) use ($label) {
@@ -136,7 +136,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
                 /** @var ?HtmlElementNode $formLabel */
                 $formLabel = null;
-                $label = TS::unwrap($this->getLabel(), TSLang::findWithOverwritten($this->overwrittenLanguage));
+                $label = TS::unwrap($this->getLabel(), TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage));
                 if(is_string($label) && strlen($label) > 0){
                     $formLabel = new BSFormLabel(function (BSFormLabel $it) use ($label) {
                         $it->setFor($this->getFullFieldName());
@@ -204,7 +204,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
         $formControl = null;
 
-        $finalLanguage = TSLang::findWithOverwritten($this->overwrittenLanguage); // TODO Active get finalLanguage
+        $finalLanguage = TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage); // TODO Active get finalLanguage
 
         if($attr instanceof Attr_Bool){
 

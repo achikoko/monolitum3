@@ -14,9 +14,9 @@ abstract class TS
      * @param mixed $string
      * @return string|null
      */
-    public static function unwrapAuto(mixed $string): ?string
+    public static function unwrapAuto(mixed $string, ?string $overwrittenLanguage = null): ?string
     {
-        return TS::unwrap($string, TSLang::findWithOverwritten());
+        return TS::unwrap($string, TSLang::pushAndGetLangWithOverwritten($overwrittenLanguage));
     }
 
 

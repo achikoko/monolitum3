@@ -106,9 +106,9 @@ class HtmlElementNode extends Renderable_Node
     public function setContent(TS|string $content, bool $raw=false): self
     {
         if($raw){
-            $this->element->setContent(new HtmlElementContent(TS::unwrap($content, TSLang::findWithOverwritten()), $raw));
+            $this->element->setContent(new HtmlElementContent(TS::unwrapAuto($content), $raw));
         }else{
-            $this->element->setContent(TS::unwrap($content, TSLang::findWithOverwritten()));
+            $this->element->setContent(TS::unwrapAuto($content));
         }
         return $this;
     }

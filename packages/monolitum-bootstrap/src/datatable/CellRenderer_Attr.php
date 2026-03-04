@@ -66,7 +66,7 @@ class CellRenderer_Attr implements CellRenderer
                     return Text::of("");
                 }else if($extValidate !== null && $extValidate->hasEnum()){
                     $string = $extValidate->getEnumString($value);
-                    $string = TS::unwrap($string, TSLang::findWithOverwritten());
+                    $string = TS::unwrapAuto($string);
                     return Text::of($string);
                 }else{
                     return Text::of($value);
@@ -81,7 +81,7 @@ class CellRenderer_Attr implements CellRenderer
                 //if(PHP_MAJOR_VERSION == 8 && PHP_MINOR_VERSION > 1 || PHP_MAJOR_VERSION > 8){
                     return Text::of($val !== null ?
                         TS_Moment::format(
-                            Moment::fromDateTime($val), ($this->format !== null ? $this->format : null), TSLang::findWithOverwritten()
+                            Moment::fromDateTime($val), ($this->format !== null ? $this->format : null), TSLang::pushAndGetLangWithOverwritten()
 //                        Moment::fromDateTime($val)->format(
 //                        ($this->format !== null ? $this->format : null),//"%Y-%m-%d")
 //                        new MomentJs()

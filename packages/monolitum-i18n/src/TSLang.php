@@ -14,16 +14,16 @@ readonly class TSLang implements MObject
 
     }
 
-    public static function findWithOverwritten($overwritten=null)
+    public static function pushAndGetLangWithOverwritten(?string $overwritten=null): ?string
     {
         if($overwritten !== null){
             return $overwritten;
         }else{
-            return self::find();
+            return self::pushAndGetLang();
         }
     }
 
-    public static function find()
+    public static function pushAndGetLang(): ?string
     {
         /** @var TSLang $tstrlang */
         $tstrlang = Find::pushAndGet(TSLang::class, true, true);
@@ -34,7 +34,7 @@ readonly class TSLang implements MObject
      * @param string $lang
      * @return TSLang
      */
-    public static function of(string $lang)
+    public static function of(string $lang): TSLang
     {
         return new TSLang($lang);
     }
