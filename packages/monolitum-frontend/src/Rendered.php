@@ -2,6 +2,8 @@
 
 namespace monolitum\frontend;
 
+use Closure;
+use monolitum\core\MNode;
 use monolitum\core\panic\DevPanic;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\html\HtmlElementContent;
@@ -40,21 +42,21 @@ class Rendered implements Renderable {
         }else if(is_string($element)){
             $r->single = new HtmlElementContent($element);
         }else if($element instanceof Renderable_Node){
-            $r->mergeWith($element->render());
+            $r->append($element->render());
         }else if($element instanceof Rendered){
-            $r->mergeWith($element);
+            $r->append($element);
         }else if(is_array($element)){
             foreach ($element as $element2){
                 if($element2 instanceof HtmlElement){
-                    $r->mergeWith($element2);
+                    $r->append($element2);
                 }else if($element2 instanceof HtmlElementContent){
-                    $r->mergeWith($element2);
+                    $r->append($element2);
                 }else if(is_string($element)){
-                    $r->mergeWith(new HtmlElementContent($element));
+                    $r->append(new HtmlElementContent($element));
                 }else if($element2 instanceof Renderable_Node){
-                    $r->mergeWith($element2->render());
+                    $r->append($element2->render());
                 }else if($element2 instanceof Rendered){
-                    $r->mergeWith($element2);
+                    $r->append($element2);
                 }
             }
         }
@@ -64,14 +66,15 @@ class Rendered implements Renderable {
     /**
      * @return Rendered
      */
-    static function ofEmpty(){
+    static function ofEmpty(): Rendered
+    {
         return new Rendered();
     }
 
     /**
      * @param Rendered|HtmlElement|HtmlElementContent|null $renderedComponent
      */
-    public function mergeWith(Rendered|HtmlElement|HtmlElementContent|null $renderedComponent): void
+    public function append(Rendered|HtmlElement|HtmlElementContent|null $renderedComponent): void
     {
         if($renderedComponent === null)
             return;
@@ -128,6 +131,17 @@ class Rendered implements Renderable {
                 else
                     $element->addContent($single->content);
 
+            }
+        }
+    }
+
+    function buildChildrenTo(Closure $nodeBuilderAndInserter): void
+    {
+        if($this->single != null){
+            $nodeBuilderAndInserter($this->single);
+        }else if ($this->multiple != null){
+            foreach ($this->multiple as $single){
+                $nodeBuilderAndInserter($single);
             }
         }
     }

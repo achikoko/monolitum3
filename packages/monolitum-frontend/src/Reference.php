@@ -33,8 +33,13 @@ class Reference extends Renderable_Node
 
     protected function buildAndInsertChild(MObject $object, ?int $idx = null): void
     {
-        $this->getParent()->buildChildManually($object);
-        ListUtils::insertAnElementIntoAnArray($this->childrenOfParent, $object, $idx);
+        if($object instanceof Rendered){
+            // It may contain children that has to be built
+            $object->buildChildrenTo(function ($c) { $this->buildAndInsertChild($c); });
+        }else{
+            $this->getParent()->buildChildManually($object);
+            ListUtils::insertAnElementIntoAnArray($this->childrenOfParent, $object, $idx);
+        }
     }
 
     protected function onExecute(): void

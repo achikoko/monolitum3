@@ -2,10 +2,12 @@
 
 namespace monolitum\bootstrap\modal;
 
+use Closure;
 use monolitum\core\util\ListUtils;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Renderable_Node;
+use monolitum\i18n\TS;
 
 trait ModalFooterTrait
 {
@@ -13,11 +15,16 @@ trait ModalFooterTrait
 
     public function appendFooter(Renderable $active, ?int $idx = null): self
     {
-        ListUtils::insertAnElementIntoAnArray($this->footerElements, $this->buildRenderable($active), $idx);
+        $this->buildRenderableManually($active, function ($e) use (&$idx) {
+            ListUtils::insertAnElementIntoAnArray($this->footerElements, $e, $idx);
+            if($idx !== null){$idx++;}
+        });
+//        ListUtils::insertAnElementIntoAnArray($this->footerElements, $this->buildRenderable($active), $idx);
         return $this;
     }
 
-    abstract public function buildRenderable(Renderable $active): Renderable;
+//    abstract public function buildRenderable(Renderable $active): Renderable;
+    abstract function buildRenderableManually(Renderable_Node|Renderable|string|TS|array $renderable, Closure $callback): void;
 
     private function createModalFooterElement(): ?HtmlElement
     {
