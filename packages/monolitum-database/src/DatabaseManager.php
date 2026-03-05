@@ -200,15 +200,17 @@ class DatabaseManager extends MNode implements EntityPersister
                     $validateString = $attr->findExtension(AttrExt_Validate_String::class);
                     $limit = $validateString?->computeMaxChars();
 
+                    // Today I've learned that a varchar type, the limit is in characters
+                    // (the x4 is already reserved on the row max size)
                     if($limit == null){
                         $sql .= " TEXT";
-                    }else if($limit < 65535/4){
+                    }else if($limit < 65535){
                         if($validateString?->computeAsciiness()){
                             $sql .= " VARCHAR(" . $limit . ") CHARACTER SET ascii";
                         }else{
-                            $sql .= " VARCHAR(" . intval($limit*4) . ")";
+                            $sql .= " VARCHAR(" . $limit . ")";
                         }
-                    }else if($limit < 16777215/4){
+                    }else if($limit < 16777215){
                         $sql .= " MEDIUMTEXT";
                     }else{
                         $sql .= " LONGTEXT";
