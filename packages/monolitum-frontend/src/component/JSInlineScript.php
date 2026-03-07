@@ -2,7 +2,6 @@
 
 namespace monolitum\frontend\component;
 
-use monolitum\backend\params\Path;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\html\HtmlElementContent;
 use monolitum\frontend\Renderable;
@@ -14,7 +13,6 @@ class JSInlineScript extends Renderable_Node {
     private array $scripts = [];
 
     /**
-     * @param Path $path
      * @param $builder
      */
     public function __construct($builder = null)
@@ -26,7 +24,8 @@ class JSInlineScript extends Renderable_Node {
      * @param string $script
      * @return $this
      */
-    public function addScript(string $script){
+    public function addScript(string $script): self
+    {
         $this->scripts[] = $script;
         return $this;
     }
@@ -34,7 +33,7 @@ class JSInlineScript extends Renderable_Node {
     public function render(): Renderable|array|null
     {
         $link = new HtmlElement("script");
-        $link->setContent((new HtmlElementContent(implode("", $this->scripts)))->setRaw());
+        $link->setContent(new HtmlElementContent(implode("", $this->scripts), true));
 
         return Rendered::of($link);
     }

@@ -21,7 +21,14 @@ class TS_Moment extends TS
     private Moment $moment;
     private string $format;
 
-    public static function format(Moment $moment, string $format, string $lang)
+    /**
+     * @param Moment $moment
+     * @param string $format Look at MomentJs to know common formats
+     * @param string $lang
+     * @return string
+     * @throws \Moment\MomentException
+     */
+    public static function format(Moment $moment, string $format, string $lang): string
     {
         if(array_key_exists($lang, TS_Moment::$momentsByLanguage)){
             return $moment->format($format, TS_Moment::$momentsByLanguage[$lang]);
