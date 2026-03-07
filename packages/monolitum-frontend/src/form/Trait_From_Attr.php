@@ -6,6 +6,7 @@ use monolitum\frontend\HtmlElementNode;
 use monolitum\i18n\TS;
 use monolitum\model\attr\Attr;
 use monolitum\model\AttrExt_Validate;
+use monolitum\model\enum\Enumeration;
 
 trait Trait_From_Attr
 {
@@ -28,20 +29,29 @@ trait Trait_From_Attr
 
     protected ?bool $hidden = null;
 
+    /// ////////////////////
+    /// Overridden Invalid TEXT
+    /// ////////////////////
+
     protected bool $userSetInvalid = false;
 
     protected TS|string|HtmlElementNode|null $overwrittenInvalidText = null;
+
+    /// ////////////////////
+    /// Overridden VALUE
+    /// ////////////////////
 
     protected bool $hasOverriddenValue = false;
 
     protected mixed $overriddenValue;
 
+    /// ////////////////////
+    /// Overridden ENUM
+    /// ////////////////////
+
     protected bool $hasOverriddenEnum = false;
 
-    /**
-     * @var string[]|TS[]
-     */
-    protected array $overriddenEnum;
+    protected ?Enumeration $overriddenEnum;
 
     public function disabled(bool $disabled=true): void
     {
@@ -79,10 +89,10 @@ trait Trait_From_Attr
      * Needs to be an associative array: (string $key) -> (string|TS $text)
      * @param string[]|TS[] $enum
      */
-    public function setOverrideEnum(array $enum): void
+    public function setOverrideEnum(array|Enumeration $enum): void
     {
         $this->hasOverriddenEnum = true;
-        $this->overriddenEnum = $enum;
+        $this->overriddenEnum = Enumeration::wrap($enum);
     }
 
     /**

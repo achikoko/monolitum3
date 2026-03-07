@@ -2,8 +2,8 @@
 namespace monolitum\model;
 
 use Closure;
-use monolitum\core\panic\DevPanic;
 use monolitum\i18n\TS;
+use monolitum\model\enum\Enumeration;
 
 // For the future me: https://stackoverflow.com/questions/4147646/determine-if-utf-8-text-is-all-ascii
 class AttrExt_Validate_String extends AttrExt_Validate
@@ -13,10 +13,7 @@ class AttrExt_Validate_String extends AttrExt_Validate
 
     private TS|string|null $regexError = null;
 
-    /**
-     * @var string[]|TS[]
-     */
-    private ?array $enums = null;
+    private ?Enumeration $enums = null;
 
     private TS|string|null $enumsError = null;
 
@@ -76,9 +73,9 @@ class AttrExt_Validate_String extends AttrExt_Validate
      * @param string|TS|null $enumsError
      * @return $this
      */
-    public function enum(array $strings, string|TS|null $enumsError = null): self
+    public function enum(array|Enumeration $strings, string|TS|null $enumsError = null): self
     {
-        $this->enums = $strings;
+        $this->enums = is_array($strings) ? Enumeration::fromArray($strings) : $strings;
         $this->enumsError = $enumsError;
         return $this;
     }
@@ -143,7 +140,7 @@ class AttrExt_Validate_String extends AttrExt_Validate
 
         if(!$validatedValue->isNull()){
             if($this->enums !== null){
-                $found = EnumUtils::keyExistsFromEnumArray($this->enums, $validatedValue->getValue());
+                $found = $this->enums->keyExist($validatedValue->getValue());
                 if(!$found){
                     $error = true;
                     $errorMessage = $this->enumsError;
@@ -196,10 +193,7 @@ class AttrExt_Validate_String extends AttrExt_Validate
         return $this->enums != null;
     }
 
-    /**
-     * @return string[]
-     */
-    public function getEnums(): array
+    public function getEnums(): ?Enumeration
     {
         return $this->enums;
     }
@@ -217,7 +211,7 @@ class AttrExt_Validate_String extends AttrExt_Validate
 
         if($this->enums !== null){
             $maxLen = 64; // Set a minimum of 64 when enums, to let space for new values
-            foreach (EnumUtils::iterateKeys($this->enums) as $enumKey){
+            foreach ($this->enums as $enumKey => $enumValue){
                 $maxLen = max($maxLen, strlen($enumKey));
             }
             return $maxLen;
@@ -233,9 +227,9 @@ class AttrExt_Validate_String extends AttrExt_Validate
         return false;
     }
 
-    public function getEnumString(mixed $value): string|TS|null
+    public function getEnumString(mixed $key): string|TS|null
     {
-        return EnumUtils::getStringFromEnumArray($this->enums, $value);
+        return $this->enums->getLabel($key);
     }
 
 }

@@ -15,21 +15,11 @@ use monolitum\frontend\Rendered;
 class BSFormControl_Select extends FormControl
 {
 
-    /**
-     * @var bool
-     */
-    private bool $picker = false;
-
     private bool $searchable = false;
 
     public function __construct(?Closure $builder = null)
     {
         parent::__construct(new HtmlElement("select"), $builder, "form-select");
-    }
-
-    public function setPicker(bool $picker=true): void
-    {
-        $this->picker = $picker;
     }
 
     public function setSearchable(bool $searchable=true): void
@@ -40,28 +30,24 @@ class BSFormControl_Select extends FormControl
     protected function onBuild(): void
     {
 
-        if($this->picker){
-            /** @var BSPage $page */
-            $page = Find::pushAndGet(BSPage::class);
-            $page->includeBootstrapSelect2IfNot();
+        /** @var BSPage $page */
+        $page = Find::pushAndGet(BSPage::class);
+        $page->includeBootstrapSelect2IfNot();
 
-            parent::onBuild();
+        parent::onBuild();
 
-            $this->append((new JSInlineScript())
-                ->addScript("
+        $this->append((new JSInlineScript())->addScript(
+"
 $( '#" . $this->getId() . "' ).select2( {
     theme: \"bootstrap-5\",
     width: $( this ).data( 'width' ) ? $( this ).data( 'width' ) : $( this ).hasClass( 'w-100' ) ? '100%' : 'style',
     placeholder: $( this ).data( 'placeholder' ),
-" .
-                    ($this->searchable ? "" : "minimumResultsForSearch: Infinity,")
-. "
-    // allowClear: true
+" . ($this->searchable ? "" : "minimumResultsForSearch: Infinity,") . "
+// allowClear: true
 } );
-            "));
-        }else{
-            parent::onBuild();
-        }
+"
+        ));
+
     }
 
     public function render(): Renderable|array|null
