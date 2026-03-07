@@ -5,7 +5,9 @@ namespace monolitum\bootstrap\form;
 use Closure;
 use monolitum\bootstrap\select\BSFormControl_Select;
 use monolitum\bootstrap\style\BSColSpanResponsive;
+use monolitum\core\panic\DevPanic;
 use monolitum\frontend\component\Div;
+use monolitum\frontend\component\Span;
 use monolitum\frontend\form\AbstractHtmlElementNodeFormAttr;
 use monolitum\frontend\form\AttrExt_Form;
 use monolitum\frontend\form\AttrExt_Form_String;
@@ -57,6 +59,9 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
     private FormControl|Closure|null $customFormControl = null;
 
+    private array $inputGroupBefore = [];
+    private array $inputGroupAfter = [];
+
     public function __construct(Attr|string $attrId, ?Closure $builder = null)
     {
         parent::__construct(new HtmlElement("div"), $attrId, $builder);
@@ -70,6 +75,12 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
         return $this;
     }
 
+    /**
+     * Sets the length of the form input respect of the label. If the colspan is set to 12 at any point,
+     * the label will become stacked on top.
+     * @param BSColSpanResponsive $isRow
+     * @return $this
+     */
     public function setIsRow(BSColSpanResponsive $isRow): self
     {
         $this->isRow = $isRow;
@@ -87,10 +98,38 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
         return $this;
     }
 
+    public function prependInputGroup(string|TS|BSFormSubmit|null $inputGroupBefore): self
+    {
+        if(is_string($inputGroupBefore) || $inputGroupBefore instanceof TS){
+            $this->inputGroupBefore[] = $inputGroupBefore;
+        }else if($inputGroupBefore instanceof BSFormSubmit){
+            $this->inputGroupBefore[] = $inputGroupBefore;
+        }else{
+            throw new DevPanic("Not accepted yet as input.");
+        }
+
+        return $this;
+    }
+
+    public function appendInputGroup(string|TS|BSFormSubmit|null $inputGroupAfter): self
+    {
+        if(is_string($inputGroupAfter) || $inputGroupAfter instanceof TS){
+            $this->inputGroupAfter[] = $inputGroupAfter;
+        }else if($inputGroupAfter instanceof BSFormSubmit){
+            $this->inputGroupAfter[] = $inputGroupAfter;
+        }else{
+            throw new DevPanic("Not accepted yet as input.");
+        }
+
+        return $this;
+    }
+
     public function onAfterBuildForm(): void
     {
         $attr = $this->getAttr();
 //        $ext = $this->getFormExt();
+
+        // TODO disable ENTER key using https://stackoverflow.com/questions/895171/prevent-users-from-submitting-a-form-by-hitting-enter
 
         if($this->hidden === true){
             $this->formWrapper->append($this->createFormControl());
@@ -149,7 +188,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
             }else{
 
-                $this->formWrapper->addClass("form-group");
+                // Not used in bootstrap 5.3
+//                $this->formWrapper->addClass("form-group");
 
                 /** @var ?HtmlElementNode $formLabel */
                 $formLabel = null;
@@ -256,7 +296,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
             } else if ($attr instanceof Attr_String) {
 
-                if ($validateExt instanceof AttrExt_Validate_String && $validateExt->hasEnum() || $this->hasOverriddenEnum) {
+                if ($validateExt instanceof AttrExt_Validate_String && $validateExt->hasEnum()) {
 
                     $formControl = $this->createSelectFormControl($isValid, $finalLanguage, $formExt, $validateExt);
 
@@ -445,6 +485,37 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                 });
 
             }
+        }
+
+        if(count($this->inputGroupBefore) > 0 || count($this->inputGroupAfter) > 0){
+            return new Div(function (Div $it) use ($formControl) {
+                $it->addClass("input-group");
+
+                foreach ($this->inputGroupBefore as $input){
+                    if(is_string($input) || $input instanceof TS){
+                        $it->append(new Span(function (Span $it) use ($input){
+                            $it->addClass("input-group-text");
+                            $it->append($input);
+                        }));
+                    }else{
+                        $it->append($input);
+                    }
+                }
+
+                $it->append($formControl);
+
+                foreach ($this->inputGroupAfter as $input){
+                    if(is_string($input) || $input instanceof TS){
+                        $it->append(new Span(function (Span $it) use ($input){
+                            $it->addClass("input-group-text");
+                            $it->append($input);
+                        }));
+                    }else{
+                        $it->append($input);
+                    }
+                }
+
+            });
         }
 
         return $formControl;
