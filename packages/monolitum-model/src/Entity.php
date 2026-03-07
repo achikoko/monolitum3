@@ -3,7 +3,9 @@ namespace monolitum\model;
 
 use DateTime;
 use monolitum\core\panic\DevPanic;
+use monolitum\core\panic\UserPanic;
 use monolitum\model\attr\Attr;
+use monolitum\model\attr\Attr_Decimal;
 
 abstract class Entity
 {
@@ -127,6 +129,34 @@ abstract class Entity
     public function setDate(Attr|string $attr, ?DateTime $date): self
     {
         return $this->_set($attr, $date);
+    }
+
+    public function getDecimalAsFloat(Attr|string $attr): ?float
+    {
+        $attr = $this->model->getAttr($attr);
+        if(!($attr instanceof Attr_Decimal))
+            throw new UserPanic("Attr is not a Attr_Decimal.");
+        $decimals = $attr->getDecimals();
+        $fixedPointValue = $this->getInt($attr);
+        if($fixedPointValue !== null){
+            return $fixedPointValue/$decimals;
+        }
+        return null;
+    }
+
+    public function setFloatAsDecimal(Attr|string $attr, ?float $value): self
+    {
+        if($value === null){
+            $this->setInt($attr, null);
+            return $this;
+        }
+
+        $attr = $this->model->getAttr($attr);
+        if(!($attr instanceof Attr_Decimal))
+            throw new UserPanic("Attr is not a Attr_Decimal.");
+        $decimals = $attr->getDecimals();
+        $intValue = intval($value * pow(10, $decimals));
+        $this->setInt($attr, $intValue);
     }
 
     public function getValue(Attr|string $attr): mixed
