@@ -2,6 +2,7 @@
 
 namespace monolitum\database;
 
+use Iterator;
 use monolitum\core\Find;
 use monolitum\core\util\MClosableIterator;
 use monolitum\model\attr\Attr;
@@ -11,21 +12,22 @@ use monolitum\model\attr\Attr_DateTime;
 use monolitum\model\attr\Attr_Decimal;
 use monolitum\model\attr\Attr_Int;
 use monolitum\model\attr\Attr_String;
+use monolitum\model\EntitiesManager;
 use monolitum\model\Entity;
 use monolitum\model\Model;
-use monolitum\model\EntitiesManager;
 use PDO;
 use PDOStatement;
 
-class Query_Result implements MClosableIterator
+class Query_Result implements MClosableIterator, Iterator
 {
 
     private EntitiesManager $entityManager;
 
-    private ?Entity $nextRow = null;
+    private ?Entity $currentRow = null;
 
     private ?int $iteratorKey = null;
 
+    private bool $initialized = false;
     private bool $finished = false;
 
     /**
@@ -50,30 +52,43 @@ class Query_Result implements MClosableIterator
     {
         if($this->finished)
             return false;
-        if($this->nextRow != null)
+        if($this->currentRow != null)
             return true;
-        $this->nextRow = $this->next();
-        return $this->nextRow !== null;
+        $this->next(); // Consume this one
+        return $this->currentRow !== null;
     }
 
     /**
      * @return Entity|null
      */
-    public function next(): mixed
+    public function nextConsume(): ?Entity
     {
         if($this->finished)
             return null;
 
-        if($this->nextRow != null){
-            $ret = $this->nextRow;
-            $this->nextRow = null;
+        if($this->currentRow != null){
+            $ret = $this->currentRow;
+            $this->next(); // Consume this one
             return $ret;
+        }else{
+            $this->next(); // Consume this one
+            return $this->currentRow;
         }
+
+    }
+
+    public function next(): void
+    {
+        if($this->finished)
+            return;
+
+        if(!$this->initialized)
+            $this->initialized = true;
 
         $row = $this->stmt->fetch(PDO::FETCH_ASSOC);
         if($row === false){
             $this->close();
-            return null;
+            return;
         }
 
         $entity = $this->entityManager->instance($this->model);
@@ -119,13 +134,13 @@ class Query_Result implements MClosableIterator
         else
             $this->iteratorKey++;
 
-        return $entity;
+        $this->currentRow = $entity;
 
     }
 
-    public function firstAndClose(): mixed
+    public function firstAndClose(): ?Entity
     {
-        $entity = $this->next();
+        $entity = $this->nextConsume();
         $this->close();
         return $entity;
     }
@@ -142,7 +157,7 @@ class Query_Result implements MClosableIterator
     #[\ReturnTypeWillChange]
     public function current(): ?Entity
     {
-        return $this->nextRow;
+        return $this->currentRow;
     }
 
     #[\ReturnTypeWillChange]
@@ -151,4 +166,16 @@ class Query_Result implements MClosableIterator
         return $this->iteratorKey;
     }
 
+    public function valid(): bool
+    {
+        return !$this->finished;
+    }
+
+    public function rewind(): void
+    {
+        if(!$this->initialized){
+            $this->next();
+        }
+        // Ignored
+    }
 }

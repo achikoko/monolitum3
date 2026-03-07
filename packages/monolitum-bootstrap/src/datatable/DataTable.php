@@ -209,7 +209,7 @@ class DataTable extends HtmlElementNode
 
             if($iterator instanceof MClosableIterator){
                 while ($iterator->hasNext()){
-                    $entity = $iterator->next();
+                    $entity = $iterator->nextConsume();
                     $row = $this->createRow(count($this->rowComponents), $entity);
                     if($this->onConfigureRow !== null){
                         $onConfigureRowCallable = $this->onConfigureRow;

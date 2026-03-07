@@ -19,7 +19,7 @@ interface MClosableIterator
 
     public function hasNext(): bool;
 
-    public function next(): mixed;
+    public function nextConsume(): mixed;
 
     public function firstAndClose(): mixed;
 
