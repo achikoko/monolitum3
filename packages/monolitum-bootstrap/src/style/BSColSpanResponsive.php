@@ -19,7 +19,7 @@ class BSColSpanResponsive extends HtmlElementNodeExtension implements BSBuiltInt
         $this->def = is_int($def) ? BSColSpan::of($def) : $def;
     }
 
-    public static function xs(BSColSpan|int $def = null): static
+    public static function xs(BSColSpan|int $def = 12): static
     {
         return new BSColSpanResponsive($def);
     }
