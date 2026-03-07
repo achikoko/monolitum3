@@ -48,4 +48,44 @@ class QuillDocument
         $this->rendered = $this->lexer->render();//str_replace($search, "$replace", $this->rendered);
     }
 
+    public function identifyTemplateValues(string $searchPattern, int $captureGroup): array
+    {
+        $toReturn = [];
+        $json = $this->lexer->getJsonArray();
+
+        foreach ($json as $jsonValue) {
+            if(isset($jsonValue["insert"])){
+                $insert = $jsonValue["insert"];
+                if(is_string($insert)){
+                    if(preg_match_all($searchPattern, $insert, $matches, PREG_SET_ORDER, 0)){
+                        foreach ($matches as $match) {
+                            if(!in_array($match[$captureGroup], $toReturn)){
+                                $toReturn[] = $match[$captureGroup];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $toReturn;
+    }
+
+    public static function tryToParseValue(string $value): ?QuillDocument
+    {
+        $lexer = new Lexer($value);
+
+        try{
+
+            // We'll check if this method fails
+            $rendered = $lexer->render();
+            return new QuillDocument($lexer, $rendered);
+
+        }catch (\Error $exception){
+            // Error
+            return null;
+        }
+    }
+
+
 }
