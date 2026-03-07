@@ -63,7 +63,7 @@ class Form extends Renderable_Node
      */
     private bool $disabled = false;
 
-    private bool $silentValidation = false;
+    private ValidationDisplayType $validationDisplay = ValidationDisplayType::ALL;
 
     private bool $methodGET = false;
 
@@ -289,17 +289,14 @@ class Form extends Renderable_Node
         $this->onValidated = $onValidated;
     }
 
-    public function setSilentValidation(bool $silentValidation=true): void
+    public function setValidationDisplay(ValidationDisplayType $validationDisplay): void
     {
-        $this->silentValidation = $silentValidation;
+        $this->validationDisplay = $validationDisplay;
     }
 
-    /**
-     * @return bool
-     */
-    public function isSilentValidation(): bool
+    public function getValidationDisplay(): ValidationDisplayType
     {
-        return $this->silentValidation;
+        return $this->validationDisplay;
     }
 
     public function setNotValidate(bool $notValidate=true): void

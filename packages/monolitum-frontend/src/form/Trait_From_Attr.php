@@ -29,6 +29,8 @@ trait Trait_From_Attr
 
     protected ?bool $hidden = null;
 
+    private ?ValidationDisplayType $validationDisplay = null;
+
     /// ////////////////////
     /// Overridden Invalid TEXT
     /// ////////////////////
@@ -64,6 +66,19 @@ trait Trait_From_Attr
     public function hidden(?bool $hidden=true): void
     {
         $this->hidden = $hidden;
+    }
+
+    public function setValidationDisplay(?ValidationDisplayType $validationDisplay): void
+    {
+        $this->validationDisplay = $validationDisplay;
+    }
+
+    /**
+     * @return ?ValidationDisplayType
+     */
+    public function getValidationDisplay(): ?ValidationDisplayType
+    {
+        return $this->validationDisplay;
     }
 
     /**
@@ -148,12 +163,19 @@ trait Trait_From_Attr
      */
     protected function isValid(): ?bool
     {
-        if($this->form->isSilentValidation())
+        $validationDisplay = $this->getValidationDisplay();
+        if($validationDisplay === null)
+            $validationDisplay = $this->form->getValidationDisplay();
+        if($validationDisplay === ValidationDisplayType::NOT_AT_ALL)
             return null;
         $isValid = $this->form->getValidatedValue($this->attr);
         if($isValid === null)
             return null;
-        return $isValid->isValid() && !$this->userSetInvalid;
+        $isValid = $isValid && !$this->userSetInvalid;
+        if($validationDisplay === ValidationDisplayType::ONLY_ERRORS){
+            return !$isValid ? false : null;
+        }
+        return $isValid;
     }
 
     /**
@@ -162,7 +184,7 @@ trait Trait_From_Attr
      */
     protected function getInvalidText(): HtmlElementNode|string|TS|null
     {
-        if($this->form->isSilentValidation())
+        if($this->form->getValidationDisplay())
             return null;
         $isValid = $this->form->getValidatedValue($this->attr);
         if($isValid === null || ($isValid->isValid() && !$this->userSetInvalid))
