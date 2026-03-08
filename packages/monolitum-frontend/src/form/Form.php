@@ -638,6 +638,10 @@ class Form extends Renderable_Node
     protected function onAfterBuild(): void
     {
 
+        foreach ($this->formAttrs as $value){
+            $value->onAfterBuildForm();
+        }
+
         if($this->isValidating() && !$this->notValidate){
 
             $validatedValueKey = $this->getSubmissionKey();
@@ -742,10 +746,6 @@ class Form extends Renderable_Node
 
             }
 
-        }
-
-        foreach ($this->formAttrs as $value){
-            $value->onAfterBuildForm();
         }
 
         foreach ($this->formSubmit as $value){

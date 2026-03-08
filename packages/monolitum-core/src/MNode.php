@@ -320,6 +320,11 @@ class MNode implements MObject
         ListUtils::insertAnElementIntoAnArray($this->children, $object, $idx);
     }
 
+    protected function clearChildren(): void
+    {
+        $this->children = [];
+    }
+
     protected function executeChildManually(MObject $object): void
     {
         // TODO Check: To execute a child manually, it must be built manually as well.

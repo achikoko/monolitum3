@@ -49,4 +49,28 @@ class GlobalsManager extends MNode
         }
     }
 
+    private function createBreakPoint(): GlobalsBreakPoint
+    {
+        return new GlobalsBreakPoint(
+            $this->uniqueId,
+            $this->uniqueIdByContext
+        );
+    }
+
+    private function restoreBreakPoint(GlobalsBreakPoint $breakPoint): void
+    {
+        $this->uniqueId = $breakPoint->uniqueId;
+        $this->uniqueIdByContext = $breakPoint->uniqueIdByContext;
+    }
+
+    public static function pushCreateBreakPoint(): GlobalsBreakPoint
+    {
+        return GlobalsManager::findSelf()->createBreakPoint();
+    }
+
+    public static function pushRestoreBreakPoint(GlobalsBreakPoint $breakPoint): void
+    {
+        GlobalsManager::findSelf()->restoreBreakPoint($breakPoint);
+    }
+
 }
