@@ -2,15 +2,14 @@
 
 namespace monolitum\quilleditor;
 
+use Closure;
 use monolitum\bootstrap\form\BSFormLabel;
 use monolitum\core\MObject;
 use monolitum\frontend\component\Div;
-use monolitum\frontend\form\AbstractHtmlElementNodeFormAttr;
 use monolitum\frontend\form\AbstractRenderableNodeFormAttr;
 use monolitum\frontend\form\FormControl_Hidden;
-use monolitum\frontend\HtmlElementNode;
 use monolitum\frontend\HtmlElementNodeExtension;
-use monolitum\i18n\TS;
+use monolitum\model\attr\Attr;
 use function monolitum\core\m;
 
 class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
@@ -23,15 +22,12 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
 
     private ?int $initialHeight = null;
 
-    public function __construct($attrId, $builder = null)
+    public function __construct(Attr|string $attrId, ?Closure $builder = null)
     {
         parent::__construct($attrId, $builder);
 //        $this->experimental_letBuildChildsAfterBuild = true;
     }
 
-    /**
-     * @param int|null $initialHeight
-     */
     public function setInitialHeight(int $initialHeight): void
     {
         $this->initialHeight = $initialHeight;
@@ -57,7 +53,7 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
         return $quillValue;
     }
 
-    public function onAfterBuildForm(): void
+    public function onBeforeBuildForm(): void
     {
 
         if($this->hidden){

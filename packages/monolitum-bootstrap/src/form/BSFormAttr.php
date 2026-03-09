@@ -124,7 +124,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
         return $this;
     }
 
-    public function onAfterBuildForm(): void
+    public function onBeforeBuildForm(): void
     {
         $attr = $this->getAttr();
 //        $ext = $this->getFormExt();
@@ -558,9 +558,13 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
             if ($this->hidden === true)
                 $it->convertToHidden();
 
-            $nullLabel = $formExt->getNullLabel();;
-            if ($formExt instanceof AttrExt_Form_String) {
-                $it->setSearchable($formExt->isSearchable());
+            if($formExt !== null) {
+                $nullLabel = $formExt->getNullLabel();
+                if ($formExt instanceof AttrExt_Form_String) {
+                    $it->setSearchable($formExt->isSearchable());
+                }
+            }else{
+                $nullLabel = null;
             }
 
             if ($validateExt == null || $validateExt->isNullable()) {

@@ -38,9 +38,9 @@ class Model extends AnonymousModel
         return  parent::__toString();
     }
 
-    public static function pushFindByName(string|Model $class): Model
+    public static function pushFindByName(string|AnonymousModel $class): AnonymousModel
     {
-        if ($class instanceof Model)
+        if ($class instanceof AnonymousModel)
             return $class;
         return EntitiesManager::findSelf()->getModel($class);
     }
@@ -55,6 +55,15 @@ class Model extends AnonymousModel
     public function clone(string $instanceableEntityClass, ?string $id = null): Model
     {
         $model = new Model($instanceableEntityClass, $id);
+        foreach ($this->attrs as $attr){
+            $model->attr($attr->getId(), $attr);
+        }
+        return $model;
+    }
+
+    public function cloneAnonymous(): AnonymousModel
+    {
+        $model = new AnonymousModel();
         foreach ($this->attrs as $attr){
             $model->attr($attr->getId(), $attr);
         }

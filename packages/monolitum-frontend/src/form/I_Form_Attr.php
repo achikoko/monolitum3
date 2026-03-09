@@ -9,9 +9,10 @@ interface I_Form_Attr
 {
 
     /**
-     * Called by the form, when it's just built and validated
+     * Called by the form, when it's just built and validated.
+     * Is called before to let attributes being built and generate all required fields and submit buttons.
      * @return void
      */
-    public function onAfterBuildForm(): void;
+    public function onBeforeBuildForm(): void;
 
 }

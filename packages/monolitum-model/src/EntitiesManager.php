@@ -26,7 +26,7 @@ class EntitiesManager extends MNode implements EntityPersister
     public function getModel(Model|string $class): Model {
         assert($class != null);
 
-        if($class instanceof Model)
+        if($class instanceof AnonymousModel)
             return $class;
 
         if(array_key_exists($class, $this->models))
@@ -109,6 +109,11 @@ class EntitiesManager extends MNode implements EntityPersister
     public function extendModel(Model|string $baseModel, string $instanceableEntityClass, ?string $id = null): Model
     {
         return $this->getModel($baseModel)->clone($instanceableEntityClass, $id);
+    }
+
+    public function extendModelToAnonymous(Model|string $baseModel): AnonymousModel
+    {
+        return $this->getModel($baseModel)->cloneAnonymous();
     }
 
 }

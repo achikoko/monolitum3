@@ -15,6 +15,7 @@ use monolitum\core\Find;
 use monolitum\core\Monolitum;
 use monolitum\core\panic\DevPanic;
 use monolitum\core\security\CSRFTokenProvider;
+use monolitum\core\util\StringUtils;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Renderable_Node;
@@ -189,6 +190,12 @@ class Form extends Renderable_Node
         $this->defaultValues[$attrString] = $value;
     }
 
+    public function getExtraFieldValidatedValue(string $extraFieldName): ValidatedValue
+    {
+        $finalFieldName = $this->buildExtraFieldName($extraFieldName);
+        return $this->validator->validateString($finalFieldName, $this->methodGET ? Source::GET : Source::POST);
+    }
+
     /**
      * @return void
      */
@@ -204,7 +211,7 @@ class Form extends Renderable_Node
             $currentToken = $provider->getCurrentCSRFToken();
 
             // Single underscore means internal
-            $validated = $this->validator->validateStringPost($this->formId . "_" . self::SUFFIX_CSRF_TOKEN);
+            $validated = $this->validator->validateString($this->formId . "_" . self::SUFFIX_CSRF_TOKEN);
 
             if (!$validated->isValid()) {
                 $this->csrfTokenIsValid = false;
@@ -364,8 +371,9 @@ class Form extends Renderable_Node
         }
 
 //        if($this->hasNestedForms || $this->rootForm !== null)
-        if(!$this->anonymousAttributesNames)
+        if(!$this->anonymousAttributesNames) {
             $attrId = $this->formId . "__" . $attrId;
+        }
 
         return $attrId;
     }
@@ -417,6 +425,13 @@ class Form extends Renderable_Node
         if(!$this->anonymousAttributesNames)
             return $this->formId . "__";
         return null;
+    }
+
+    public function buildExtraFieldName(string $extraFieldName): string
+    {
+        if(!$this->anonymousAttributesNames)
+            return $this->formId . "_" . StringUtils::toIdentifier($extraFieldName, false);
+        return $extraFieldName;
     }
 
     /**
@@ -639,7 +654,7 @@ class Form extends Renderable_Node
     {
 
         foreach ($this->formAttrs as $value){
-            $value->onAfterBuildForm();
+            $value->onBeforeBuildForm();
         }
 
         if($this->isValidating() && !$this->notValidate){
@@ -717,7 +732,7 @@ class Form extends Renderable_Node
             } else {
                 $this->formElement->setAttribute("method", "post");
 
-                /** @var CSRFTokenProvider $provider */
+                /** @var ?CSRFTokenProvider $provider */
                 $provider = Find::pushAndGet(CSRFTokenProvider::class, dontThrowIfNotReceived: true);
                 if ($provider !== null && $provider->isCSRFSystemAvailable()) {
 //                    if($this->internalComputedParamsAlone === null){

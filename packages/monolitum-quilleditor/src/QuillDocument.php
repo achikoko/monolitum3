@@ -2,6 +2,7 @@
 
 namespace monolitum\quilleditor;
 
+use Closure;
 use nadar\quill\Lexer;
 
 class QuillDocument
@@ -69,6 +70,49 @@ class QuillDocument
         }
 
         return $toReturn;
+    }
+
+    public function replaceTemplateValues(string $searchPattern, int $captureGroup, Closure|array $function): QuillDocument
+    {
+        $toReturn = [];
+        $json = $this->lexer->getJsonArray();
+
+        foreach ($json as &$jsonValue) {
+            if(isset($jsonValue["insert"])){
+                $insert = $jsonValue["insert"];
+                if(is_string($insert)){
+                    $jsonValue["insert"] = preg_replace_callback(
+                        $searchPattern,
+                        function ($match) use ($function, $captureGroup) {
+
+                            $matchedKey = $match[$captureGroup];
+
+                            if(is_array($function)){
+                                $toReplace = $function[$matchedKey] ?? null;
+                            }else{
+                                $toReplace = $function($matchedKey);
+                            }
+
+                            if($toReplace === null){
+                                return $match[0];
+                            }
+
+                            return $toReplace;
+                        },
+                        $insert
+                    );
+
+                }
+            }
+        }
+
+        $lexer = new Lexer($json);
+
+        // We'll check if this method fails
+        $rendered = $lexer->render();
+
+        return new QuillDocument($lexer, $rendered);
+
     }
 
     public static function tryToParseValue(string $value): ?QuillDocument
