@@ -13,6 +13,12 @@ trait TraitBSButton
     private bool $isLinkStyled = false;
     private ?bool $isLarge = null;
 
+    public function noColor(): self
+    {
+        $this->color = null;
+        return $this;
+    }
+
     public function color(BSColor $color, bool $outline = false): self
     {
         $this->color = $color;
@@ -52,7 +58,7 @@ trait TraitBSButton
             else
                 $buttonElement->addClass("btn-" . $this->color->getValue());
         }else{
-            $buttonElement->addClass("btn-primary");
+//            $buttonElement->addClass("btn-primary");
         }
 
         if($this->isLinkStyled){

@@ -98,6 +98,10 @@ class BSButton extends AbstractTextNode
 
                 $this->form = Form::fromAnonymousModel(function (Form $it) {
                     $it->receive($this->formSubmit = new BSFormSubmit(function (BSFormSubmit $it) {
+                        $it->color = $this->color;
+                        $it->outline = $this->outline;
+                        $it->isLarge = $this->isLarge;
+                        $it->isLinkStyled = $this->isLinkStyled;
 
                         $buttonId = $this->getId();
                         if($buttonId !== null){
@@ -133,6 +137,10 @@ class BSButton extends AbstractTextNode
                     $it->setLink($this->pathOrLink);
 
                     $it->receive($this->formSubmit = new BSFormSubmit(function (BSFormSubmit $it) {
+                        $it->color = $this->color;
+                        $it->outline = $this->outline;
+                        $it->isLarge = $this->isLarge;
+                        $it->isLinkStyled = $this->isLinkStyled;
 
                         $buttonId = $this->getId();
                         if($buttonId !== null){

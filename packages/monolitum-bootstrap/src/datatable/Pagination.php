@@ -12,6 +12,7 @@ use monolitum\bootstrap\style\BSDisplay;
 use monolitum\bootstrap\style\BSMargin;
 use monolitum\bootstrap\style\BSPadding;
 use monolitum\bootstrap\style\BSText;
+use monolitum\bootstrap\values\BSColor;
 use monolitum\core\panic\DevPanic;
 use monolitum\frontend\component\A;
 use monolitum\frontend\component\Div;
@@ -285,6 +286,7 @@ class Pagination extends HtmlElementNode
                     }));
 
                     M(new BSFormSubmit(function (BSFormSubmit $it){
+                        $it->color(BSColor::primary());
                         $it->setContent($this->comboboxButtonText);
                     }));
 
