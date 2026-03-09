@@ -27,6 +27,8 @@ class BSButton extends AbstractTextNode
 
     private Path|string|null|Link $pathOrLink = null;
 
+    private ?Closure $onAction = null;
+
     private ?HrefResolver $hrefResolver = null;
 
     private bool $disabled = false;
@@ -42,39 +44,18 @@ class BSButton extends AbstractTextNode
         parent::__construct(new HtmlElement(null), $builder);
     }
 
-    /**
-     * @param BSColor $color
-     * @return $this
-     */
-    public function color(BSColor $color, bool $outline = false): self
+    public function setOnAction(Closure $onAction): self
     {
-        if($outline)
-            $this->addClass("btn-outline-" . $color->getValue());
-        else
-            $this->addClass("btn-" . $color->getValue());
-        return $this;
-    }
-
-    public function colorLink(): self
-    {
-        $this->addClass("btn-link");
-        return $this;
-    }
-
-    public function large(): self
-    {
-        $this->addClass("btn-lg");
-        return $this;
-    }
-
-    public function small(): self
-    {
-        $this->addClass("btn-sm");
+        $this->onAction = $onAction;
+        $this->linkHook = null;
+        $this->pathOrLink = null;
         return $this;
     }
 
     public function setLink(LinkHook|Link|string|Path $link): self
     {
+        $this->onAction = null;
+
         if($link instanceof LinkHook){
             $this->linkHook = $link;
             $this->pathOrLink = null;
@@ -105,6 +86,38 @@ class BSButton extends AbstractTextNode
     {
         if($this->linkHook !== null){
             $this->linkHook->buildLinkHook($this);
+        }else if($this->onAction !== null) {
+            // instance Form if post is set, Form has to be autodisabled when another form is in a parent.
+            // when
+
+            if($this->disabled){
+
+                throw new DevPanic("Not supported");
+
+            }else{
+
+                $this->form = Form::fromAnonymousModel(function (Form $it) {
+                    $it->receive($this->formSubmit = new BSFormSubmit(function (BSFormSubmit $it) {
+
+                        $buttonId = $this->getId();
+                        if($buttonId !== null){
+                            $it->setId($buttonId);
+                        }
+                        $it->addClass(...$this->getClasses());
+
+                    }));
+
+                    $it->setOnValidated(function (Form $it){
+                        if($it->isAllValid()) { // If csrf token is not valid, function is called but this if is not executed
+                            $onAction = $this->onAction;
+                            $onAction($this); // $this as BSButton
+                        }
+                    });
+
+                });
+                $this->buildChildManually($this->form);
+            }
+
         }else if(!is_string($this->pathOrLink) && $this->post) {
             // instance Form if post is set, Form has to be autodisabled when another form is in a parent.
             // when
