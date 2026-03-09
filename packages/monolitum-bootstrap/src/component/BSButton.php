@@ -21,6 +21,7 @@ use monolitum\frontend\Rendered;
 
 class BSButton extends AbstractTextNode
 {
+    use TraitBSButton;
 
     private ?LinkHook $linkHook = null;
 
@@ -198,6 +199,8 @@ class BSButton extends AbstractTextNode
                 $a->addClass("disabled");
                 $a->setAttribute("aria-disabled", "true");
             }
+
+            $this->styleButton($a);
 
             $rc = parent::renderChildren();
             Renderable_Node::renderRenderedTo($rc, $a);

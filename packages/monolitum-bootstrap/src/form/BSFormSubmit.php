@@ -2,15 +2,14 @@
 namespace monolitum\bootstrap\form;
 
 use Closure;
+use monolitum\bootstrap\component\TraitBSButton;
 use monolitum\bootstrap\values\BSColor;
 use monolitum\frontend\form\FormSubmit;
 use monolitum\frontend\html\HtmlElement;
 
 class BSFormSubmit extends FormSubmit
 {
-
-    private ?BSColor $color = null;
-    private bool $outline = false;
+    use TraitBSButton;
 
     public function __construct(?Closure $builder)
     {
@@ -20,24 +19,10 @@ class BSFormSubmit extends FormSubmit
         $this->getElement()->setRequireEndTag();
     }
 
-    public function color(BSColor $color, bool $outline = false): self
-    {
-        $this->color = $color;
-        $this->outline = $outline;
-        return $this;
-    }
-
     protected function onAfterBuild(): void
     {
         parent::onAfterBuild();
-        if($this->color != null){
-            if($this->outline)
-                $this->getElement()->addClass("btn-outline-" . $this->color->getValue());
-            else
-                $this->getElement()->addClass("btn-" . $this->color->getValue());
-        }else{
-            $this->getElement()->addClass("btn-primary");
-        }
+        $this->styleButton($this->getElement());
     }
 
     public function onAfterBuildForm(): void
