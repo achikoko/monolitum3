@@ -199,11 +199,7 @@ class ParamsManager extends MNode implements Validator
         }else{
 
             $sourceIfAnonymous = $sourceIfAnonymous ?? Source::GET;
-            $globalArray = match($sourceIfAnonymous){
-                Source::GET => $_GET,
-                Source::POST => $_POST,
-                default => throw new DevPanic("Not supported params method: " . $sourceIfAnonymous->value)
-            };
+            $globalArray = $sourceIfAnonymous->toGlobalArray();
 
         }
 
@@ -245,14 +241,10 @@ class ParamsManager extends MNode implements Validator
         return $files;
     }
 
-    /**
-     * @param string $name
-     * @return ValidatedValue
-     */
-    public function validateStringPost(string $name): ValidatedValue
+    public function validateString(string $name, Source $source = Source::POST): ValidatedValue
     {
 
-        $globalArray = $_POST;
+        $globalArray = $source->toGlobalArray();
 
         $value = array_key_exists($name, $globalArray) ? $globalArray[$name] : null;
 

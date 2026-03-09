@@ -28,11 +28,7 @@ interface Validator
      */
     function validateOnlyFormat(AnonymousModel|Model|string $model, Attr|string $attr, ?string $prefix=null, ?Source $sourceIfAnonymous=null): ValidatedValue;
 
-    /**
-     * @param string $name
-     * @return ValidatedValue
-     */
-    function validateStringPost(string $name): ValidatedValue;
+    function validateString(string $name, Source $source = Source::POST): ValidatedValue;
 
     /**
      * @param string $prefix

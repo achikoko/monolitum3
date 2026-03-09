@@ -2,6 +2,7 @@
 
 namespace monolitum\frontend\form;
 
+use monolitum\backend\params\Source;
 use monolitum\backend\params\Validator;
 use monolitum\core\panic\DevPanic;
 use monolitum\model\attr\Attr;
@@ -61,9 +62,9 @@ class Form_Validator_Anonymous extends Form_Validator
         return $this->validator->validateStringPost_NameStartingWith_ReturnEnding($prefix);
     }
 
-    public function validateStringPost(string $key): ValidatedValue
+    public function validateString(string $key, Source $source = Source::POST): ValidatedValue
     {
-        return $this->validator->validateStringPost($key);
+        return $this->validator->validateString($key, $source);
     }
 
     /**

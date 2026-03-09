@@ -2,6 +2,8 @@
 
 namespace monolitum\backend\params;
 
+use monolitum\core\panic\DevPanic;
+
 enum Source: string
 {
     case GET = "GET";
@@ -12,9 +14,21 @@ enum Source: string
     static function get(): array
     {
         return [
-            self::GET => self::GET,
-            self::POST => self::POST
+            self::GET->name => self::GET,
+            self::POST->name => self::POST
         ];
+    }
+
+    /**
+     * @throws DevPanic
+     */
+    public function toGlobalArray(): array
+    {
+        return match ($this) {
+            self::GET => $_GET,
+            self::POST => $_POST,
+            default => throw new DevPanic("Not supported source."),
+        };
     }
 
 }

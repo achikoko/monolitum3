@@ -49,9 +49,9 @@ class ValidatedValue
     /**
      * @return mixed|null
      */
-    public function getValue(mixed $valueIfValid = null): mixed
+    public function getValue(mixed $valueIfNotValid = null): mixed
     {
-        return $this->isValid ? $this->value : $valueIfValid;
+        return $this->isValid ? $this->value : $valueIfNotValid;
     }
 
     /**

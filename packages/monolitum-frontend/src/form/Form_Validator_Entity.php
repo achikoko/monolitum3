@@ -178,10 +178,12 @@ class Form_Validator_Entity extends Form_Validator
         return $this->validator->validateStringPost_NameStartingWith_ReturnEnding($prefix);
     }
 
-    public function validateStringPost(string $key): ValidatedValue
+    public function validateString(string $key, Source $source = Source::POST): ValidatedValue
     {
-        return $this->validator->validateStringPost($key);
+        return $this->validator->validateString($key, $source);
     }
+
+
 
     /**
      * @param Entity $entity
