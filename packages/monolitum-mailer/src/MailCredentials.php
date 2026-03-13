@@ -9,7 +9,8 @@ readonly class MailCredentials
         public string $host,
         public string $address,
         public string $name,
-        public string $password
+        public string $password,
+        public ?string $replyTo = null,
     )
     {
     }

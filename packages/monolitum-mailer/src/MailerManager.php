@@ -32,14 +32,14 @@ class MailerManager extends MNode
         return $this;
     }
 
-    public function createNewMail(string $keyname): PHPMailer
+    public function createNewMail(string $credentialsName): PHPMailer
     {
 
-        if (array_key_exists($keyname, $this->mailCredentials)) {
+        if (array_key_exists($credentialsName, $this->mailCredentials)) {
 
-            $mailCredentials = $this->mailCredentials[$keyname];
+            $mailCredentials = $this->mailCredentials[$credentialsName];
 
-            if (!array_key_exists($keyname, $this->smtps) || !$this->smtps[$keyname]->connected()) {
+            if (!array_key_exists($credentialsName, $this->smtps) || !$this->smtps[$credentialsName]->connected()) {
                 $smtp = new SMTP();
 //
 //                if(!$smtp->connect($mailCredentials->getHost(), 587)){
@@ -50,9 +50,9 @@ class MailerManager extends MNode
 //                    throw new MailPanic($smtp->getError());
 //                }
 
-                $this->smtps[$keyname] = $smtp;
+                $this->smtps[$credentialsName] = $smtp;
             }else{
-                $smtp = $this->smtps[$keyname];
+                $smtp = $this->smtps[$credentialsName];
             }
 
             $phpMailer = new PHPMailer();
@@ -68,6 +68,10 @@ class MailerManager extends MNode
                 $phpMailer->Password = $mailCredentials->password;
                 $phpMailer->SMTPSecure = 'tls';
                 $phpMailer->Port = 587;
+
+                if($mailCredentials->replyTo !== null){
+                    $phpMailer->AddReplyTo($mailCredentials->replyTo);
+                }
 
                 $phpMailer->setFrom($mailCredentials->address, $mailCredentials->name);
             } catch (Exception $e) {
