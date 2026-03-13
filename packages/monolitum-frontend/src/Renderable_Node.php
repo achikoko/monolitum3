@@ -42,11 +42,26 @@ abstract class Renderable_Node extends MNode {
     }
 
     /**
+     * Append one or many objects at the end of children.
+     * @param string|array|Renderable|Renderable_Node|TS|null $objects
+     * @return $this
+     */
+    public function append(Renderable_Node|Renderable|string|TS|array|null ...$objects): self
+    {
+        foreach ($objects as $child){
+            $this->insert($child);
+        }
+        return $this;
+    }
+
+    /**
+     * Insert one (or many if passed as an array) starting to the provided index on the children.
+     * If it is null, it is appended to the end of children, instead.
      * @param string|array|Renderable|Renderable_Node|TS|null $object
      * @param int|null $idx
      * @return $this
      */
-    public function append(Renderable_Node|Renderable|string|TS|array|null $object, ?int $idx=null): self
+    public function insert(Renderable_Node|Renderable|string|TS|array|null $object, ?int $idx=null): self
     {
         // Ignore null values
         if($object !== null){
