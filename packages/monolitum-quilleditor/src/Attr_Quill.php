@@ -10,14 +10,7 @@ use nadar\quill\Lexer;
 class Attr_Quill extends AbstractAttr implements DatabaseableAttr
 {
 
-    /**
-     * @return Attr_Quill
-     */
-    public static function from(){
-        return new Attr_Quill();
-    }
-
-    private function tryToParseValue(string $value): QuillDocument
+    private function tryToParseValue(?string $value): QuillDocument
     {
         $lexer = new Lexer($value);
 

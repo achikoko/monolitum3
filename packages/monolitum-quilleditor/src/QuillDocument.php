@@ -46,6 +46,7 @@ class QuillDocument
         }
 
         $this->lexer = new Lexer($json);
+        self::processCustomElements($this->lexer);
         $this->rendered = $this->lexer->render();//str_replace($search, "$replace", $this->rendered);
     }
 
@@ -107,6 +108,7 @@ class QuillDocument
         }
 
         $lexer = new Lexer($json);
+        self::processCustomElements($lexer);
 
         // We'll check if this method fails
         $rendered = $lexer->render();
@@ -115,9 +117,13 @@ class QuillDocument
 
     }
 
-    public static function tryToParseValue(string $value): ?QuillDocument
+    public static function tryToParseValue(?string $value): ?QuillDocument
     {
+        if($value === null)
+            return null;
+
         $lexer = new Lexer($value);
+        self::processCustomElements($lexer);
 
         try{
 
@@ -129,6 +135,12 @@ class QuillDocument
             // Error
             return null;
         }
+    }
+
+    private static function processCustomElements(Lexer $lexer): void
+    {
+        $lexer->registerListener(new HorizontalRow());
+        $lexer->registerListener(new Size());
     }
 
 

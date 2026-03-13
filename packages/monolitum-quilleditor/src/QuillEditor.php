@@ -190,6 +190,7 @@ class QuillEditor extends HtmlElementNode
                                 console.log('A user action triggered this change.');
                                 console.log(JSON.stringify(quill.getContents().ops));
                               }
+                                console.log('text-change', delta, source);
                             });
                             var contents = document.getElementById('" . $this->editor_id . "').value;
                             console.log(contents);
