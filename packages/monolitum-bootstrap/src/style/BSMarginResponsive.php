@@ -9,7 +9,7 @@ class BSMarginResponsive extends HtmlElementNodeExtension implements BSBuiltInto
 {
     use ResponsiveTrait;
 
-    public function __construct(BSMargin $def)
+    public function __construct(?BSMargin $def)
     {
         parent::__construct();
         $this->def = $def;
@@ -55,7 +55,7 @@ class BSMarginResponsive extends HtmlElementNodeExtension implements BSBuiltInto
         $this->_buildInto($component, null, $inverted);
     }
 
-    protected function _buildIntoForBreakpoint(HtmlElementNode $component, string $prefix, ?string $breakpoint, ResponsiveProperty $responsiveProperty, bool $inverted = false): void
+    protected function _buildIntoForBreakpoint(HtmlElementNode $component, ?string $prefix, ?string $breakpoint, ResponsiveProperty $responsiveProperty, bool $inverted = false): void
     {
         $responsiveProperty->buildIntoResponsive($component, $breakpoint, $inverted);
     }

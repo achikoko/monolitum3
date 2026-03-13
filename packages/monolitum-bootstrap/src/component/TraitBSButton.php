@@ -74,4 +74,52 @@ trait TraitBSButton
         }
     }
 
+    /**
+     * @param bool|null $isLarge
+     */
+    public function setIsLarge(?bool $isLarge): void
+    {
+        $this->isLarge = $isLarge;
+    }
+
+    /**
+     * @param bool $isLinkStyled
+     */
+    public function setIsLinkStyled(bool $isLinkStyled): void
+    {
+        $this->isLinkStyled = $isLinkStyled;
+    }
+
+    /**
+     * @return BSColor|null
+     */
+    public function getColor(): ?BSColor
+    {
+        return $this->color;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getIsLarge(): ?bool
+    {
+        return $this->isLarge;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLinkStyled(): bool
+    {
+        return $this->isLinkStyled;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOutline(): bool
+    {
+        return $this->outline;
+    }
+
 }

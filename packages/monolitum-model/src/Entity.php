@@ -196,6 +196,8 @@ abstract class Entity
     public function update(): void
     {
         $this->manager->_executeUpdateEntity($this);
+        $this->updateAttrs = [];
+        $this->hasBeenNotified = false;
     }
 
     /**
@@ -204,6 +206,8 @@ abstract class Entity
     public function insert(): false|int
     {
         $returned = $this->manager->_executeInsertEntity($this);
+        $this->updateAttrs = [];
+        $this->hasBeenNotified = false;
         return $returned[1];
     }
 

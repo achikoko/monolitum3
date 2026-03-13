@@ -89,16 +89,16 @@ class BSPadding extends HtmlElementNodeExtension implements ResponsiveProperty
         if ($breakpoint != null) {
 
             if ($this->bound != null) {
-                $this->getElementComponent()->addClass("p" . $this->bound->getValue() . "-" . $breakpoint . "-" . $this->size);
+                $component->addClass("p" . $this->bound->getValue() . "-" . $breakpoint . "-" . $this->size);
             }else{
-                $this->getElementComponent()->addClass("p-" . $breakpoint . "-" . $this->size);
+                $component->addClass("p-" . $breakpoint . "-" . $this->size);
             }
 
         } else {
             if ($this->bound != null) {
-                $this->getElementComponent()->addClass("p" . $this->bound->getValue() . "-" . $this->size);
+                $component->addClass("p" . $this->bound->getValue() . "-" . $this->size);
             }else{
-                $this->getElementComponent()->addClass("p-" . $this->size);
+                $component->addClass("p-" . $this->size);
             }
         }
     }

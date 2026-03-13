@@ -95,27 +95,27 @@ class BSMargin extends HtmlElementNodeExtension implements ResponsiveProperty
 
             if ($this->bound != null) {
                 if ($this->size == null){
-                    $this->getElementComponent()->addClass("m" . $this->bound->getValue() . "-" . $breakpoint . "-auto");
+                    $component->addClass("m" . $this->bound->getValue() . "-" . $breakpoint . "-auto");
                 } else if ($this->size < 0){
-                    $this->getElementComponent()->addClass("m" . $this->bound->getValue() . "-" . $breakpoint . "-n" . (-$this->size));
+                    $component->addClass("m" . $this->bound->getValue() . "-" . $breakpoint . "-n" . (-$this->size));
                 } else {
-                    $this->getElementComponent()->addClass("m" . $this->bound->getValue() . "-" . $breakpoint . "-" . $this->size);
+                    $component->addClass("m" . $this->bound->getValue() . "-" . $breakpoint . "-" . $this->size);
                 }
             }else{
-                $this->getElementComponent()->addClass("m-" . $breakpoint . "-" . $this->size);
+                $component->addClass("m-" . $breakpoint . "-" . $this->size);
             }
 
         } else {
             if ($this->bound != null) {
                 if ($this->size == null) {
-                    $this->getElementComponent()->addClass("m" . $this->bound->getValue() . "-auto");
+                    $component->addClass("m" . $this->bound->getValue() . "-auto");
                 } else if ($this->size < 0){
-                    $this->getElementComponent()->addClass("m" . $this->bound->getValue() . "-n" . (-$this->size));
+                    $component->addClass("m" . $this->bound->getValue() . "-n" . (-$this->size));
                 }else {
-                    $this->getElementComponent()->addClass("m" . $this->bound->getValue() . "-" . $this->size);
+                    $component->addClass("m" . $this->bound->getValue() . "-" . $this->size);
                 }
             }else{
-                $this->getElementComponent()->addClass("m-" . $this->size);
+                $component->addClass("m-" . $this->size);
             }
         }
     }
