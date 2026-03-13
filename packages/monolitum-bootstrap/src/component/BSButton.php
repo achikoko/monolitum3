@@ -9,11 +9,14 @@ use monolitum\backend\resources\HrefResolver;
 use monolitum\backend\resources\Request_HrefResolver;
 use monolitum\bootstrap\form\BSFormSubmit;
 use monolitum\bootstrap\values\BSColor;
+use monolitum\core\MObject;
 use monolitum\core\Monolitum;
 use monolitum\core\panic\DevPanic;
+use monolitum\core\panic\NodePanicRouter;
 use monolitum\frontend\component\AbstractTextNode;
 use monolitum\frontend\form\Form;
 use monolitum\frontend\html\HtmlElement;
+use monolitum\frontend\HtmlElementNodeExtension;
 use monolitum\frontend\LinkHook;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Renderable_Node;
@@ -39,9 +42,24 @@ class BSButton extends AbstractTextNode
 
     private BSFormSubmit $formSubmit;
 
+    /**
+     * @var array<HtmlElementNodeExtension>
+     */
+    private array $extensions = [];
+
     public function __construct(?Closure $builder = null)
     {
         parent::__construct(new HtmlElement(null), $builder);
+    }
+
+    public function doAcceptChild(MObject $object): bool
+    {
+        // Intercept extensions
+        if($object instanceof HtmlElementNodeExtension){
+            $this->extensions[] = $object;
+            return true;
+        }
+        return parent::doAcceptChild($object);
     }
 
     public function setOnAction(Closure $onAction): self
@@ -76,7 +94,7 @@ class BSButton extends AbstractTextNode
         return $this;
     }
 
-    public function setDisabled(bool $disabled): self
+    public function setDisabled(bool $disabled = true): self
     {
         $this->disabled = $disabled;
         return $this;
@@ -97,7 +115,11 @@ class BSButton extends AbstractTextNode
             }else{
 
                 $this->form = Form::fromAnonymousModel(function (Form $it) {
+                    $it->addClass("d-inline-block");
                     $it->receive($this->formSubmit = new BSFormSubmit(function (BSFormSubmit $it) {
+                        foreach ($this->extensions as $extension) {
+                            $it->receive($extension);
+                        }
                         if($this->getColor() !== null){
                             $it->color($this->getColor(), $this->isOutline());
                         }
@@ -134,10 +156,13 @@ class BSButton extends AbstractTextNode
             }else{
 
                 $this->form = Form::fromAnonymousModel(function (Form $it) {
-
                     $it->setLink($this->pathOrLink);
 
                     $it->receive($this->formSubmit = new BSFormSubmit(function (BSFormSubmit $it) {
+                        foreach ($this->extensions as $extension) {
+                            $it->receive($extension);
+                        }
+
                         if($this->getColor() !== null){
                             $it->color($this->getColor(), $this->isOutline());
                         }
@@ -160,6 +185,12 @@ class BSButton extends AbstractTextNode
             $active = new Request_HrefResolver($this->pathOrLink);
             Monolitum::getInstance()->push($active);
             $this->hrefResolver = $active->getHrefResolver();
+        }
+
+        if($this->form === null){
+            foreach ($this->extensions as $extension) {
+                parent::doAcceptChild($extension);
+            }
         }
 
         parent::onAfterBuild();

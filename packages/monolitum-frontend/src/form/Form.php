@@ -17,9 +17,9 @@ use monolitum\core\panic\DevPanic;
 use monolitum\core\security\CSRFTokenProvider;
 use monolitum\core\util\StringUtils;
 use monolitum\frontend\html\HtmlElement;
+use monolitum\frontend\HtmlElementNode;
+use monolitum\frontend\HtmlElementNodeExtension;
 use monolitum\frontend\Renderable;
-use monolitum\frontend\Renderable_Node;
-use monolitum\frontend\Rendered;
 use monolitum\i18n\TS;
 use monolitum\model\AnonymousModel;
 use monolitum\model\attr\Attr;
@@ -27,12 +27,17 @@ use monolitum\model\Entity;
 use monolitum\model\Model;
 use monolitum\model\ValidatedValue;
 
-class Form extends Renderable_Node
+class Form extends HtmlElementNode
 {
     use Trait_Form_Validate_Attrs;
 
     private const SUFFIX_CSRF_TOKEN = "csrf_token";
     private ?Form_Validator $validator;
+
+    /**
+     * @var array<HtmlElementNodeExtension>
+     */
+    private array $extensions = [];
 
     /**
      * If flag is true, attributes' names are written as is, without any prefix, so they cannot be identified later.
@@ -159,7 +164,7 @@ class Form extends Renderable_Node
 
     public function __construct(?Form_Validator $validator, ?string $formId, ?Closure $builder = null)
     {
-        parent::__construct($builder);
+        parent::__construct(new HtmlElement("form"), $builder);
         $this->validator = $validator;
         $this->formId = $formId;
         $this->validator?->_setForm($this);
@@ -724,7 +729,7 @@ class Form extends Renderable_Node
 
         if($this->rootForm === null){
             // Create form
-            $this->formElement = new HtmlElement("form");
+            $this->formElement = $this->getElement(); // Retrieve element created at constructor (it may have style from user)
             $this->formElement->setAttribute("enctype", "multipart/form-data");
 
             if($this->methodGET) {
@@ -794,7 +799,7 @@ class Form extends Renderable_Node
                     foreach ($paramsAlone as $key => $value) {
                         $input = $this->createHiddenInput($this, $key, $value, false);
                         if ($input !== null)
-                            $this->append($input);
+                            $this->formElement->addChildElement($input);
                     }
                 }
 
@@ -804,7 +809,7 @@ class Form extends Renderable_Node
                 foreach ($this->internalComputedParamsAlone as $key => $value) {
                     $input = $this->createHiddenInput($this, $key, $value, true);
                     if ($input !== null)
-                        $this->append($input);
+                        $this->formElement->addChildElement($input);
                 }
             }
 
@@ -812,7 +817,7 @@ class Form extends Renderable_Node
                 foreach ($this->userComputedParamsAlone as $key => $value) {
                     $input = $this->createHiddenInput($this, $key, $value, false);
                     if ($input !== null)
-                        $this->append($input);
+                        $this->formElement->addChildElement($input);
                 }
             }
 
@@ -822,7 +827,7 @@ class Form extends Renderable_Node
                     foreach($computedParamsAlone as $key => $value){
                         $input = $this->createHiddenInput($form, $key, $value, true);
                         if($input !== null)
-                            $this->append($input);
+                            $this->formElement->addChildElement($input);
                     }
                 }
 
@@ -831,7 +836,7 @@ class Form extends Renderable_Node
                     foreach($computedParamsAlone as $key => $value){
                         $input = $this->createHiddenInput($form, $key, $value, false);
                         if($input !== null)
-                            $this->append($input);
+                            $this->formElement->addChildElement($input);
                     }
                 }
             }
@@ -843,12 +848,10 @@ class Form extends Renderable_Node
 
     public function render(): Renderable|array|null
     {
-        $parentRender = parent::render();
         if($this->formElement !== null){
-            Renderable_Node::renderRenderedTo($parentRender, $this->formElement);
-            return Rendered::of($this->formElement);
+            return parent::render();
         }else{
-            return $parentRender;
+            return $this->renderChildren(); // Skip <form> element
         }
     }
 

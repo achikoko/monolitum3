@@ -129,6 +129,14 @@ class HtmlElementNode extends Renderable_Node
         return $this->element->getId();
     }
 
+    /**
+     * @return array
+     */
+    protected function getExtensions(): array
+    {
+        return $this->extensions;
+    }
+
     public function doAcceptChild(MObject $object): bool
     {
         if($object instanceof HtmlElementNodeExtension){
