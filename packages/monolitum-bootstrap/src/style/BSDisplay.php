@@ -5,7 +5,7 @@ namespace monolitum\bootstrap\style;
 use monolitum\frontend\HtmlElementNode;
 use monolitum\frontend\HtmlElementNodeExtension;
 
-class BSDisplay extends HtmlElementNodeExtension implements BSBuiltIntoInterface
+class BSDisplay extends HtmlElementNodeExtension implements BSBuiltIntoInterface, ResponsiveProperty
 {
 
     function __construct(private readonly string $value)
@@ -78,4 +78,8 @@ class BSDisplay extends HtmlElementNodeExtension implements BSBuiltIntoInterface
         $this->buildInto($this->getElementComponent());
     }
 
+    public function buildIntoResponsive(HtmlElementNode $component, ?string $breakpoint, bool $inverted = false): void
+    {
+        $component->addClass("d-" . $breakpoint . "-" . $this->getValue($inverted));
+    }
 }
