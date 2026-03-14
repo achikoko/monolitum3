@@ -4,6 +4,22 @@ namespace monolitum\quilleditor;
 
 use Closure;
 use nadar\quill\Lexer;
+use nadar\quill\listener\Align;
+use nadar\quill\listener\BackgroundColor;
+use nadar\quill\listener\Blockquote;
+use nadar\quill\listener\Bold;
+use nadar\quill\listener\CodeBlock;
+use nadar\quill\listener\Color;
+use nadar\quill\listener\Font;
+use nadar\quill\listener\Heading;
+use nadar\quill\listener\Image;
+use nadar\quill\listener\Italic;
+use nadar\quill\listener\Link;
+use nadar\quill\listener\Lists;
+use nadar\quill\listener\Script;
+use nadar\quill\listener\Strike;
+use nadar\quill\listener\Underline;
+use nadar\quill\listener\Video;
 
 class QuillDocument
 {
@@ -45,7 +61,7 @@ class QuillDocument
             }
         }
 
-        $this->lexer = new Lexer($json);
+        $this->lexer = new Lexer($json, false);
         self::processCustomElements($this->lexer);
         $this->rendered = $this->lexer->render();//str_replace($search, "$replace", $this->rendered);
     }
@@ -107,7 +123,7 @@ class QuillDocument
             }
         }
 
-        $lexer = new Lexer($json);
+        $lexer = new Lexer($json, false);
         self::processCustomElements($lexer);
 
         // We'll check if this method fails
@@ -122,7 +138,7 @@ class QuillDocument
         if($value === null)
             return null;
 
-        $lexer = new Lexer($value);
+        $lexer = new Lexer($value, false);
         self::processCustomElements($lexer);
 
         try{
@@ -139,6 +155,27 @@ class QuillDocument
 
     private static function processCustomElements(Lexer $lexer): void
     {
+        $lexer->registerListener(new Image());
+        $lexer->registerListener(new Bold());
+        $lexer->registerListener(new Italic());
+        $lexer->registerListener(new Color());
+        $lexer->registerListener(new BackgroundColor());
+        $lexer->registerListener(new Link());
+        $lexer->registerListener(new Video());
+        $lexer->registerListener(new Strike());
+        $lexer->registerListener(new Underline());
+        $lexer->registerListener(new Heading());
+        $lexer->registerListener(new CodeBlock());
+
+//        $lexer->registerListener(new Text());
+        $lexer->registerListener(new TextFromJSQuill());
+
+        $lexer->registerListener(new Lists());
+        $lexer->registerListener(new Blockquote());
+        $lexer->registerListener(new Font());
+        $lexer->registerListener(new Script());
+        $lexer->registerListener(new Align());
+
         $lexer->registerListener(new HorizontalRow());
         $lexer->registerListener(new Size());
     }

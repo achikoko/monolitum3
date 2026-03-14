@@ -16,16 +16,15 @@ class Size extends InlineListener
     /**
      * {@inheritDoc}
      */
-    public function process(Line $line)
+    public function process(Line $line): void
     {
-        // TODO change this to span->style->font-size->smaller|larger
         if ($size = $line->getAttribute('size')) {
             if($size == "small"){
-                $this->updateInput($line, '<small>'.$line->getInput().'</small>');
+                $this->updateInput($line, '<span style="font-size:smaller">'.$line->getInput().'</span>');
             }else if($size == "large"){
-                $this->updateInput($line, '<big>'.$line->getInput().'</big>');
+                $this->updateInput($line, '<span style="font-size:larger">'.$line->getInput().'</span>');
             }else if($size == "huge"){
-                $this->updateInput($line, '<big><big>'.$line->getInput().'</big></big>');
+                $this->updateInput($line, '<span style="font-size:larger"><span style="font-size:larger">'.$line->getInput().'</span></span>');
             }
         }
     }
