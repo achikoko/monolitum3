@@ -2,8 +2,6 @@
 
 namespace monolitum\bootstrap\style;
 
-use monolitum\core\GlobalContext;
-use monolitum\frontend\ElementComponent_Ext;
 use monolitum\frontend\HtmlElementNode;
 use monolitum\frontend\HtmlElementNodeExtension;
 

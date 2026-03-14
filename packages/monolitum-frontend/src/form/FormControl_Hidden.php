@@ -2,7 +2,6 @@
 namespace monolitum\frontend\form;
 
 use Closure;
-use monolitum\core\GlobalContext;
 use monolitum\frontend\html\HtmlElement;
 
 class FormControl_Hidden extends FormControl

@@ -2,7 +2,6 @@
 namespace monolitum\frontend\form;
 
 use Closure;
-use monolitum\core\GlobalContext;
 use monolitum\core\panic\DevPanic;
 use monolitum\frontend\html\HtmlElement;
 

@@ -4,7 +4,6 @@ namespace monolitum\bootstrap\notification;
 
 use monolitum\bootstrap\manager\Notification_Manager;
 use monolitum\core\Active;
-use monolitum\core\GlobalContext;
 use monolitum\core\Find;
 use monolitum\backend\Manager;
 use monolitum\core\MNode;
