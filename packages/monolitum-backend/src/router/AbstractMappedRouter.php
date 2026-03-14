@@ -13,13 +13,13 @@ abstract class AbstractMappedRouter extends MNode
      */
     protected array $map = [];
 
-    protected ?MNode $defaultRoute = null;
+    protected MNode|Closure|null $defaultRoute = null;
 
     function __construct(?Closure $builder = null){
         parent::__construct($builder);
     }
 
-    public function setDefaultRoute(MNode $node): self
+    public function setDefaultRoute(MNode|Closure|null $node): self
     {
         $this->defaultRoute = $node;
         return $this;
