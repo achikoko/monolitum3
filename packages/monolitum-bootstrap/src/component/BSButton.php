@@ -114,7 +114,7 @@ class BSButton extends AbstractTextNode
 
             }else{
 
-                $this->form = Form::fromAnonymousModel(function (Form $it) {
+                $this->form = Form::fromAnonymousModelAndId($this->getId(), function (Form $it) {
                     $it->addClass("d-inline-block");
                     $it->receive($this->formSubmit = new BSFormSubmit(function (BSFormSubmit $it) {
                         foreach ($this->extensions as $extension) {
@@ -155,7 +155,7 @@ class BSButton extends AbstractTextNode
 
             }else{
 
-                $this->form = Form::fromAnonymousModel(function (Form $it) {
+                $this->form = Form::fromAnonymousModelAndId($this->getId(), function (Form $it) {
                     $it->setLink($this->pathOrLink);
 
                     $it->receive($this->formSubmit = new BSFormSubmit(function (BSFormSubmit $it) {

@@ -50,8 +50,6 @@ class Form extends HtmlElementNode
      */
     private array $defaultValues = [];
 
-    private ?string $formId;
-
     /**
      * @var ?Closure(Form $this, string $action)
      */
@@ -166,7 +164,9 @@ class Form extends HtmlElementNode
     {
         parent::__construct(new HtmlElement("form"), $builder);
         $this->validator = $validator;
-        $this->formId = $formId;
+        if($formId !== null){
+            $this->setId($formId);
+        }
         $this->validator?->_setForm($this);
 
     }
@@ -216,7 +216,7 @@ class Form extends HtmlElementNode
             $currentToken = $provider->getCurrentCSRFToken();
 
             // Single underscore means internal
-            $validated = $this->validator->validateString($this->formId . "_" . self::SUFFIX_CSRF_TOKEN);
+            $validated = $this->validator->validateString($this->getFormId() . "_" . self::SUFFIX_CSRF_TOKEN);
 
             if (!$validated->isValid()) {
                 $this->csrfTokenIsValid = false;
@@ -335,9 +335,18 @@ class Form extends HtmlElementNode
     /**
      * @return string
      */
-    public function getFormId(): string
+    public function getFormId(): ?string
     {
-        return $this->formId;
+        return $this->getId();
+    }
+
+    public function setId(string $id): HtmlElementNode
+    {
+        $currentId = $this->getId();
+        if($currentId !== null){
+            throw new DevPanic("Form id is already set. Cannot be reset.");
+        }
+        return parent::setId($id);
     }
 
     /**
@@ -377,7 +386,7 @@ class Form extends HtmlElementNode
 
 //        if($this->hasNestedForms || $this->rootForm !== null)
         if(!$this->anonymousAttributesNames) {
-            $attrId = $this->formId . "__" . $attrId;
+            $attrId = $this->getFormId() . "__" . $attrId;
         }
 
         return $attrId;
@@ -394,7 +403,7 @@ class Form extends HtmlElementNode
         if($this->anonymousAttributesNames)
             return null;
         $form = $formSubmit->getForm();
-        return $form->formId . "_submit__";
+        return $form->getFormId() . "_submit__";
     }
 
     /**
@@ -428,14 +437,14 @@ class Form extends HtmlElementNode
     {
 //        if($this->hasNestedForms || $this->rootForm !== null)
         if(!$this->anonymousAttributesNames)
-            return $this->formId . "__";
+            return $this->getFormId() . "__";
         return null;
     }
 
     public function buildExtraFieldName(string $extraFieldName): string
     {
         if(!$this->anonymousAttributesNames)
-            return $this->formId . "_" . StringUtils::toIdentifier($extraFieldName, false);
+            return $this->getFormId() . "_" . StringUtils::toIdentifier($extraFieldName, false);
         return $extraFieldName;
     }
 
@@ -532,12 +541,12 @@ class Form extends HtmlElementNode
         if (!$exists) {
             $elem = new HtmlElement("input");
             $elem->setAttribute("type", "hidden");
-            if (!$this->anonymousAttributesNames && $form->formId !== null) {
+            if (!$this->anonymousAttributesNames && $form->getFormId() !== null) {
                 if($internal){
                     // Single underscore means internal
-                    $elem->setAttribute("name", $form->formId . "_" . $key);
+                    $elem->setAttribute("name", $form->getFormId() . "_" . $key);
                 }else{
-                    $elem->setAttribute("name", $form->formId . "__" . $key);
+                    $elem->setAttribute("name", $form->getFormId() . "__" . $key);
                 }
             } else {
                 $elem->setAttribute("name", $key);
@@ -618,13 +627,12 @@ class Form extends HtmlElementNode
         return $this->csrfTokenIsValid;
     }
 
-
-    protected function onBuild(): void
+    protected function onAfterBuild(): void
     {
         // Generate an ID to identify the submission of this form if not exist
 
-        if($this->formId === null)
-            $this->formId = Request_NewId::pushAndGet("form");
+        if($this->getFormId() === null)
+            $this->setId(Request_NewId::pushAndGet("form"));
 
         // Find root form before all
         // If there are nested forms, they will find me and the real root form
@@ -651,12 +659,6 @@ class Form extends HtmlElementNode
                 $this->validateCSRFToken();
             }
         }
-
-        parent::onBuild();
-    }
-
-    protected function onAfterBuild(): void
-    {
 
         foreach ($this->formAttrs as $value){
             $value->onBeforeBuildForm();
@@ -917,13 +919,25 @@ class Form extends HtmlElementNode
     }
 
     /**
+     * Creates a Form without validator.
+     */
+    public static function fromAnonymousModelAndId(string $formId, ?Closure $builder): Form
+    {
+        /** @var ParamsManager $manager_params */
+        $manager_params = Find::pushAndGet(ParamsManager::class);
+        $fc = new Form(new Form_Validator_Anonymous($manager_params), $formId, $builder);
+//        $fc->setAnonymousAttributesNames();
+        return $fc;
+    }
+
+    /**
      * @return ValidatedValue|null
      */
     public function getSubmissionKey(): ?ValidatedValue
     {
-        if($this->formId !== null && $this->validator !== null){
+        if($this->getFormId() !== null && $this->validator !== null){
             // Single underscore means internal
-            return $this->validator->validateSubmissionKey($this->formId . "_submit__");
+            return $this->validator->validateSubmissionKey($this->getFormId() . "_submit__");
         }
         return null;
     }
