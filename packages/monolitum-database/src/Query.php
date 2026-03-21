@@ -2,56 +2,22 @@
 
 namespace monolitum\database;
 
-use monolitum\core\Find;
 use monolitum\model\attr\Attr;
 use monolitum\model\Model;
 
 class Query
 {
 
-    /**
-     * @var string[]
-     */
-    private ?array $selectAttrs = null;
-
     private array|Query_Or|null $filter = null;
-
-    private ?int $limitLow = null;
-    private ?int $limitMany = null;
-
-    /**
-     * @var array<string>
-     */
-    private array $sortedAttrs = [];
-
-    /**
-     * @var array<bool>
-     */
-    private array $sortedAttrsAsc = [];
 
     /**
      * @var array
      */
     private array $joins = [];
 
-    public function __construct(public readonly DatabaseManager $manager, public readonly Model $model)
+    public function __construct(public readonly string|Model $model)
     {
 
-    }
-
-    /**
-     * @param string|array<string>|null $attrs
-     * @return $this
-     */
-    public function select(array|string|null $attrs): self
-    {
-        if(is_string($attrs))
-            $this->selectAttrs = [$attrs];
-        else if(is_array($attrs))
-            $this->selectAttrs = $attrs;
-        else
-            $this->selectAttrs = null;
-        return $this;
     }
 
     /**
@@ -65,59 +31,45 @@ class Query
     }
 
     /**
-     * @param int $low
-     * @param int|null $high
-     * @return $this
-     */
-    public function limit(int $low, int $high = null): self
-    {
-        if($high == null){
-            $this->limitLow = 0;
-            $this->limitMany = $low;
-        }else{
-            $this->limitLow = $low;
-            $this->limitMany = $high;
-        }
-        return $this;
-    }
-
-    public function sort(string|Attr $attr, bool $asc = true): self
-    {
-        $this->sortedAttrs[] = $attr;
-        $this->sortedAttrsAsc[] = $asc;
-        return $this;
-    }
-
-    /**
-     * Performs an inner join in the query.
+     * Performs an outer join in the query. (Skips rows without relations).
      *
      * @param string|array<string> $attrs
-     * @param Join $join other query model
+     * @param Query_Join $join other query model
      * @return $this
      */
-    public function join(array|string $attrs, Join $join): self
+    public function join(array|string $attrs, Query_Join $join): self
     {
-        $this->joins[] = [
-            "attrs" => $attrs,
-            "join" => $join
-        ];
+        if(is_string($attrs)){
+            $attrs = [$attrs];
+        }
+        $this->joins[] = new Query_Join_Tuple($attrs, false, $join);
         return $this;
     }
 
     /**
-     * @return array>
+     * Performs an inner join in the query. (Returns entities even if there is not a single relation)
+     *
+     * @param string|array<string> $attrs
+     * @param Query_Join $join other query model
+     * @return $this
+     */
+    public function innerJoin(array|string $attrs, Query_Join $join): self
+    {
+        $this->joins[] = new Query_Join_Tuple(is_string($attrs) ? [$attrs] : $attrs, true, $join);
+        return $this;
+    }
+
+    /**
+     * @return array<Query_Join_Tuple>
      */
     public function getJoins(): array
     {
         return $this->joins;
     }
 
-    /**
-     * @return string[]
-     */
-    public function getSelectAttrs(): ?array
+    public function hasJoins(): bool
     {
-        return $this->selectAttrs;
+        return !empty($this->joins);
     }
 
     public function getFilter(): array|Query_Or|null
@@ -125,34 +77,19 @@ class Query
         return $this->filter;
     }
 
-    public function getLimitLow(): ?int
-    {
-        return $this->limitLow;
-    }
-
-    public function getLimitMany(): ?int
-    {
-        return $this->limitMany;
-    }
-
-    public function getSortedAttrs(): array
-    {
-        return $this->sortedAttrs;
-    }
-
-    public function getSortedAttrsAsc(): array
-    {
-        return $this->sortedAttrsAsc;
-    }
-
     public static function newQuery(string|Model $model): Query_Entities_Executor
     {
-        return DatabaseManager::findSelf()->newQuery($model);
+        return new Query_Entities_Executor($model);
     }
 
-    public static function newQueryAggregation(string|Model $model, string|Attr $attr, string $operation): Query_Aggregation_Executor
+    public static function newQueryAggregation(string|Model $model, string|Attr $attr, Operation $operation): Query_Aggregation_Executor
     {
-        return DatabaseManager::findSelf()->newQuery_Aggregation($model, $attr, $operation);
+        return new Query_Aggregation_Executor($model, $attr, $operation);
+    }
+
+    public static function newQueryJoin(string|Model $model, array|string $attrs): Query_Join
+    {
+        return new Query_Join($model, $attrs);
     }
 
 }

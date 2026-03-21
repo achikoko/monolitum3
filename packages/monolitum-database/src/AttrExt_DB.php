@@ -18,6 +18,14 @@ class AttrExt_DB extends AttrExt
     private bool $isDefaultSet = false;
     private mixed $def = null;
 
+//    private ?string $overwriteDatabaseName = null;
+
+//    public function overwriteDatabaseName(?string $overwriteDatabaseName): self
+//    {
+//        $this->overwriteDatabaseName = $overwriteDatabaseName;
+//        return $this;
+//    }
+
     public function primaryKey(): self
     {
         $this->primaryKey = true;
@@ -79,6 +87,14 @@ class AttrExt_DB extends AttrExt
     {
         return $this->def;
     }
+
+//    /**
+//     * @return string|null
+//     */
+//    public function getOverwriteDatabaseName(): ?string
+//    {
+//        return $this->overwriteDatabaseName;
+//    }
 
 }
 

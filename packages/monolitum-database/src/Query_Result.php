@@ -23,24 +23,27 @@ class Query_Result implements MClosableIterator, Iterator
 
     private EntitiesManager $entityManager;
 
-    private ?Entity $currentRow = null;
+    private ?Entity $currentEntity = null;
+
+    private array|false $nextRow = false;
 
     private ?int $iteratorKey = null;
 
     private bool $initialized = false;
+    private bool $lastEntityWasParsed = false;
     private bool $finished = false;
 
     /**
      * @param DatabaseManager $manager
      * @param Model $model
-     * @param array<Attr> $select
+     * @param Query_Entities_Executor $select
      * @param bool $protectForUpdate
      * @param PDOStatement $stmt
      */
     public function __construct(
         DatabaseManager $manager,
         private readonly Model $model,
-        private readonly array $select,
+        private readonly Query_Entities_Executor $select,
         private readonly bool $protectForUpdate,
         private readonly PDOStatement $stmt)
     {
@@ -52,10 +55,10 @@ class Query_Result implements MClosableIterator, Iterator
     {
         if($this->finished)
             return false;
-        if($this->currentRow != null)
+        if($this->currentEntity != null)
             return true;
         $this->next(); // Consume this one
-        return $this->currentRow !== null;
+        return $this->currentEntity !== null;
     }
 
     /**
@@ -66,75 +69,92 @@ class Query_Result implements MClosableIterator, Iterator
         if($this->finished)
             return null;
 
-        if($this->currentRow != null){
-            $ret = $this->currentRow;
+        if($this->currentEntity != null){
+            $ret = $this->currentEntity;
             $this->next(); // Consume this one
             return $ret;
         }else{
             $this->next(); // Consume this one
-            return $this->currentRow;
+            return $this->currentEntity;
         }
 
     }
 
     public function next(): void
     {
+        if($this->lastEntityWasParsed)
+            $this->finished = true;
+
         if($this->finished)
             return;
 
-        if(!$this->initialized)
+        if(!$this->initialized){
             $this->initialized = true;
 
-        $row = $this->stmt->fetch(PDO::FETCH_ASSOC);
-        if($row === false){
-            $this->close();
-            return;
+            $row = $this->stmt->fetch(PDO::FETCH_ASSOC);
+            if($row === false){
+                $this->close();
+                $this->finished = true;
+                return;
+            }
+            $this->nextRow = $row;
+
         }
 
-        $entity = $this->entityManager->instance($this->model);
+        $joinIdsStack = [];
 
-        foreach ($this->select as $attr){
+        $idsMandatory = $this->protectForUpdate || $this->select->hasJoins();
 
-            $rowValue = $row[$attr->getId()];
+        $entity = null;
+        while ($this->nextRow !== false){
+            $tableIndex = 0;
+            $parsedEntity = $this->parseEntity(
+                $this->select,
+                $this->model,
+                $idsMandatory,
+                null,
+                $tableIndex,
+                $joinIdsStack
+            );
 
-            if($rowValue !== null){
+            if($parsedEntity === null){
+                // Encountered the next root entity, break without advancing the cursor so next iteration can be read
+                break;
+            }
 
-                if($attr instanceof Attr_String){
-                    $entity->setString($attr, strval($rowValue));
-                }else if($attr instanceof Attr_Int){
-                    $entity->setInt($attr, intval($rowValue));
-                }else if($attr instanceof Attr_Decimal){
-                    $entity->setInt($attr, intval($rowValue));
-                }else if($attr instanceof Attr_Bool){
-                    if(is_int($rowValue))
-                        $rowValue = $rowValue != 0;
-                    else if($rowValue === "true")
-                        $rowValue = true;
-                    else if($rowValue === "false")
-                        $rowValue = false;
-                    $entity->setBool($attr, $rowValue);
-                }else if($attr instanceof Attr_Date || $attr instanceof Attr_DateTime){
-                    $entity->setDate($attr, date_create($rowValue));
-                }else if($attr instanceof DatabaseableAttr){
-                    $entity->setValue($attr, $attr->parseValue($rowValue));
+            if($entity === null){
+                $entity = $parsedEntity;
+                if(!$idsMandatory){
+                    // Not interested in iterate more for a simple query
+                    // Tho, advance the cursor anyways
+
+                    $this->nextRow = $this->stmt->fetch(PDO::FETCH_ASSOC);
+                    if($this->nextRow === false){
+                        $this->close();
+                    }
+
+                    break;
                 }
+            }else{
+                assert($entity === $parsedEntity);
+            }
 
+            $this->nextRow = $this->stmt->fetch(PDO::FETCH_ASSOC);
+            if($this->nextRow === false){
+                $this->close();
             }
 
         }
 
-        if($this->protectForUpdate){
-            $entity->_setManager($this->entityManager);
-        }else{
-            $entity->_protectWrite();
+        assert($entity !== null);
+
+        if(is_null($this->iteratorKey)) {
+            $this->iteratorKey = 0;
+        } else {
+            $this->iteratorKey++;
         }
 
-        if(is_null($this->iteratorKey))
-            $this->iteratorKey = 0;
-        else
-            $this->iteratorKey++;
-
-        $this->currentRow = $entity;
+        $this->currentEntity = $entity;
 
     }
 
@@ -150,14 +170,14 @@ class Query_Result implements MClosableIterator, Iterator
      */
     public function close(): void
     {
-        $this->finished = true;
+        $this->lastEntityWasParsed = true;
         $this->stmt->closeCursor();
     }
 
     #[\ReturnTypeWillChange]
     public function current(): ?Entity
     {
-        return $this->currentRow;
+        return $this->currentEntity;
     }
 
     #[\ReturnTypeWillChange]
@@ -178,4 +198,200 @@ class Query_Result implements MClosableIterator, Iterator
         }
         // Ignored
     }
+
+    private function parseEntity(Query_Entities $query, Model $model, bool $idsMandatory, ?Entity $parentEntity, int &$tableIndex, array &$joinIdsStack): ?Entity
+    {
+        $selectedAttrsIds = $query->getSelectAttrs();
+        $tableAlias = DatabaseManager::_computeTableAlias($tableIndex);
+
+        /** @var ?array $keys */
+        if($idsMandatory) {
+
+            assert($tableIndex <= sizeof($joinIdsStack));
+
+            if($tableIndex == sizeof($joinIdsStack)){
+                $joinIdsStack[] = null;
+            }
+
+            $keys = null;
+            foreach ($model->getAttrs() as $attr) {
+                /** @var AttrExt_DB $ext */
+                $ext = $attr->findExtension(AttrExt_DB::class);
+                if ($ext !== null && $ext->isPrimaryKey()) {
+                    $val = $this->parseValue($tableAlias, $attr, null);
+
+                    if ($val === null) {
+                        break; // No entity
+                    }
+
+                    if ($keys === null) {
+                        $keys = [$val];
+                    } else {
+                        $keys[] = $val;
+                    }
+
+                }
+            }
+
+            if($keys !== null){
+                $entity = $joinIdsStack[$tableIndex];
+                if($entity != null){
+                    // Check if it is a new entity
+                    if($this->compareIds($model, $entity, $keys)){
+                        // Same entity
+                        // Skip reading attributes and go to joins
+                        $read = false;
+                    }else{
+                        // New Entity different that reading one
+                        if($parentEntity == null){
+                            // Root entity, don't advance more!!
+                            return null;
+                        }else{
+                            // Read entity
+                            $entity = $this->entityManager->instance($this->model);
+                            $this->assignIds($model, $entity, $keys);
+                            $read = true;
+                            $joinIdsStack[$tableIndex] = $entity;
+                        }
+                    }
+                }else{
+                    // New entity
+                    $entity = $this->entityManager->instance($this->model);
+                    $this->assignIds($model, $entity, $keys);
+                    $read = true;
+                    $joinIdsStack[$tableIndex] = $entity;
+                }
+
+            }else{
+                // No entity, skip reading, cannot be joined
+                return null;
+            }
+
+
+        }else{
+            $entity = $this->entityManager->instance($this->model);
+            $read = true;
+        }
+
+        if($read){
+
+            foreach ($model->getAttrs() as $attr) {
+                /** @var AttrExt_DB $ext */
+                $ext = $attr->findExtension(AttrExt_DB::class);
+                if (
+                    // Not an ID
+                    (!$idsMandatory || $ext === null || !$ext->isPrimaryKey())
+                    && (
+                        // Selected
+                        $selectedAttrsIds === true
+                        || is_array($selectedAttrsIds) && in_array($attr->getId(), $selectedAttrsIds)
+                    )
+                ) {
+                    $this->parseValue($tableAlias, $attr, $entity);
+                }
+            }
+
+            if($this->protectForUpdate){
+                $entity->_setManager($this->entityManager);
+            }else{
+                $entity->_protectWrite();
+            }
+
+        }
+
+        $joinIndex = 0;
+        foreach ($query->getJoins() as $joinTuple) {
+            $join = $joinTuple->join;
+            $joinModel = $this->entityManager->getModel($join->model);
+            $tableIndex++;
+
+            $childEntity = $this->parseEntity($join, $joinModel, true, $entity, $tableIndex, $joinIdsStack);
+            if($childEntity !== null){
+                $entity->_addJointEntity($joinIndex, $childEntity);
+            }
+
+            $joinIndex++;
+        }
+
+        return $read ? $entity : null;
+    }
+
+    private function parseValue(string $tableAlias, Attr $attr, ?Entity $entity): mixed
+    {
+        $columnName = DatabaseManager::_computeSelectAttrAlias($tableAlias, $attr);
+
+        $rowValue = $this->nextRow[$columnName];
+
+        if($rowValue !== null){
+
+            if($attr instanceof Attr_String){
+                $val = strval($rowValue);
+                $entity?->setString($attr, $val);
+                return $val;
+            }else if($attr instanceof Attr_Int){
+                $val = intval($rowValue);
+                $entity?->setInt($attr, $val);
+                return $val;
+            }else if($attr instanceof Attr_Decimal){
+                $val = intval($rowValue);
+                $entity?->setInt($attr, $val);
+                return $val;
+            }else if($attr instanceof Attr_Bool){
+                if(is_int($rowValue))
+                    $rowValue = $rowValue != 0;
+                else if($rowValue === "true")
+                    $rowValue = true;
+                else if($rowValue === "false")
+                    $rowValue = false;
+                $entity?->setBool($attr, $rowValue);
+                return $rowValue;
+            }else if($attr instanceof Attr_Date || $attr instanceof Attr_DateTime){
+                $val = date_create($rowValue);
+                $entity?->setDate($attr, $val);
+                return $val;
+            }else if($attr instanceof DatabaseableAttr){
+                $val = $attr->parseValue($rowValue);
+                $entity?->setValue($attr, $val);
+                return $val;
+            }
+
+        }
+
+        return null;
+
+    }
+
+    private function compareIds(Model $model, Entity $lastEntity, array $keys): bool
+    {
+        $idx = 0;
+        foreach ($model->getAttrs() as $attr) {
+            /** @var AttrExt_DB $ext */
+            $ext = $attr->findExtension(AttrExt_DB::class);
+            if ($ext !== null && $ext->isPrimaryKey()) {
+                $currentVal = $lastEntity->getValue($attr);
+                $readVal = $keys[$idx++];
+
+                if($currentVal !== $readVal){
+                    return false;
+                }
+
+            }
+        }
+
+        return true;
+    }
+
+    private function assignIds(Model $model, Entity $entity, array $keys): void
+    {
+        $idx = 0;
+        foreach ($model->getAttrs() as $attr) {
+            /** @var AttrExt_DB $ext */
+            $ext = $attr->findExtension(AttrExt_DB::class);
+            if ($ext !== null && $ext->isPrimaryKey()) {
+                $entity->setValue($attr, $keys[$idx++]);
+            }
+        }
+
+    }
+
 }

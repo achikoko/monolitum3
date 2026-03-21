@@ -867,7 +867,7 @@ class Form extends HtmlElementNode
     /**
      * Creates a Form using Manager_Params as provider and a Model as model.
      */
-    public static function fromModel(AnonymousModel|Model|string $model, ?Closure $builder): Form
+    public static function fromModel(AnonymousModel|string $model, ?Closure $builder): Form
     {
         /** @var ParamsManager $manager_params */
         $manager_params = Find::pushAndGet(ParamsManager::class);
@@ -881,7 +881,7 @@ class Form extends HtmlElementNode
     /**
      * Creates a Form using Manager_Params as provider and a Model as model.
      */
-    public static function fromModelAndEntity(Model|string $model, Entity $entity, ?Closure $builder): Form
+    public static function fromModelAndEntity(AnonymousModel|string $model, Entity $entity, ?Closure $builder): Form
     {
         /** @var ParamsManager $manager_params */
         $manager_params = Find::pushAndGet(ParamsManager::class);
@@ -895,7 +895,7 @@ class Form extends HtmlElementNode
     /**
      * Creates a Form using Manager_Params as provider and a Model as model.
      */
-    public static function fromModelAndId(Model|string $model, string $formId, ?Closure $builder): Form
+    public static function fromModelAndId(AnonymousModel|string $model, ?string $formId, ?Closure $builder): Form
     {
         /** @var ParamsManager $manager_params */
         $manager_params = Find::pushAndGet(ParamsManager::class);
@@ -921,7 +921,7 @@ class Form extends HtmlElementNode
     /**
      * Creates a Form without validator.
      */
-    public static function fromAnonymousModelAndId(string $formId, ?Closure $builder): Form
+    public static function fromAnonymousModelAndId(?string $formId, ?Closure $builder): Form
     {
         /** @var ParamsManager $manager_params */
         $manager_params = Find::pushAndGet(ParamsManager::class);

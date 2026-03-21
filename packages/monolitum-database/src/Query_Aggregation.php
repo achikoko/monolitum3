@@ -8,14 +8,9 @@ use monolitum\model\Model;
 class Query_Aggregation extends Query
 {
 
-    const MAX = "max";
-    const MIN = "min";
-    const SUM = "sum";
-    const COUNT = "count";
-
-    public function __construct(DatabaseManager $manager, Model $model, public readonly Attr $selectAttr, public readonly string $operation)
+    public function __construct(string|Model $model, public readonly string|Attr $selectAttr, public readonly Operation $operation)
     {
-        parent::__construct($manager, $model);
+        parent::__construct($model);
     }
 
 }

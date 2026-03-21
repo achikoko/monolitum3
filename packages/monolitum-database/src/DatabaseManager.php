@@ -36,6 +36,34 @@ class DatabaseManager extends MNode implements EntityPersister
         parent::__construct($builder);
     }
 
+    public static function _computeSelectAttrAlias(string $tableAlias, Attr $attr): string
+    {
+        return $tableAlias . '__' . self::_computeAttrName($attr);
+    }
+
+    public static function _computeTableAlias(int $index): string
+    {
+        return 'qtbl_' . $index;
+    }
+
+    public static function _computeAttrName(Attr|string $attr): string
+    {
+        if($attr instanceof Attr) {
+            // Not yet, this means that we need always to check if the attribute has an overwritten name
+//            /** @var ?AttrExt_DB $ext */
+//            $ext = $attr->findExtension(AttrExt_DB::class);
+//            if($ext !== null) {
+//                $dbName = $ext->getOverwriteDatabaseName();
+//                if($dbName !== null) {
+//                    return $dbName;
+//                }
+//            }
+            return $attr->getId();
+        }
+
+        return $attr;
+    }
+
     public function setPdo(PDO $pdo): void
     {
         $this->pdo = $pdo;
@@ -110,29 +138,6 @@ class DatabaseManager extends MNode implements EntityPersister
     public function newDelete(string|Model $entityModel): Delete
     {
         return new Delete($this, $this->entitiesManager->getModel($entityModel));
-    }
-
-    public function newQuery(string|Model $entityModel): Query_Entities_Executor
-    {
-        return new Query_Entities_Executor($this, $this->entitiesManager->getModel($entityModel));
-    }
-
-    public function newQuery_Aggregation(string|Model $entity, string|Attr $attr, string $operation): Query_Aggregation_Executor
-    {
-        $model = $this->entitiesManager->getModel($entity);
-        return new Query_Aggregation_Executor($this, $model, $model->getAttr($attr), $operation);
-    }
-
-    public function newJoin(Model|string $entity, array|string $attrs): Join
-    {
-        $entityModel = $this->entitiesManager->getModel($entity);
-
-        $attrs2 = [];
-        foreach ($attrs as $attr) {
-            $attrs2[] = $entityModel->getAttr($attr);
-        }
-
-        return new Join($this, $entityModel, $attrs2);
     }
 
     public function _notifyChanged(Entity $entity, Attr $attr)
@@ -263,55 +268,6 @@ class DatabaseManager extends MNode implements EntityPersister
         return $sql;
     }
 
-    public function execute_generate_select(Query_Entities $query, Model $model, array &$selectAttr): string
-    {
-        $sql = "SELECT ";
-
-        $selectAttrIds = $query->getSelectAttrs();
-        $first = true;
-
-        // Append existing select attrs
-        foreach ($selectAttr as $attr) {
-            $ext = $attr->findExtension(AttrExt_DB::class);
-            if ($ext != null) {
-                if ($first)
-                    $first = false;
-                else
-                    $sql .= ", ";
-                $sql .= '`' . $attr->getId() . '`';
-            }
-        }
-
-        if ($selectAttrIds == null) {
-            foreach ($model->getAttrs() as $attr) {
-                $ext = $attr->findExtension(AttrExt_DB::class);
-                if ($ext != null) {
-                    if ($first)
-                        $first = false;
-                    else
-                        $sql .= ", ";
-                    $sql .= '`' . $attr->getId() . '`';
-                    $selectAttr[] = $attr;
-                }
-            }
-        } else {
-            foreach ($selectAttrIds as $attrId) {
-                $attr = $model->getAttr($attrId);
-                $ext = $attr->findExtension(AttrExt_DB::class);
-                if ($ext != null) {
-                    if ($first)
-                        $first = false;
-                    else
-                        $sql .= ", ";
-                    $sql .= '`' . $attr->getId() . '`';
-                    $selectAttr[] = $attr;
-                }
-            }
-        }
-
-        return $sql;
-    }
-
     /**
      * @param Delete|Insert|Update $query
      * @return array<int|bool>
@@ -360,7 +316,6 @@ class DatabaseManager extends MNode implements EntityPersister
         return [$count, $lastInsert !== false ? intval($lastInsert) : false];
     }
 
-    /** @noinspection SqlNoDataSourceInspection */
     private function executeUpdate_Insert(Insert $query, Model $model, array &$values): string
     {
         $sql = "INSERT INTO " . $this->prefix . $model->id . "(";
@@ -418,7 +373,7 @@ class DatabaseManager extends MNode implements EntityPersister
      */
     private function executeUpdate_Update(Update $query, Model $model, array &$values): string
     {
-        $sql = "UPDATE " . $this->prefix . $model->id . " AS qtbl_0 SET ";
+        $sql = "UPDATE " . $this->prefix . $model->id . " AS " . self::_computeTableAlias(0) . " SET ";
 
         $count = 0;
         foreach ($query->getValues() as $attrName => $value) {
@@ -453,8 +408,11 @@ class DatabaseManager extends MNode implements EntityPersister
         if($count == 0)
             throw new DevPanic("Update of 0 values");
 
-        $sql .= $this->execute_generate_where($query->getFilter(), $model, "qtbl_0", $values);
-
+        $sqlWhere = $this->execute_generate_where_filter($query->getFilter(), $model, self::_computeTableAlias(0), $values);
+        if(empty($sqlWhere)){
+            throw new DevPanic("Execute UPDATE without WHERE statement.");
+        }
+        $sql .= " WHERE " . $sqlWhere;
         return $sql;
     }
 
@@ -467,8 +425,12 @@ class DatabaseManager extends MNode implements EntityPersister
      */
     private function executeUpdate_Delete(Delete $query, Model $model, array &$values): string
     {
-        $sql = "DELETE qtbl_0 FROM " . $this->prefix . $model->id . " AS qtbl_0";
-        $sql .= $this->execute_generate_where($query->getFilter(), $model, "qtbl_0", $values);
+        $sql = "DELETE " . self::_computeTableAlias(0) . " FROM " . $this->prefix . $model->id . " AS "  . self::_computeTableAlias(0);
+        $sqlWhere = $this->execute_generate_where_filter($query->getFilter(), $model, self::_computeTableAlias(0), $values);
+        if(empty($sqlWhere)){
+            throw new DevPanic("Execute DELETE without WHERE statement.");
+        }
+        $sql .= " WHERE " . $sqlWhere;
         return $sql;
     }
 
@@ -479,63 +441,57 @@ class DatabaseManager extends MNode implements EntityPersister
     public function executeQuery(Query $query): Query_Result|int|float
     {
 
-        $model = $query->model;
+//        $entityModel = $this->entitiesManager->getModel($model);
+//
+//        $attrs2 = [];
+//        foreach ($attrs as $attr) {
+//            $attrs2[] = $entityModel->getAttr($attr);
+//        }
+        $model = $this->entitiesManager->getModel($query->model);
 
-        $selectAttrs = [];
         if($query instanceof Query_Entities_Executor){
             // Append ids if you want to update the entity, they are required to run the update
-            if($query->isForUpdate())
-                $this->append_model_ids($model, $selectAttrs);
-
-            $sql = $this->execute_generate_select($query, $model, $selectAttrs);
+            $sql = $this->execute_generate_select($query, $model);
         }else if($query instanceof Query_Aggregation_Executor){
-            $sql = "SELECT " . $query->operation . "(`" . $query->selectAttr->getId() . "`)" ;
+            $sql = "SELECT " . $query->operation->value . "(`" . self::_computeTableAlias(0) . '`.`' . self::_computeAttrName($model->getAttr($query->selectAttr)) . "`)" ;
         }else{
             throw new DevPanic();
         }
 
-        $sql .= " FROM " . $this->prefix . $model->id . " AS qtbl_0";
+        $sql .= " FROM " . $this->prefix . $model->id . " AS " . self::_computeTableAlias(0);
 
-        $joins = $query->getJoins();
-        if(sizeof($joins) > 0){
-            $table_code = 1;
-           $this->execute_generate_joins_header($model, $joins, "qtbl_0", $table_code);
+        if($query->hasJoins()){
+            $parentTableCounter = 0;
+            $sql .= $this->execute_generate_joins_headers($model, $query,$parentTableCounter);
         }
 
         $values = [];
-        $sql .= $this->execute_generate_where($query->getFilter(), $model, "qtbl_0", $values);
+        $parentTableCounter = 0;
+        $whereSql = $this->execute_generate_wheres($query, $model, $parentTableCounter, $values);
 
-        if(sizeof($joins) > 0){
-            $table_code = 1;
-            $this->execute_generate_joins_where($model, $joins, $table_code, $values);
+        if(!empty($whereSql)){
+            $sql .= " WHERE " . $whereSql;
         }
 
-        $sortedAttrs = $query->getSortedAttrs();
-        if($sortedAttrs){
-            $sql .= " ORDER BY ";
-            $sortedAttrsAsc = $query->getSortedAttrsAsc();
+        if($query instanceof Query_Entities_Executor) {
 
-            $i = 0;
-            foreach ($sortedAttrs as $sortedAttr){
-                if($i > 0)
-                    $sql .= ",";
-                $sql .= " " . $sortedAttr . " " . ($sortedAttrsAsc[$i] ? "ASC " : "DESC ");
-                $i++;
+            $parentTableCounter = 0;
+            $orderBySql = $this->execute_generate_order_by($query, $model, $query->hasJoins(), false, $parentTableCounter);
+
+            if(!empty($orderBySql)){
+                $sql .= " ORDER BY " . $orderBySql;
             }
 
-        }
+            $low = $query->getLimitLow();
+            $high = $query->getLimitMany();
 
-        $low = $query->getLimitLow();
-        $high = $query->getLimitMany();
+            if ($low !== null && $high !== null) {
+                $sql .= " LIMIT ?, ?";
+                $values[] = $low;
+                $values[] = $high;
+            }
 
-        if($low !== null && $high !== null){
-            $sql .= " LIMIT ?, ?";
-            $values[] = $low;
-            $values[] = $high;
-        }
-
-        if($query instanceof Query_Entities_Executor){
-            if($query->isForUpdate())
+            if ($query->isForUpdate())
                 $sql .= " FOR UPDATE";
         }
 
@@ -560,7 +516,7 @@ class DatabaseManager extends MNode implements EntityPersister
         $stmt->execute();
 
         if($query instanceof Query_Entities_Executor){
-            return new Query_Result($this, $model, $selectAttrs, $query->isForUpdate(), $stmt);
+            return new Query_Result($this, $model, $query, $query->isForUpdate(), $stmt);
         }else if($query instanceof Query_Aggregation_Executor){
             $result = $stmt->fetch(PDO::FETCH_NUM)[0];
             $stmt->closeCursor();
@@ -571,19 +527,45 @@ class DatabaseManager extends MNode implements EntityPersister
 
     }
 
-    public function execute_generate_where(array|Query_Or|null $filter, Model $model, string $alias, array &$values): string
+    public function execute_generate_select(Query_Entities_Executor $query, Model $model): string
     {
+        $sql = "SELECT ";
 
+        $sql .= $this->execute_generate_select_append_model_attrs(
+            $model,
+            $query->isForUpdate() || $query->hasJoins(),
+            $query->getSelectAttrs(),
+            self::_computeTableAlias(0)
+        );
+
+        if($query->hasJoins()) {
+            $parentTableCounter = 0;
+            $sql .= $this->execute_generate_select_joins($query, $parentTableCounter);
+        }
+
+        return $sql;
+    }
+
+    public function execute_generate_select_joins(Query_Entities $query, int &$parentTableCounter): string
+    {
         $sql = "";
 
-        if($filter != null){
+        /** @var Query_Join_Tuple $joinTuple */
+        foreach ($query->getJoins() as $joinTuple){
+            $join = $joinTuple->join;
+            $model = $this->entitiesManager->getModel($join->model);
+            $tableId = ++$parentTableCounter;
 
-            $sql .= $this->execute_generate_where_filter($filter, $model, $alias, $values);
+            $sql .= $this->execute_generate_select_append_model_attrs(
+                $model,
+                true,
+                $join->getSelectAttrs(),
+                self::_computeTableAlias($tableId),
+                true
+            );
 
-            if($sql == ""){
-                return $sql;
-            }else{
-                return " WHERE " . $sql;
+            if($join->hasJoins()) {
+                $sql .= $this->execute_generate_select_joins($join, $parentTableCounter);
             }
 
         }
@@ -591,10 +573,80 @@ class DatabaseManager extends MNode implements EntityPersister
         return $sql;
     }
 
-    public function execute_generate_where_filter(array|Query_Or $filter, Model $model, string $alias, array &$values): string
+    private function execute_generate_select_append_model_attrs(Model $entity, bool $idsMandatory, array|bool $selectedAttrsIds, string $tablePrefix, bool $appendInitialComma = false): string
+    {
+        $string = "";
+        foreach ($entity->getAttrs() as $attr) {
+            /** @var AttrExt_DB $ext */
+            $ext = $attr->findExtension(AttrExt_DB::class);
+            if (
+                $selectedAttrsIds === true
+                || $idsMandatory && $ext !== null && $ext->isPrimaryKey()
+                || is_array($selectedAttrsIds) && in_array($attr->getId(), $selectedAttrsIds)
+            ) {
+                if($appendInitialComma || !empty($string)){
+                    $string .= ", ";
+                }
+                $string .= '`' . $tablePrefix . '`.`' . self::_computeAttrName($attr)
+                    . '` AS ' . self::_computeSelectAttrAlias($tablePrefix, $attr);
+            }
+        }
+        return $string;
+    }
+
+    public function execute_generate_wheres(Query $query, Model $model, int &$parentTableCounter, array &$values): string
     {
 
         $sql = "";
+
+        $filter = $query->getFilter();
+        if($filter != null){
+            $sql .= $this->execute_generate_where_filter($filter, $model, self::_computeTableAlias($parentTableCounter), $values);
+        }
+
+        if($query->hasJoins()) {
+            foreach ($query->getJoins() as $joinTuple){
+                $join = $joinTuple->join;
+                $model = $this->entitiesManager->getModel($join->model);
+                $parentTableCounter++;
+                $whereSql = $this->execute_generate_wheres($join, $model, $parentTableCounter, $values);
+                if(!empty($whereSql)){
+                    $sql .= " AND " . $whereSql;
+                }
+            }
+        }
+
+        return $sql;
+    }
+
+//    public function execute_generate_where(array|Query_Or|null $filter, Model $model, string $alias, array &$values): string
+//    {
+//
+//        $sql = "";
+//
+//        if($filter != null){
+//
+//            $sql .= $this->execute_generate_where_filter($filter, $model, $alias, $values);
+//
+//            if($sql == ""){
+//                return $sql;
+//            }else{
+//                return " WHERE " . $sql;
+//            }
+//
+//        }
+//
+//        return $sql;
+//    }
+
+    public function execute_generate_where_filter(array|Query_Or|null $filter, Model $model, string $alias, array &$values): string
+    {
+
+        $sql = "";
+
+        if($filter === null){
+            return $sql;
+        }
 
         if(is_array($filter)){
             // parse and
@@ -627,7 +679,7 @@ class DatabaseManager extends MNode implements EntityPersister
                     else
                         $sql .= " $operation ";
 
-                    $sql .= $this->execute_generate_where_attr($attr, $filter, $model, $alias, $values);
+                    $sql .= $this->execute_generate_where_attr($attr, $filter, $model, $alias, $values) . " ";
 
                 }
             }else {
@@ -652,9 +704,9 @@ class DatabaseManager extends MNode implements EntityPersister
         $sql = $alias . "." . $attr->getId();
 
         if($filter === null){
-            $sql .= " IS NULL ";
+            $sql .= " IS NULL";
         }else if($filter instanceof Query_NotNull) {
-            $sql .= " IS NOT NULL ";
+            $sql .= " IS NOT NULL";
         }else if($filter instanceof Query_CMP){
             $sql .= " IS NOT NULL AND " . $alias . "." . $attr->getId();
             $value = $filter->value;
@@ -708,6 +760,46 @@ class DatabaseManager extends MNode implements EntityPersister
 
         return $sql;
 
+    }
+
+    public function execute_generate_order_by(Query_Entities $query, Model $model, bool $orderByIds, bool $appendInitialComma, int &$parentTableCounter): string
+    {
+
+        $sql = "";
+        $tableAlias = self::_computeTableAlias($parentTableCounter);
+
+        $sortedAttrs = $query->getSortedAttrs();
+        if (!empty($sortedAttrs)) {
+            foreach ($sortedAttrs as $sortedAttr) {
+                if ($appendInitialComma || !empty($sql))
+                    $sql .= ", ";
+                $sql .= "`" . $tableAlias . "`.`" . self::_computeAttrName($sortedAttr->attr) . "` " . ($sortedAttr->asc ? "ASC " : "DESC ");
+            }
+        }
+
+        if($orderByIds){
+            foreach ($model->getAttrs() as $attr) {
+                /** @var ?AttrExt_DB $ext */
+                $ext = $attr->findExtension(AttrExt_DB::class);
+                if ($ext !== null && $ext->isPrimaryKey()) {
+                    if($appendInitialComma || !empty($sql)){
+                        $sql .= ", ";
+                    }
+                    $sql .= "`" . $tableAlias . "`.`" . self::_computeAttrName($attr) . "` ASC";
+                }
+            }
+        }
+
+        if($query->hasJoins()) {
+            foreach ($query->getJoins() as $joinTuple){
+                $join = $joinTuple->join;
+                $model = $this->entitiesManager->getModel($join->model);
+                $parentTableCounter++;
+                $sql .= $this->execute_generate_order_by($join, $model, $orderByIds, $appendInitialComma || !empty($sql), $parentTableCounter);
+            }
+        }
+
+        return $sql;
     }
 
     public function _executeInsertEntity(Entity $entity): array
@@ -780,41 +872,33 @@ class DatabaseManager extends MNode implements EntityPersister
         return $ids;
     }
 
-    public function append_model_ids(Model $entity, array &$selectAttrs): array
-    {
-        $ids = [];
-        foreach ($entity->getAttrs() as $attr) {
-            if(in_array($attr, $selectAttrs))
-                continue;
-
-            /** @var AttrExt_DB $ext */
-            $ext = $attr->findExtension(AttrExt_DB::class);
-            if ($ext !== null && $ext->isPrimaryKey())
-                $selectAttrs[] = $attr;
-        }
-        return $ids;
-    }
-
-    private function execute_generate_joins_header(Model $model, array $joins, string $parentAlias, int &$table_code): string
+    private function execute_generate_joins_headers(Model $model, Query $query, int &$parentTableCounter): string
     {
         $sql = "";
+        $parentTableAlias = self::_computeTableAlias($parentTableCounter);
 
-        foreach($joins as $joinObject){
-            $table_code++;
+        foreach($query->getJoins() as $joinTuple){
+            $childTableAlias = ++$parentTableCounter;
+            $join = $joinTuple->join;
 
             /** @var array<string|Attr> $leftAttrs */
-            $leftAttrs = $joinObject["attrs"];
-            /** @var Join $join */
-            $join = $joinObject["join"];
+            $leftAttrs = $joinTuple->attrs;
 
-            $childModel = $join->model;
-            $rightAttrs = $join->getLocalAttrs();
+            $childModel = $this->entitiesManager->getModel($join->model);
+            $rightAttrs = $join->getLocalJointAttrs();
 
-            $sql .= $this->execute_generate_join($leftAttrs, $model, $parentAlias, $childModel, "tbl_" . $table_code, $rightAttrs);
+            if($joinTuple->inner){
+                $sql .= " INNER";
+            }
 
-            $childJoins = $join->getJoins();
-            if(sizeof($childJoins) > 0){
-                $sql .= $this->execute_generate_joins_header($childModel, $childJoins, "qtbl_" . $table_code, $table_code);
+            $sql .= $this->execute_generate_join(
+                $leftAttrs, $model, $parentTableAlias,
+                $rightAttrs, $childModel, self::_computeTableAlias($childTableAlias)
+            );
+
+            if($join->hasJoins()){
+                $sql .= $this->execute_generate_joins_headers(
+                    $childModel, $join, $parentTableCounter);
             }
 
         }
@@ -829,12 +913,12 @@ class DatabaseManager extends MNode implements EntityPersister
         foreach($joins as $joinObject){
             $table_code++;
 
-            /** @var Join $join */
+            /** @var Query_Join $join */
             $join = $joinObject["join"];
 
-            $childModel = $join->model;
+            $childModel = $this->entitiesManager->getModel($join->model);
 
-            $sql .= $this->execute_generate_where($join->getFilter(), $childModel, "qtbl_" . $table_code, $values);
+            $sql .= $this->execute_generate_where_filter($join->getFilter(), $childModel, self::_computeTableAlias($table_code), $values);
 
             $childJoins = $join->getJoins();
             if(sizeof($childJoins) > 0){
@@ -846,9 +930,9 @@ class DatabaseManager extends MNode implements EntityPersister
         return $sql;
     }
 
-    private function execute_generate_join(string|array $leftAttrs, Model $leftModel, string $leftModelAlias, Model $rightModel, string $rightModelAlias, array $rightAttrs): string
+    private function execute_generate_join(string|array $leftAttrs, Model $leftModel, string $leftModelAlias, array $rightAttrs, Model $rightModel, string $rightModelAlias): string
     {
-        $sql = " JOIN " . $rightModel->id . " AS " . $rightModelAlias . " ON";
+        $sql = " JOIN " . $this->prefix . $rightModel->id . " AS " . $rightModelAlias . " ON";
 
         for ($i = 0; $i < sizeof($leftAttrs); $i++) {
             $leftAttr = $leftAttrs[$i];

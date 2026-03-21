@@ -25,6 +25,12 @@ abstract class Entity
 
     protected bool $hasBeenNotified = false;
 
+    /**
+     * List of entities by Joined Model
+     * @var array<string|Entity[]>
+     */
+    private array $joinedEntities = [];
+
     public function _setModel(Model $model): void
     {
         $this->model = $model;
@@ -71,6 +77,34 @@ abstract class Entity
     {
         $this->manager = $entityManager;
         $this->updateAttrs = [];
+    }
+
+    public function _addJointEntity(int $joinIndex, Entity $entity): void
+    {
+        if(isset($this->joinedEntities[$joinIndex])){
+            $this->joinedEntities[$joinIndex][] = $entity;
+        }else{
+            $this->joinedEntities[$joinIndex] = [$entity];
+        }
+    }
+
+    public function getJoinedSingleEntity(int $index = 0): ?Entity
+    {
+        if(isset($this->joinedEntities[$index])) {
+            $array = $this->joinedEntities[$index];
+            if(sizeof($array) > 0) {
+                return $array[0];
+            }
+        }
+        return null;
+    }
+
+    public function getJoinedEntities(int $index = 0): array
+    {
+        if(isset($this->joinedEntities[$index])) {
+            return $this->joinedEntities[$index];
+        }
+        return [];
     }
 
     public function getString(Attr|string $attr): ?string

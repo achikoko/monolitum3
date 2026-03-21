@@ -2,6 +2,7 @@
 
 namespace monolitum\database;
 
+use monolitum\model\attr\Attr;
 use monolitum\model\Model;
 
 class Query_Entities extends Query
@@ -10,37 +11,48 @@ class Query_Entities extends Query
     /*
      * @var string[]
      */
-    private ?array $selectAttrs = null;
+    private array|bool $selectAttrs;
 
-    public function __construct(DatabaseManager $manager, Model $model)
+    /**
+     * @var array<Query_Sort_Tuple>
+     */
+    private array $sortedAttrs = [];
+
+    public function __construct(string|Model $model, bool $defaultValueForSelect)
     {
-        parent::__construct($manager, $model);
+        parent::__construct($model);
+        $this->selectAttrs = $defaultValueForSelect;
     }
 
     /**
      * @param string|array<string>|null $attrs
      * @return $this
      */
-    public function select(string|array|null $attrs): self
+    public function select(string|array|bool $attrs = true): self
     {
-        if(is_string($attrs))
+        if(is_string($attrs)) {
             $this->selectAttrs = [$attrs];
-        else if(is_array($attrs))
+        }else { //if(is_array($attrs) || is_bool($attrs))
             $this->selectAttrs = $attrs;
-        else
-            $this->selectAttrs = null;
+        }
+        return $this;
+    }
+
+    public function sort(string|Attr $attr, bool $asc = true): self
+    {
+        $this->sortedAttrs[] = new Query_Sort_Tuple($attr, $asc);
         return $this;
     }
 
     /**
-     * Store entities in the manager to be referenced later
+     * @return array<Query_Sort_Tuple>
      */
-    public function store(): self
+    public function getSortedAttrs(): array
     {
-        return $this;
+        return $this->sortedAttrs;
     }
 
-    public function getSelectAttrs(): ?array
+    public function getSelectAttrs(): array|bool
     {
         return $this->selectAttrs;
     }

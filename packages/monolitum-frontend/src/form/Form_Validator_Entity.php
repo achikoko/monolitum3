@@ -18,9 +18,9 @@ class Form_Validator_Entity extends Form_Validator
     private Validator $validator;
 
     /**
-     * @var class-string|AnonymousModel|Model
+     * @var class-string|AnonymousModel
      */
-    private string|AnonymousModel|Model $model;
+    private string|AnonymousModel $model;
 
     /**
      * @var ?Entity
@@ -34,7 +34,7 @@ class Form_Validator_Entity extends Form_Validator
      * @param class-string|AnonymousModel|Model $model
      * @param mixed|null $post
      */
-    public function __construct(Validator $validator, string|AnonymousModel|Model $model, ?Source $sourceIfAnonymousModel = null)
+    public function __construct(Validator $validator, string|AnonymousModel $model, ?Source $sourceIfAnonymousModel = null)
     {
         $this->validator = $validator;
         $this->model = $model;

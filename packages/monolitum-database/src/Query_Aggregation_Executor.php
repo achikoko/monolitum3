@@ -2,17 +2,23 @@
 
 namespace monolitum\database;
 
+use monolitum\model\attr\Attr;
+use monolitum\model\Model;
+
 class Query_Aggregation_Executor extends Query_Aggregation
 {
 
-    public function __construct($manager, $model, $selectAttr, $operation)
+    public function __construct(string|Model $model, string|Attr $selectAttr, Operation $operation)
     {
-        parent::__construct($manager, $model, $selectAttr, $operation);
+        parent::__construct($model, $selectAttr, $operation);
     }
 
-    public function executeAndClose(): int|float
+    public function executeAndClose(?DatabaseManager $databaseManager = null): int|float
     {
-        return $this->manager->executeQuery($this);
+        if($databaseManager === null){
+            $databaseManager = DatabaseManager::findSelf();
+        }
+        return $databaseManager->executeQuery($this);
     }
 
 }

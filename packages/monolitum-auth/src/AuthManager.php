@@ -9,6 +9,7 @@ use monolitum\core\MNode;
 use monolitum\core\panic\DevPanic;
 use monolitum\core\security\CSRFTokenProvider;
 use monolitum\database\DatabaseManager;
+use monolitum\database\Query;
 use monolitum\model\EntitiesManager;
 use monolitum\model\Entity;
 use monolitum\model\Model;
@@ -94,13 +95,13 @@ class AuthManager extends MNode implements CSRFTokenProvider
     public function logIn(string $username, string $password): bool
     {
 
-        $userIterable = $this->managerDB->newQuery($this->entityModel)
+        $userIterable = Query::newQuery($this->entityModel)
             ->filter([
                 $this->usernameAttr => $username,
                 $this->enabledAttr => true
             ])
             ->store()
-            ->execute();
+            ->execute($this->managerDB);
 
         /** @var Entity|null $user */
         $this->user = $userIterable->firstAndClose();
@@ -138,12 +139,12 @@ class AuthManager extends MNode implements CSRFTokenProvider
             if(!isset($_SESSION['username']) || $_SESSION['username'] == null)
                 throw new AuthPanic_NoUser();
 
-            $userIterable = $this->managerDB->newQuery($this->entityModel)
+            $userIterable = Query::newQuery($this->entityModel)
                 ->filter([
                     $this->usernameAttr => $_SESSION['username']
                 ])
                 ->store()
-                ->execute();
+                ->execute($this->managerDB);
 
             /** @var Entity|null $user */
             $this->user = $userIterable->firstAndClose();
@@ -163,12 +164,12 @@ class AuthManager extends MNode implements CSRFTokenProvider
             if(!isset($_SESSION['username']) || $_SESSION['username'] == null)
                 return null;
 
-            $userIterable = $this->managerDB->newQuery($this->entityModel)
+            $userIterable = Query::newQuery($this->entityModel)
                 ->filter([
                     $this->usernameAttr => $_SESSION['username']
                 ])
                 ->store()
-                ->execute();
+                ->execute($this->managerDB);
 
             /** @var Entity|null $user */
             $this->user = $userIterable->firstAndClose();
