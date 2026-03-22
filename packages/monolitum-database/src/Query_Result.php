@@ -248,7 +248,7 @@ class Query_Result implements MClosableIterator, Iterator
                             return null;
                         }else{
                             // Read entity
-                            $entity = $this->entityManager->instance($this->model);
+                            $entity = $this->entityManager->instance($model);
                             $this->assignIds($model, $entity, $keys);
                             $read = true;
                             $joinIdsStack[$tableIndex] = $entity;
@@ -256,7 +256,7 @@ class Query_Result implements MClosableIterator, Iterator
                     }
                 }else{
                     // New entity
-                    $entity = $this->entityManager->instance($this->model);
+                    $entity = $this->entityManager->instance($model);
                     $this->assignIds($model, $entity, $keys);
                     $read = true;
                     $joinIdsStack[$tableIndex] = $entity;
@@ -269,7 +269,7 @@ class Query_Result implements MClosableIterator, Iterator
 
 
         }else{
-            $entity = $this->entityManager->instance($this->model);
+            $entity = $this->entityManager->instance($model);
             $read = true;
         }
 
@@ -313,7 +313,9 @@ class Query_Result implements MClosableIterator, Iterator
             $joinIndex++;
         }
 
-        return $read ? $entity : null;
+        // If parent entity is root, never return null here, it is returned null only when a new root entity has been found
+        // and the 'return' statement that does that is above here
+        return $read || $parentEntity === null ? $entity : null;
     }
 
     private function parseValue(string $tableAlias, Attr $attr, ?Entity $entity): mixed
