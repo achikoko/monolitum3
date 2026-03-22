@@ -2,6 +2,7 @@
 
 namespace monolitum\core\panic;
 
+use Exception;
 use monolitum\core\MNode;
 
 /**
@@ -9,8 +10,12 @@ use monolitum\core\MNode;
  */
 class DevPanic extends Panic{
 
-    function __construct(string $message = null, public readonly ?MNode $node = null){
-        parent::__construct($message);
+    function __construct(
+        string                     $message = null,
+        public readonly ?MNode     $node = null,
+        ?Exception $exception = null
+    ){
+        parent::__construct($message, exception: $exception);
     }
 
 }

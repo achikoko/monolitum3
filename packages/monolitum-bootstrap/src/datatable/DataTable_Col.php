@@ -19,6 +19,7 @@ class DataTable_Col implements MObject
     private bool $sortable = false;
 
     private string $sortable_id;
+    private ?ManualSorter $sortable_manualSorter;
 
     public function __construct(string|TS $name)
     {
@@ -31,10 +32,11 @@ class DataTable_Col implements MObject
         return $this;
     }
 
-    public function sortable(string $id): self
+    public function sortable(string $id, ?ManualSorter $manualSorter = null): self
     {
         $this->sortable = true;
         $this->sortable_id = $id;
+        $this->sortable_manualSorter = $manualSorter;
         return $this;
     }
 
@@ -56,6 +58,11 @@ class DataTable_Col implements MObject
     public function getSortableId(): string
     {
         return $this->sortable_id;
+    }
+
+    public function getSortableManualSorter(): ?ManualSorter
+    {
+        return $this->sortable_manualSorter;
     }
 
     function onNotReceived()

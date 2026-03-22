@@ -11,7 +11,6 @@ use monolitum\frontend\form\FormControl_CheckBox;
 use monolitum\frontend\Reference;
 use monolitum\frontend\Renderable_Node;
 use monolitum\frontend\Rendered;
-use monolitum\i18n\TS;
 use monolitum\i18n\TS_Moment;
 use monolitum\i18n\TSLang;
 use monolitum\model\attr\Attr;
@@ -23,14 +22,28 @@ use monolitum\model\attr\Attr_Int;
 use monolitum\model\attr\Attr_String;
 use monolitum\model\AttrExt_Validate_String;
 use monolitum\model\Entity;
+use ReflectionClass;
 
-class CellRenderer_Attr implements CellRenderer
+class CellRenderer_As implements CellRenderer
 {
+
+    private ReflectionClass $rc;
+
     private ?string $format = null;
 
-    public function __construct(private readonly Attr|string $attr, private readonly ?Closure $valueProcessor)
+    public function __construct(Attr|string|ReflectionClass $attr, private readonly Closure $valueRetriever)
     {
-
+        if($attr instanceof ReflectionClass){
+            $this->rc = $attr;
+        }else if(is_string($attr)){
+            try {
+                $this->rc = new ReflectionClass($attr);
+            } catch (\ReflectionException $e) {
+                throw new DevPanic("Exception building CellRenderer_As", exception: $e);
+            }
+        }else{
+            $this->rc = new ReflectionClass(get_class($attr));
+        }
     }
 
     public function format(string $format): self
@@ -55,26 +68,20 @@ class CellRenderer_Attr implements CellRenderer
         if($entity == null){
             return new Reference();
         } else {
-            $attr = $entity->getAttr($this->attr);
-            if($attr instanceof Attr_String){
+            if($this->rc->getName() === Attr_String::class){
                 /** @var AttrExt_Validate_String $extValidate */
-                $extValidate = $attr->findExtension(AttrExt_Validate_String::class);
-                $value = $this->processValue($entity, $entity->getString($attr));
+                $value = $this->retrieveValue($entity);
                 if($value === null){
                     return Text::of("");
-                }else if($extValidate !== null && $extValidate->hasEnum()){
-                    $string = $extValidate->getEnumString($value);
-                    $string = TS::unwrapAuto($string);
-                    return Text::of($string);
                 }else{
                     return Text::of($value);
                 }
-            }else if($attr instanceof Attr_Int){
-                return Text::of(strval($this->processValue($entity, $entity->getInt($attr))));
-            }else if($attr instanceof Attr_Decimal){
-                return Text::of(strval($this->processValue($entity, $entity->getInt($attr) / pow(10, $attr->getDecimals()))));
-            }else if($attr instanceof Attr_Date || $attr instanceof Attr_DateTime){
-                $val = $this->processValue($entity, $entity->getDate($attr));
+            }else if($this->rc->getName() === Attr_Int::class){
+                return Text::of(strval($this->retrieveValue($entity)));
+            }else if($this->rc->getName() === Attr_Decimal::class){
+                return Text::of(strval($this->retrieveValue($entity)));
+            }else if($this->rc->getName() === Attr_Date::class || $this->rc->getName() === Attr_DateTime::class){
+                $val = $this->retrieveValue($entity);
 
                 //if(PHP_MAJOR_VERSION == 8 && PHP_MINOR_VERSION > 1 || PHP_MAJOR_VERSION > 8){
                     return Text::of($val !== null ?
@@ -89,23 +96,15 @@ class CellRenderer_Attr implements CellRenderer
                         ($this->format !== null ? $this->format : "%Y-%m-%d"), $val->getTimestamp()
                     ) : "");
                 }*/
-            }else if($attr instanceof Attr_Bool){
+            }else if($this->rc->getName() === Attr_Bool::class){
                 $ch = new FormControl_CheckBox();
                 $ch->setDisabled();
-                $ch->setValue($this->processValue($entity, $entity->getBool($attr))); // TODO intermediate
+                $ch->setValue($this->retrieveValue($entity)); // TODO intermediate
                 return $ch;
             }else{
                 throw new DevPanic("Not recognized col type");
             }
         }
-    }
-
-    private function processValue(Entity $entity, mixed $value)
-    {
-        if($this->valueProcessor !== null){
-            return call_user_func($this->valueProcessor, $entity, $value);
-        }
-        return $value;
     }
 
     /**
@@ -317,9 +316,14 @@ class CellRenderer_Attr implements CellRenderer
 //        return $out;
 //    }
 
-    public static function of(Attr|string $attr, ?Closure $valueProcessor = null): static
+    public static function of(Attr|string $attrType, Closure $valueRetriever): static
     {
-        return new CellRenderer_Attr($attr, $valueProcessor);
+        return new CellRenderer_As($attrType, $valueRetriever);
+    }
+
+    private function retrieveValue(Entity $entity): mixed
+    {
+        return call_user_func($this->valueRetriever, $entity);
     }
 
 }

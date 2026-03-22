@@ -48,17 +48,19 @@ class DataTable extends HtmlElementNode
      */
     private array $rowComponents = [];
 
-    private Model|string|null $sortable_model = null;
+    private ?SortableParamsProvider $sortableParamsProvider = null;
 
-    private Attr|string|null $sortable_attr_sort = null;
-
-    private Attr|string|null $sortable_attr_desc = null;
+//    private Model|string|null $sortable_model = null;
+//
+//    private Attr|string|null $sortable_attr_sort = null;
+//
+//    private Attr|string|null $sortable_attr_desc = null;
 
     private ?Link $sortable_base_link = null;
 
     private ?DataTable_Col $sortedColumn = null;
-
     private ?bool $sortedColumnDesc = null;
+    private ?ManualSorter $sortedColumnManualSorter = null;
 
     private ?bool $responsiveTable = true;
 
@@ -89,9 +91,10 @@ class DataTable extends HtmlElementNode
 
     public function setSortableParams(Model|string $class, Attr|string $sort, Attr|string $desc=null): void
     {
-        $this->sortable_model = $class;
-        $this->sortable_attr_sort = $sort;
-        $this->sortable_attr_desc = $desc;
+//        $this->sortable_model = $class;
+//        $this->sortable_attr_sort = $sort;
+//        $this->sortable_attr_desc = $desc;
+        $this->sortableParamsProvider = new SortableParamsProvider_Model($class, $sort, $desc);
     }
 
     public function setSortableBaseLink(?Link $sortable_base_link): void
@@ -99,55 +102,46 @@ class DataTable extends HtmlElementNode
         $this->sortable_base_link = $sortable_base_link;
     }
 
-    public function getSortedColumnId(): ?string
+    public function getAutoSortedColumnId(): ?string
     {
-        return $this->sortedColumn?->getSortableId();
+        return $this->sortedColumnManualSorter === null ? $this->sortedColumn?->getSortableId() : null;
     }
 
-    public function getSortedColumnDesc(): ?bool
+    public function getAutoSortedColumnDesc(): ?bool
     {
-        return $this->sortedColumnDesc;
+        return $this->sortedColumnManualSorter === null ? $this->sortedColumnDesc : null;
     }
 
     private function detectSorting(): void
     {
-        if ($this->sortable_model !== null && $this->sortable_attr_sort !== null) {
-            // Detect if it is sorted
+        if($this->sortableParamsProvider === null){
+            return;
+        }
 
-            $sortValidatedValue = ParamsManager::pushGetParameterValidatedValue($this->sortable_model, $this->sortable_attr_sort);
+        $this->sortableParamsProvider->execute($this);
 
-            $sortedColumnName = null;
-            if ($sortValidatedValue->isValid()) {
-                $sortedColumnName = $sortValidatedValue->getValue();
-            }
+        $sortedId = $this->sortableParamsProvider->getSortedId();
 
-            if($sortedColumnName === null)
-                return;
+        if($sortedId !== null){
 
-            $sortedColumn = null;
+            $this->sortedColumn = null;
             foreach ($this->columns as $column){
                 if($column->isSortable()){
-                    if($column->getSortableId() === $sortedColumnName) {
-                        $sortedColumn = $column;
+                    if($column->getSortableId() === $sortedId) {
+                        $this->sortedColumn = $column;
+                        $this->sortedColumnManualSorter = $column->getSortableManualSorter();
                         break;
                     }
                 }
             }
 
-            if($sortedColumn === null)
+            if($this->sortedColumn === null)
                 return;
 
-            $descValidatedValue = $this->sortable_attr_desc !== null ? ParamsManager::pushGetParameterValidatedValue($this->sortable_model, $this->sortable_attr_desc) : null;
-
-            $desc = false;
-            if ($descValidatedValue->isValid() && !$descValidatedValue->isNull()) {
-                $desc = $descValidatedValue->getValue();
-            }
-
-            $this->sortedColumn = $sortedColumn;
-            $this->sortedColumnDesc = $desc;
+            $this->sortedColumnDesc = $this->sortableParamsProvider->getSortedDesc();
 
         }
+
     }
 
     public function doAcceptChild(MObject $object): bool
@@ -173,39 +167,38 @@ class DataTable extends HtmlElementNode
 
         foreach ($this->columns as $column){
             $this->buildAndAppendChild($column);
-            if($column->isSortable()){
 
-                $myLink = $baseLink->copy();
-                $myLink->addParams([
-                    $this->sortable_attr_sort => $column->getSortableId()
-                ]);
-
-                if($column === $this->sortedColumn && !$this->sortedColumnDesc){
-                    $myLink->addParams([
-                        $this->sortable_attr_desc => true
-                    ]);
-                }else if($this->sortable_attr_desc !== null){
-                    $myLink->removeParams(
-                        $this->sortable_attr_desc
-                    );
+            if($this->sortableParamsProvider !== null){
+                $myLink = $this->sortableParamsProvider->makeSortLink($column, $baseLink);
+                if($myLink !== null){
+                    $request = new Request_HrefResolver($myLink);
+                    $this->receive($request);
+                    $this->columnHrefResolvers[] = $request->getHrefResolver();
+                }else{
+                    $this->columnHrefResolvers[] = null;
                 }
-
-                $request = new Request_HrefResolver($myLink);
-                $this->receive($request);
-                $this->columnHrefResolvers[] = $request->getHrefResolver();
             }else{
                 $this->columnHrefResolvers[] = null;
             }
+
         }
 
         // Build header
 
         if($this->rowRetriever !== null){
 
-            $callable = $this->rowRetriever;
-
             /** @var MClosableIterator|array $iterator */
-            $iterator = $callable($this);
+            $iterator = call_user_func($this->rowRetriever, $this);
+
+            if ($this->sortedColumnManualSorter !== null){
+                $finalArray = [];
+                foreach ($iterator as $entity){
+                    $finalArray[] = $entity;
+                }
+                usort($finalArray, fn($left, $right) => $this->sortedColumnManualSorter->compare($left, $right));
+            }else{
+                $finalArray = $iterator;
+            }
 
             if($iterator instanceof MClosableIterator){
                 while ($iterator->hasNext()){
@@ -283,9 +276,7 @@ class DataTable extends HtmlElementNode
         foreach($this->columns as $column){
 
             $th = new HtmlElement("th");
-            if ($this->sortable_model !== null
-                && $this->sortable_attr_sort !== null
-                && $column->isSortable()){
+            if ($this->sortableParamsProvider !== null && $column->isSortable()){
 
                 if($column === $this->sortedColumn){
                     if($this->sortedColumnDesc){

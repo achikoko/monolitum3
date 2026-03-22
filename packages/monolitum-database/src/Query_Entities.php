@@ -38,9 +38,9 @@ class Query_Entities extends Query
         return $this;
     }
 
-    public function sort(string|Attr $attr, bool $asc = true): self
+    public function sort(string|Attr $attr, bool $desc = false): self
     {
-        $this->sortedAttrs[] = new Query_Sort_Tuple($attr, $asc);
+        $this->sortedAttrs[] = new Query_Sort_Tuple($attr, !$desc);
         return $this;
     }
 
