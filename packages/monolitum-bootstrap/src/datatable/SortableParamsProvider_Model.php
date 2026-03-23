@@ -48,21 +48,22 @@ class SortableParamsProvider_Model implements SortableParamsProvider
 
     public function makeSortLink(DataTable_Col $column, Link $baseLink): Link|null
     {
-        if($column->isSortable()){
+        if($column->isSortable()) {
 
             $myLink = $baseLink->copy();
             $myLink->addParams([
                 $this->sortableId => $column->getSortableId()
             ]);
-
-            if($column->getSortableId() === $this->sortableId && !$this->sortedDesc){
-                $myLink->addParams([
-                    $this->sortableDesc => true
-                ]);
-            }else if($this->sortableDesc !== null){
-                $myLink->removeParams(
-                    $this->sortableDesc
-                );
+            if ($this->sortableDesc !== null) {
+                if ($column->getSortableId() === $this->sortedId && !$this->sortedDesc) {
+                    $myLink->addParams([
+                        $this->sortableDesc => true
+                    ]);
+                } else {
+                    $myLink->removeParams(
+                        $this->sortableDesc
+                    );
+                }
             }
 
             return $myLink;
