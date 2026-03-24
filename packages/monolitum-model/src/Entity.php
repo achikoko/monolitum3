@@ -99,6 +99,13 @@ abstract class Entity
         return null;
     }
 
+    function limitJoinedEntities(int $index, ?int $low, ?int $many): void
+    {
+        if(isset($this->joinedEntities[$index])) {
+            $this->joinedEntities[$index] = array_slice($this->joinedEntities[$index], $low ?? 0, $many);
+        }
+    }
+
     public function getJoinedEntities(int $index = 0): array
     {
         if(isset($this->joinedEntities[$index])) {

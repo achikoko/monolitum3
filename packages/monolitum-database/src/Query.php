@@ -31,7 +31,7 @@ class Query
     }
 
     /**
-     * Performs an outer join in the query. (Skips rows without relations).
+     * Performs an inner join in the query. (Skips rows without relations).
      *
      * @param string|array<string> $attrs
      * @param Query_Join $join other query model
@@ -47,13 +47,13 @@ class Query
     }
 
     /**
-     * Performs an inner join in the query. (Returns entities even if there is not a single relation)
+     * Performs an outer join in the query. (Returns entities even if there is not a single relation)
      *
      * @param string|array<string> $attrs
      * @param Query_Join $join other query model
      * @return $this
      */
-    public function innerJoin(array|string $attrs, Query_Join $join): self
+    public function outerJoin(array|string $attrs, Query_Join $join): self
     {
         $this->joins[] = new Query_Join_Tuple(is_string($attrs) ? [$attrs] : $attrs, true, $join);
         return $this;

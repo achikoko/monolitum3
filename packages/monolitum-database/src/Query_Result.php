@@ -148,6 +148,8 @@ class Query_Result implements MClosableIterator, Iterator
 
         assert($entity !== null);
 
+        $this->limitJoins($this->select, $entity);
+
         if(is_null($this->iteratorKey)) {
             $this->iteratorKey = 0;
         } else {
@@ -392,6 +394,21 @@ class Query_Result implements MClosableIterator, Iterator
             if ($ext !== null && $ext->isPrimaryKey()) {
                 $entity->setValue($attr, $keys[$idx++]);
             }
+        }
+
+    }
+
+    private function limitJoins(Query_Entities $query, Entity $entity): void
+    {
+        $idx = 0;
+        foreach ($query->getJoins() as $join){
+            if($join->join->hasLimit()){
+                $entity->limitJoinedEntities($idx, $join->join->getLimitLow(), $join->join->getLimitMany());
+            }
+            foreach ($entity->getJoinedEntities($idx) as $joinedEntity){
+                $this->limitJoins($join->join, $joinedEntity);
+            }
+            $idx++;
         }
 
     }

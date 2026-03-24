@@ -21,4 +21,11 @@ class Query_Join extends Query_Entities
         return $this->localJointAttrs;
     }
 
+    /** @noinspection PhpRedundantMethodOverrideInspection */
+    public function isLimit1Recursive(): bool
+    {
+        // TODO autodetect implicit limit 1, when the local join attrs are a complete key (in such case, a subquery is not necessary)
+        return parent::isLimit1Recursive();
+    }
+
 }

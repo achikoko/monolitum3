@@ -9,7 +9,7 @@ class ManualSorter
 {
 
     private function __construct(
-        private Closure $entityComparator,
+        private readonly Closure $entityComparator,
     ) {
 
     }
