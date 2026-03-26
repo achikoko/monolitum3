@@ -916,13 +916,13 @@ class DatabaseManager extends MNode implements EntityPersister
         $sortedAttrs = $query->getSortedAttrs();
         if (!empty($sortedAttrs)) {
             foreach ($sortedAttrs as $sortedAttr) {
-                if($isRoot || $sortedAttr->promoteToGlobalDesc !== null) {
+//                if($isRoot || $sortedAttr->promoteToGlobalDesc !== null) {
                     if ($appendInitialComma || !empty($sql))
                         $sql .= ", ";
                     $sql .= "`" . $tableAlias
                         . "`.`" . self::_computeAttrName($sortedAttr->attr)
                         . "` " . (($sortedAttr->promoteToGlobalDesc !== null ? $sortedAttr->promoteToGlobalDesc : $sortedAttr->desc) ? "DESC " : "ASC ");
-                }
+//                }
             }
         }
 
