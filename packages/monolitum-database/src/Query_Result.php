@@ -281,8 +281,9 @@ class Query_Result implements MClosableIterator, Iterator
                 /** @var AttrExt_DB $ext */
                 $ext = $attr->findExtension(AttrExt_DB::class);
                 if (
+                    $ext != null &&
                     // Not an ID
-                    (!$idsMandatory || $ext === null || !$ext->isPrimaryKey())
+                    (!$idsMandatory || !$ext->isPrimaryKey())
                     && (
                         // Selected
                         $selectedAttrsIds === true

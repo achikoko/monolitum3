@@ -611,10 +611,11 @@ class DatabaseManager extends MNode implements EntityPersister
             /** @var AttrExt_DB $ext */
             $ext = $attr->findExtension(AttrExt_DB::class);
             if (
-                $selectedAttrsIds === true
-                || $idsMandatory && $ext !== null && $ext->isPrimaryKey()
-                || is_array($selectedAttrsIds) && in_array($attr->getId(), $selectedAttrsIds)
-            ) {
+                $ext != null
+                && ($selectedAttrsIds === true
+                    || $idsMandatory && $ext->isPrimaryKey()
+                    || is_array($selectedAttrsIds) && in_array($attr->getId(), $selectedAttrsIds)
+                )) {
                 if($appendInitialComma || !empty($string)){
                     $string .= ", ";
                 }

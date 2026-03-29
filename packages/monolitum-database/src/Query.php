@@ -37,12 +37,9 @@ class Query
      * @param Query_Join $join other query model
      * @return $this
      */
-    public function join(array|string $attrs, Query_Join $join): self
+    public function join(array|string $attrs, Query_Join $join, $outer = false): self
     {
-        if(is_string($attrs)){
-            $attrs = [$attrs];
-        }
-        $this->joins[] = new Query_Join_Tuple($attrs, false, $join);
+        $this->joins[] = new Query_Join_Tuple(is_string($attrs) ? [$attrs] : $attrs, $outer, $join);
         return $this;
     }
 
