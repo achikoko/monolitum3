@@ -428,7 +428,7 @@ class DatabaseManager extends MNode implements EntityPersister
         if($count == 0)
             throw new DevPanic("Update of 0 values");
 
-        $sqlWhere = $this->execute_generate_where_filter($query->getFilter(), $model, self::_computeTableAlias(0), $values);
+        $sqlWhere = $this->execute_generate_where_filter($query->getFilter(), $model, self::_computeTableAlias(0), null, $values);
         if(empty($sqlWhere)){
             throw new DevPanic("Execute UPDATE without WHERE statement.");
         }
@@ -446,7 +446,7 @@ class DatabaseManager extends MNode implements EntityPersister
     private function executeUpdate_Delete(Delete $query, Model $model, array &$values): string
     {
         $sql = "DELETE " . self::_computeTableAlias(0) . " FROM " . $this->prefix . $model->id . " AS "  . self::_computeTableAlias(0);
-        $sqlWhere = $this->execute_generate_where_filter($query->getFilter(), $model, self::_computeTableAlias(0), $values);
+        $sqlWhere = $this->execute_generate_where_filter($query->getFilter(), $model, self::_computeTableAlias(0), null, $values);
         if(empty($sqlWhere)){
             throw new DevPanic("Execute DELETE without WHERE statement.");
         }
@@ -486,12 +486,15 @@ class DatabaseManager extends MNode implements EntityPersister
 
         if($query->hasJoins()){
             $parentTableCounter = 0;
-            $sql .= $this->execute_generate_joins_headers($model, $query,$parentTableCounter);
+            $joinsWhereHint = new _JoinsWhereHint($model, self::_computeTableAlias($parentTableCounter));
+            $sql .= $this->execute_generate_joins_headers($model, $query, $joinsWhereHint,$parentTableCounter);
+        }else{
+            $joinsWhereHint = null;
         }
 
         $values = [];
         $parentTableCounter = 0;
-        $whereSql = $this->execute_generate_wheres($query, $model, $parentTableCounter, $values);
+        $whereSql = $this->execute_generate_wheres($query, $model, $joinsWhereHint, $parentTableCounter, $values);
         $parentTableCounter = 0;
         $whereJoinsSql = $this->execute_generate_additional_wheres_for_limited_joins($query, $model, $parentTableCounter, $values);
 
@@ -658,7 +661,7 @@ class DatabaseManager extends MNode implements EntityPersister
 
                     $filter = $join->getFilter();
                     if($filter != null){
-                        $sql .= " " . $this->execute_generate_where_filter($filter, $childModel, $childTableSubqueryAlias, $values);
+                        $sql .= " AND " . $this->execute_generate_where_filter($filter, $childModel, $childTableSubqueryAlias, null, $values);
                     }
 
                     $orderBySql = "";
@@ -689,7 +692,7 @@ class DatabaseManager extends MNode implements EntityPersister
                                 $and[$attr->getId()] = null;
                             }
                         }
-                        $sql .= $this->execute_generate_where_list($and, $childModel, $childTableAlias, $values);
+                        $sql .= $this->execute_generate_where_list($and, $childModel, $childTableAlias, null, $values);
                     }
 
                     $sql .= ")";
@@ -754,14 +757,14 @@ class DatabaseManager extends MNode implements EntityPersister
 
     }
 
-    public function execute_generate_wheres(Query $query, Model $model, int &$parentTableCounter, array &$values): string
+    public function execute_generate_wheres(Query $query, Model $model, ?_JoinsWhereHint $joinsWhereHint, int &$parentTableCounter, array &$values): string
     {
 
         $sql = "";
 
         $filter = $query->getFilter();
         if($filter != null){
-            $sql .= $this->execute_generate_where_filter($filter, $model, self::_computeTableAlias($parentTableCounter), $values);
+            $sql .= $this->execute_generate_where_filter($filter, $model, self::_computeTableAlias($parentTableCounter), $joinsWhereHint, $values);
         }
 
         if($query->hasJoins()) {
@@ -772,7 +775,7 @@ class DatabaseManager extends MNode implements EntityPersister
                 if(!$join->isLimit1Recursive()) {
                     $model = $this->entitiesManager->getModel($join->model);
                     $parentTableCounter++;
-                    $whereSql = $this->execute_generate_wheres($join, $model, $parentTableCounter, $values);
+                    $whereSql = $this->execute_generate_wheres($join, $model, $joinsWhereHint, $parentTableCounter, $values);
                     if (!empty($whereSql)) {
                         if (!empty($sql))
                             $sql .= " AND ";
@@ -785,7 +788,7 @@ class DatabaseManager extends MNode implements EntityPersister
         return $sql;
     }
 
-    public function execute_generate_where_filter(array|Query_Or|null $filter, Model $model, string $tableAlias, array &$values): string
+    public function execute_generate_where_filter(array|Query_Or|null $filter, Model $model, string $tableAlias, ?_JoinsWhereHint $joinsWhereHint, array &$values, bool $forceParenthesis = false): string
     {
 
         $sql = "";
@@ -796,20 +799,15 @@ class DatabaseManager extends MNode implements EntityPersister
 
         if(is_array($filter)){
             // parse and
-            $sql .= $this->execute_generate_where_list($filter, $model, $tableAlias, $values);
+            $sql .= $this->execute_generate_where_list($filter, $model, $tableAlias, $joinsWhereHint, $values, forceParenthesis: $forceParenthesis);
         }else if($filter instanceof Query_Or){
-
-            $or = $this->execute_generate_where_list($filter->getFilters(), $model, $tableAlias, $values, "OR");
-
-            if($or !== ""){
-                $sql .= "($or)";
-            }
+            $sql .= $this->execute_generate_where_list($filter->getFilters(), $model, $tableAlias, $joinsWhereHint, $values, "OR", true);
         }
 
         return $sql;
     }
 
-    public function execute_generate_where_list(array $filters, Model $model, string $tableAlias, array &$values, string $operation = "AND"): string
+    public function execute_generate_where_list(array $filters, Model $model, string $tableAlias, ?_JoinsWhereHint $joinsWhereHint, array &$values, string $operation = "AND", bool $forceParenthesis = false): string
     {
 
         $sql = "";
@@ -820,31 +818,66 @@ class DatabaseManager extends MNode implements EntityPersister
                 $attr = $model->getAttr($attrId);
                 $ext = $attr->findExtension(AttrExt_DB::class);
                 if ($ext != null) {
-                    if ($first)
+                    if ($first) {
                         $first = false;
-                    else
+                        if($forceParenthesis)
+                            $sql .= "(";
+                    }else {
                         $sql .= " $operation ";
+                    }
 
-                    $sql .= $this->execute_generate_where_attr($attr, $filter, $model, $tableAlias, $values) . " ";
+                    $sql .= $this->execute_generate_where_attr($attr, $filter, $model, $tableAlias, $joinsWhereHint, $values) . " ";
 
                 }
-            }else {
-                $sql2 = $this->execute_generate_where_filter($filter, $model, $tableAlias, $values);
+            } else if($filter instanceof Query_JoinedModel) {
+                $childModel = $this->entitiesManager->getModel($filter->model);
+                if($joinsWhereHint !== null && array_key_exists($childModel->id, $joinsWhereHint->joinsWhereHintsByModel)){
+                    $childJoinsWhereHint = $joinsWhereHint->joinsWhereHintsByModel[$childModel->id];
+                    $childTable = $childJoinsWhereHint->tableAlias;
+                    $childModel = $childJoinsWhereHint->model;
+                    $sql2 = $this->execute_generate_where_list($filter->getFilters(), $childModel, $childTable, $childJoinsWhereHint, $values);
+
+                    if($sql2 !== ""){
+                        if ($first) {
+                            $first = false;
+                            if($forceParenthesis)
+                                $sql .= "(";
+                        }else {
+                            $sql .= " $operation ";
+                        }
+                        $sql .= $sql2;
+                    }
+
+                }else{
+                    throw new DevPanic("Joined table $filter->model not found in query.");
+                }
+
+            } else {
+                $sql2 = $this->execute_generate_where_filter($filter, $model, $tableAlias, $joinsWhereHint, $values);
 
                 if($sql2 !== ""){
-                    if ($first)
+                    if ($first) {
                         $first = false;
-                    else
+                        if($forceParenthesis)
+                            $sql .= "(";
+                    }else {
                         $sql .= " $operation ";
+                    }
                     $sql .= $sql2;
                 }
             }
+
+        }
+
+        if(!$first){
+            if($forceParenthesis)
+                $sql .= ")";
         }
 
         return $sql;
     }
 
-    private function execute_generate_where_attr(Attr $attr, mixed $filter, Model $model, string $tableAlias, array &$values): string
+    private function execute_generate_where_attr(Attr $attr, mixed $filter, Model $model, string $tableAlias, ?_JoinsWhereHint $joinsWhereHint, array &$values): string
     {
 
         $sql = $tableAlias . "." . $attr->getId();
@@ -900,7 +933,16 @@ class DatabaseManager extends MNode implements EntityPersister
 
         }else if($filter instanceof Query_Different){
             $sql .= $this->appendValue($filter->value, $attr, "<>", $values);
-        }else {
+        } else if(is_array($filter)){
+            if($joinsWhereHint !== null && array_key_exists(self::_computeAttrName($attr), $joinsWhereHint->joinsWhereHintsByAttr)){
+                $childJoinsWhereHint = $joinsWhereHint->joinsWhereHintsByAttr[self::_computeAttrName($attr)];
+                $childModel = $joinsWhereHint->model;
+                $childTable = $joinsWhereHint->tableAlias;
+                $this->execute_generate_where_list($filter, $childModel, $childTable, $childJoinsWhereHint, $values );
+            }else{
+                throw new DevPanic("Joined table not found in query.");
+            }
+        } else {
             $sql .= $this->appendValue($filter, $attr, "=", $values);
         }
 
@@ -967,13 +1009,13 @@ class DatabaseManager extends MNode implements EntityPersister
         return $ids;
     }
 
-    private function execute_generate_joins_headers(Model $model, Query $query, int &$parentTableCounter): string
+    private function execute_generate_joins_headers(Model $model, Query $query, ?_JoinsWhereHint $whereHint, int &$parentTableCounter): string
     {
         $sql = "";
         $parentTableAlias = self::_computeTableAlias($parentTableCounter);
 
         foreach($query->getJoins() as $joinTuple){
-            $childTableAlias = ++$parentTableCounter;
+            $childTableAliasCounter = ++$parentTableCounter;
             $join = $joinTuple->join;
 
             /** @var array<string|Attr> $leftAttrs */
@@ -986,44 +1028,54 @@ class DatabaseManager extends MNode implements EntityPersister
                 $sql .= " LEFT";
             }
 
+            $childTableAlias = self::_computeTableAlias($childTableAliasCounter);
+
             $sql .= $this->execute_generate_join(
                 $leftAttrs, $model, $parentTableAlias,
-                $rightAttrs, $childModel, self::_computeTableAlias($childTableAlias)
+                $rightAttrs, $childModel, $childTableAlias
             );
 
+            $childJoinsWhereHint = new _JoinsWhereHint($childModel, $childTableAlias);
+
             if($join->hasJoins()){
-                $sql .= $this->execute_generate_joins_headers(
-                    $childModel, $join, $parentTableCounter);
+                $sql .= $this->execute_generate_joins_headers($childModel, $join, $childJoinsWhereHint, $parentTableCounter);
             }
 
+            if(sizeof($leftAttrs) == 1 && !array_key_exists($leftAttrs[0], $whereHint->joinsWhereHintsByAttr)){
+                $whereHint->joinsWhereHintsByAttr[self::_computeAttrName($leftAttrs[0])] = $childJoinsWhereHint;
+            }
+
+            if(!array_key_exists($childModel->id, $whereHint->joinsWhereHintsByModel)){
+                $whereHint->joinsWhereHintsByModel[$childModel->id] = $childJoinsWhereHint;
+            }
         }
 
         return $sql;
     }
 
-    private function execute_generate_joins_where(Model $model, array $joins, int &$table_code, array &$values): string
-    {
-        $sql = "";
-
-        foreach($joins as $joinObject){
-            $table_code++;
-
-            /** @var Query_Join $join */
-            $join = $joinObject["join"];
-
-            $childModel = $this->entitiesManager->getModel($join->model);
-
-            $sql .= $this->execute_generate_where_filter($join->getFilter(), $childModel, self::_computeTableAlias($table_code), $values);
-
-            $childJoins = $join->getJoins();
-            if(sizeof($childJoins) > 0){
-                $sql .= $this->execute_generate_joins_where($childModel, $childJoins, $table_code, $values);
-            }
-
-        }
-
-        return $sql;
-    }
+//    private function execute_generate_joins_where(Model $model, array $joins, int &$table_code, array &$values): string
+//    {
+//        $sql = "";
+//
+//        foreach($joins as $joinObject){
+//            $table_code++;
+//
+//            /** @var Query_Join $join */
+//            $join = $joinObject["join"];
+//
+//            $childModel = $this->entitiesManager->getModel($join->model);
+//
+//            $sql .= $this->execute_generate_where_filter($join->getFilter(), $childModel, self::_computeTableAlias($table_code), $values);
+//
+//            $childJoins = $join->getJoins();
+//            if(sizeof($childJoins) > 0){
+//                $sql .= $this->execute_generate_joins_where($childModel, $childJoins, $table_code, $values);
+//            }
+//
+//        }
+//
+//        return $sql;
+//    }
 
     private function execute_generate_join(string|array $leftAttrs, Model $leftModel, string $leftModelAlias, array $rightAttrs, Model $rightModel, string $rightModelAlias, string $joinString = "JOIN", string $onString = "ON"): string
     {
@@ -1105,5 +1157,21 @@ class DatabaseManager extends MNode implements EntityPersister
     {
         // TODO: Implement _notifyEntityChanged() method.
     }
+
+}
+
+/** @noinspection PhpMultipleClassesDeclarationsInOneFile */
+class _JoinsWhereHint {
+
+    public function __construct(public readonly Model $model, public readonly string $tableAlias)
+    {
+
+    }
+
+    /** @var array<string, _JoinsWhereHint>  */
+    public array $joinsWhereHintsByAttr = [];
+
+    /** @var array<string, _JoinsWhereHint>  */
+    public array $joinsWhereHintsByModel = [];
 
 }
