@@ -140,27 +140,27 @@ class Link
     /**
      * @return $this
      */
-    public function setPushHistory(): self
+    public function setPushHistory(bool $pushHistory = true): self
     {
-        $this->historyBehavior = self::HISTORY_BEHAVIOR_PUSH;
+        $this->historyBehavior = $pushHistory ? self::HISTORY_BEHAVIOR_PUSH : $this->historyBehavior;
         return $this;
     }
 
     /**
      * @return $this
      */
-    public function setDontPreserveHistory(): self
+    public function setDontPreserveHistory(bool $dontPreserveHistory = true): self
     {
-        $this->historyBehavior = null;
+        $this->historyBehavior = $dontPreserveHistory ? null : $this->historyBehavior;
         return $this;
     }
 
     /**
      * @return $this
      */
-    public function setPopHistory(): self
+    public function setPopHistory(bool $popHistory = true): self
     {
-        $this->historyBehavior = self::HISTORY_BEHAVIOR_POP;
+        $this->historyBehavior = $popHistory ? self::HISTORY_BEHAVIOR_POP : $this->historyBehavior;
         return $this;
     }
 
