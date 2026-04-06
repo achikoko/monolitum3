@@ -64,7 +64,7 @@ class CellRenderer_Attr implements CellRenderer
                     return Text::of("");
                 }else if($extValidate !== null && $extValidate->hasEnum()){
                     $string = $extValidate->getEnumString($value);
-                    $string = TS::unwrapAuto($string);
+                    $string = TS::renderAuto($string);
                     return Text::of($string);
                 }else{
                     return Text::of($value);

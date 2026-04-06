@@ -2,8 +2,8 @@
 namespace monolitum\frontend\form;
 
 use Closure;
-use monolitum\core\ts\TS;
 use monolitum\frontend\html\HtmlElement;
+use monolitum\i18n\TS;
 
 class FormControl_Text extends FormControl
 {

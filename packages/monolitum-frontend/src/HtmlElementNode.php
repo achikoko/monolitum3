@@ -106,9 +106,9 @@ class HtmlElementNode extends Renderable_Node
     public function setContent(TS|string $content, bool $raw=false): self
     {
         if($raw){
-            $this->element->setContent(new HtmlElementContent(TS::unwrapAuto($content), $raw));
+            $this->element->setContent(new HtmlElementContent(TS::unwrapAuto($content), true));
         }else{
-            $this->element->setContent(TS::unwrapAuto($content));
+            TS::renderAuto($content)?->renderTo($this->element);
         }
         return $this;
     }

@@ -3,6 +3,9 @@
 namespace monolitum\i18n;
 
 use Moment\Moment;
+use monolitum\frontend\html\HtmlElementContent;
+use monolitum\frontend\Renderable;
+use monolitum\frontend\Rendered;
 
 /**
  * Translatable string
@@ -10,33 +13,23 @@ use Moment\Moment;
 abstract class TS
 {
 
-    /**
-     * @param mixed $string
-     * @return string|null
-     */
-    public static function unwrapAuto(mixed $string, ?string $overwrittenLanguage = null): ?string
+    public static function unwrapAuto(mixed $string, ?string $overwrittenLanguage = null, ?array $params=null): ?string
     {
-        return TS::unwrap($string, TSLang::pushAndGetLangWithOverwritten($overwrittenLanguage));
+        return TS::unwrap($string, TSLang::pushAndGetLangWithOverwritten($overwrittenLanguage), $params);
     }
 
-
-    /**
-     * @param mixed $string
-     * @param string|null $lang
-     * @return string|null
-     */
-    public static function unwrap(mixed $string, string $lang=null): ?string
+    public static function unwrap(mixed $string, ?string $lang=null, ?array $params=null): ?string
     {
         if(is_string($string)){
             return $string;
         }else if($string instanceof TS){
-            return $string->getTranslation($lang);
+            return $string->getTranslation($lang, $params);
         }else if(is_array($string)){
             if(array_key_exists($lang, $string)){
-                return self::unwrap($string[$lang], $lang);
+                return self::unwrap($string[$lang], $lang, $params);
             }else{
                 foreach($string as $firstValue){
-                    return self::unwrap($firstValue, $lang);
+                    return self::unwrap($firstValue, $lang, $params);
                 }
                 return null;
             }
@@ -45,9 +38,36 @@ abstract class TS
         }
     }
 
-    public abstract function getTranslation(?string $lang, array $params=null): ?string;
+    public static function renderAuto(mixed $string, ?string $overwrittenLanguage = null, ?array $params=null): Renderable
+    {
+        return TS::render($string, TSLang::pushAndGetLangWithOverwritten($overwrittenLanguage), $params) ?? Rendered::ofEmpty();
+    }
 
-//    public abstract function add($lang, $string);
+    public static function render(mixed $string, ?string $lang=null, ?array $params=null): Renderable
+    {
+        if(is_string($string)){
+            return new HtmlElementContent($string);
+        }else if($string instanceof TS){
+            return $string->getRenderable($lang, $params) ?? Rendered::ofEmpty();
+        }else if(is_array($string)){
+            if(array_key_exists($lang, $string)){
+                return self::render($string[$lang], $lang, $params);
+            }else{
+                foreach($string as $firstValue){
+                    return self::render($firstValue, $lang, $params);
+                }
+                return Rendered::ofEmpty();
+            }
+        }else if ($string === null) {
+            return Rendered::ofEmpty();
+        }else{
+            return $string;
+        }
+    }
+
+    public abstract function getTranslation(?string $lang, ?array $params=null): ?string;
+
+    public abstract function getRenderable(?string $lang, ?array $params=null): ?Renderable;
 
     /**
      * @param string[] $string

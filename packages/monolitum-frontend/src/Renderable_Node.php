@@ -76,12 +76,11 @@ abstract class Renderable_Node extends MNode {
             }else if(is_string($object)){
                 $this->buildAndInsertChild(Rendered::of($object), $idx);
             }else if($object instanceof TS){
-                $this->buildAndInsertChild(Rendered::of(TS::unwrapAuto($object)), $idx);
+                $this->buildAndInsertChild(TS::renderAuto($object), $idx);
             }else {
                 $this->buildAndInsertChild($object, $idx);
             }
 
-//            $this->buildAndInsertChild($this->buildRenderable($object), $idx);
         }
         return $this;
     }
@@ -95,7 +94,7 @@ abstract class Renderable_Node extends MNode {
         }else if(is_string($renderable)){
             return Rendered::of($renderable);
         }else if($renderable instanceof TS){
-            return Rendered::of(TS::unwrapAuto($renderable));
+            return TS::renderAuto($renderable);
         }else {
             return $renderable;
         }
@@ -112,7 +111,7 @@ abstract class Renderable_Node extends MNode {
         }else if(is_string($renderable)){
             $callback(Rendered::of($renderable));
         }else if($renderable instanceof TS){
-            $callback(Rendered::of(TS::unwrapAuto($renderable)));
+            $callback(TS::renderAuto($renderable));
         }else {
             $this->buildChildManually($renderable);
             $callback($renderable);

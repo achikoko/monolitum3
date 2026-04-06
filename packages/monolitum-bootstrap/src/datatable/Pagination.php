@@ -276,7 +276,8 @@ class Pagination extends HtmlElementNode
 
                         for ($i = 1; $i <= $this->max_pages; $i++) {
 
-                            M(new FormControl_Select_Option(strval($i), strval($i), function (FormControl_Select_Option $it) use ($i) {
+                            M(new FormControl_Select_Option(strval($i), function (FormControl_Select_Option $it) use ($i) {
+                                $it->setContent(strval($i));
                                 if ($this->page === $i)
                                     $it->setSelected();
                             }));

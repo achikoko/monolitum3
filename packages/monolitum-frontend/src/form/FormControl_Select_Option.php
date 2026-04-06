@@ -8,12 +8,11 @@ use monolitum\frontend\HtmlElementNode;
 class FormControl_Select_Option extends HtmlElementNode
 {
 
-    public function __construct(string $value=null, string $content=null, ?Closure $builder = null,)
+    public function __construct(string $value=null, ?Closure $builder = null)
     {
         parent::__construct(new HtmlElement("option"), $builder);
         $option = $this->getElement();
         $option->setAttribute("value", $value);
-        $option->setContent($content);
     }
 
     /**

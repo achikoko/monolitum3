@@ -4,6 +4,8 @@ namespace monolitum\i18n;
 
 use Moment\CustomFormats\MomentJs;
 use Moment\Moment;
+use monolitum\frontend\html\HtmlElementContent;
+use monolitum\frontend\Renderable;
 
 /**
  * Translatable string
@@ -49,6 +51,15 @@ class TS_Moment extends TS
                 return $this->getTranslation(null);
             }
         }
+    }
+
+    public function getRenderable(?string $lang, ?array $params = null): ?Renderable
+    {
+        $s = $this->getTranslation($lang, $params);
+        if($s !== null){
+            return new HtmlElementContent($s);
+        }
+        return null;
     }
 
     public static function newFromMoment(Moment $moment, string $format): TS_Moment

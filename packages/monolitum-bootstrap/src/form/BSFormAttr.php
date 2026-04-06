@@ -127,7 +127,6 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
     public function onBeforeBuildForm(): void
     {
         $attr = $this->getAttr();
-//        $ext = $this->getFormExt();
 
         // TODO disable ENTER key using https://stackoverflow.com/questions/895171/prevent-users-from-submitting-a-form-by-hitting-enter
 
@@ -137,8 +136,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
             $invalidFeedback = null;
             if($this->isValid() === false){
-                $invalidText = TS::unwrapAuto($this->getInvalidText(), $this->overwrittenLanguage);
-                if($invalidText !== null){
+                if($this->getInvalidText() !== null){
+                    $invalidText = TS::renderAuto($this->getInvalidText(), $this->overwrittenLanguage);
                     $invalidFeedback = new Div(function (Div $it) use ($invalidText) {
                         $it->addClass("invalid-feedback");
                         $it->append($invalidText);
@@ -166,12 +165,12 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
                 $this->formWrapper->append($this->createFormControl());
 
-                $label = TS::unwrap($this->getLabel(), TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage));
-                if(is_string($label) && strlen($label) > 0){
+                if($this->getLabel() !== null){
+                    $label = TS::render($this->getLabel(), TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage));
                     $this->formWrapper->append(
                         new BSFormLabel(function(BSFormLabel $it) use ($label) {
                             $it->setFor($this->getFullFieldName());
-                            $it->setContent($label);
+                            $it->append($label);
                         }, "form-check-label")
                     );
                 }
@@ -193,11 +192,11 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
                 /** @var ?HtmlElementNode $formLabel */
                 $formLabel = null;
-                $label = TS::unwrap($this->getLabel(), TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage));
-                if(is_string($label) && strlen($label) > 0){
+                if($this->getLabel() !== null){
+                    $label = TS::render($this->getLabel(), TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage));
                     $formLabel = new BSFormLabel(function (BSFormLabel $it) use ($label) {
                         $it->setFor($this->getFullFieldName());
-                        $it->setContent($label);
+                        $it->append($label);
                     }, $this->isRow != null ? "col-form-label" : "form-label");
                 }
 
@@ -571,8 +570,9 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
                 M(new FormControl_Select_Option(
                     "",
-                    $nullLabel !== null ? TS::unwrap($nullLabel, $finalLanguage) : "",
                     function (FormControl_Select_Option $it) use ($finalLanguage, $selected, $nullLabel) {
+
+                        $it->append($nullLabel !== null ? TS::render($nullLabel, $finalLanguage) : "");
 
                         if ($selected === null)
                             $it->setSelected();
@@ -584,7 +584,6 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                 $it->setAttribute("data-placeholder", TS::unwrap($nullLabel, $finalLanguage));
 
                 M(new FormControl_Select_Option(
-                    "",
                     "",
                     function (FormControl_Select_Option $it) use ($selected) {
                         $it->setContent("");
@@ -606,7 +605,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                 $currentGroupElement = null;
 
                 foreach ($enumeration as $itemKey => $itemLabel) {
-                    $content = TS::unwrap($itemLabel, $finalLanguage);
+                    $content = TS::render($itemLabel, $finalLanguage);
 
                     $itemGroup = $enumeration->getGroupOfKey($itemKey);
 
@@ -618,7 +617,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                             $currentGroupElement = null;
                         }
 
-                        M(new FormControl_Select_Option($itemKey, $content, function (FormControl_Select_Option $it) use ($itemKey, $selected) {
+                        M(new FormControl_Select_Option($itemKey, function (FormControl_Select_Option $it) use ($content, $itemKey, $selected) {
+                            $it->append($content);
                             if ($itemKey == $selected)
                                 $it->setSelected();
                         }));
@@ -635,7 +635,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                             $currentGroup = $itemGroup;
                         }
 
-                        $currentGroupElement->receive(new FormControl_Select_Option($itemKey, $content, function (FormControl_Select_Option $it) use ($itemKey, $selected) {
+                        $currentGroupElement->receive(new FormControl_Select_Option($itemKey, function (FormControl_Select_Option $it) use ($content, $itemKey, $selected) {
+                            $it->setContent($content);
                             if ($itemKey == $selected)
                                 $it->setSelected();
                         }));
