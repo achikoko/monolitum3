@@ -19,6 +19,7 @@ class PathManager extends MNode
 
     public function __construct(
         private readonly ValidatedValueGetter $readPathParam,
+        private readonly string $baseUrl,
         ?Closure $builder = null)
     {
         parent::__construct($builder);
@@ -103,7 +104,7 @@ class PathManager extends MNode
             $querySign = false;
 
             if($isAppendUrlPrefix)
-                $url .= Monolitum::getInstance()->getLocalAddress();
+                $url .= $this->baseUrl;
 
             $stringPath = $path?->writePath();
             if($stringPath != null){
@@ -229,7 +230,7 @@ class PathManager extends MNode
             case Abstract_Request_ValidatedValue::TYPE_STRING:
                 return new ValidatedValue(true, true, $strValue, null, $strValue);
             case Abstract_Request_ValidatedValue::TYPE_INT:
-                // Dangerous code, it will parse anything. If it fails, a 0 is returned.
+                // TODO Dangerous code, it will parse anything. If it fails, a 0 is returned.
                 // Better use https://hashids.org/php/ instead of ids
                 $intValue = intval($strValue);
                 return new ValidatedValue(true, true, $intValue, null, $strValue);

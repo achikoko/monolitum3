@@ -7,13 +7,15 @@ use Exception;
 use monolitum\backend\params\Path;
 use monolitum\backend\params\ValidatedValueGetter;
 use monolitum\core\MNode;
-use monolitum\core\Monolitum;
 use monolitum\core\panic\DevPanic;
+use monolitum\core\util\ResourceAddressResolver;
 
 class ResourceProviderManager extends MNode
 {
 
     private ValidatedValueGetter $readResourceParam;
+
+    private ?ResourceAddressResolver $resourceAddressResolver = null;
 
     /**
      * @var array<string, AllowedExtension>
@@ -39,6 +41,14 @@ class ResourceProviderManager extends MNode
     public function __construct(?Closure $builder = null)
     {
         parent::__construct($builder);
+    }
+
+    /**
+     * @param ResourceAddressResolver|null $resourceAddressResolver
+     */
+    public function setResourceAddressResolver(?ResourceAddressResolver $resourceAddressResolver): void
+    {
+        $this->resourceAddressResolver = $resourceAddressResolver;
     }
 
     public function setReadResourceParam(ValidatedValueGetter $readResourceParam): void
@@ -87,7 +97,7 @@ class ResourceProviderManager extends MNode
                 $this->fileAllowedExtension->prepare($this);
 
                 $resolvedUrl = $this->filePath->writePath(false);
-                $this->fileName = Monolitum::getInstance()->getResourcesAddressResolver()->resolve($resolvedUrl);
+                $this->fileName = $this->resourceAddressResolver?->resolve($resolvedUrl);
 
                 if($this->fileName === null)
                     throw new ResourceNotFoundPanic("Illegal url.");

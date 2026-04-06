@@ -40,8 +40,6 @@ use function monolitum\core\m;
 require 'vendor/autoload.php';
 
 Monolitum::execute(
-    "", // Ignore it.
-    null, // Ignore it.
     // Instance an HTMLPage as a root node.
     new HTMLPage(function (HTMLPage $it){
         // This function builds the page (and the rest of children).
@@ -49,14 +47,14 @@ Monolitum::execute(
         // so HTMLPage will catch it and append it to the body.
         M(new H(1, function (H $it){
             // Append the string into the header tag.
-            $it->append("Hello Monolitum!");
+            $it->append("Hello, Monolitum!");
         }));
     })
 );
 
 ```
 
-I would like to create a bootstrap example, but there is a little bit of setup using _managers_ to be able to retrieve the `.js` and `.css` files.
+I would like to create a _twitter bootstrap_ example, but there is a little bit of setup using _managers_ to be able to retrieve the `.js` and `.css` files.
 Exactly, in monolitum you can manage the whole application and resources avoiding the "public" folder, and starting always from the `index.php`.
  
 ## External licences
