@@ -3,7 +3,6 @@
 namespace monolitum\frontend;
 
 use Closure;
-use monolitum\core\MNode;
 use monolitum\core\panic\DevPanic;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\html\HtmlElementContent;
@@ -51,8 +50,8 @@ class Rendered implements Renderable {
                     $r->append($element2);
                 }else if($element2 instanceof HtmlElementContent){
                     $r->append($element2);
-                }else if(is_string($element)){
-                    $r->append(new HtmlElementContent($element));
+                }else if(is_string($element2)){
+                    $r->append(new HtmlElementContent($element2));
                 }else if($element2 instanceof Renderable_Node){
                     $r->append($element2->render());
                 }else if($element2 instanceof Rendered){
