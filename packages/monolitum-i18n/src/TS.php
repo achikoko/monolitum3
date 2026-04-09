@@ -71,7 +71,7 @@ abstract class TS
 
     /**
      * @param string[] $string
-     * @return TS
+     * @return TS_Default
      */
     public static function from(array $string): TS_Default{
         return TS_Default::ofStringArray($string);

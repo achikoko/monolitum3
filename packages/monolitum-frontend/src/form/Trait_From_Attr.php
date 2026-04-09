@@ -137,12 +137,12 @@ trait Trait_From_Attr
     /**
      * @return string
      */
-    protected function getFullFieldName(): string
+    public function getFullFieldName(): string
     {
         return $this->form->_getFullFieldName($this->attr);
     }
 
-    protected function getLabel(): string|TS|null
+    public function getLabel(): string|TS|null
     {
         $label = null;
         if($label == null)
