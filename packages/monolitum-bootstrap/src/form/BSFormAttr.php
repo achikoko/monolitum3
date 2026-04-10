@@ -636,7 +636,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                         }
 
                         $currentGroupElement->receive(new FormControl_Select_Option($itemKey, function (FormControl_Select_Option $it) use ($content, $itemKey, $selected) {
-                            $it->setContent($content);
+                            $it->append($content);
                             if ($itemKey == $selected)
                                 $it->setSelected();
                         }));
