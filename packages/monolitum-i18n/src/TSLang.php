@@ -9,7 +9,7 @@ use monolitum\core\panic\DevPanic;
 readonly class TSLang implements MObject
 {
 
-    public function __construct(public string $lang)
+    public function __construct(public string $locale)
     {
 
     }
@@ -27,16 +27,16 @@ readonly class TSLang implements MObject
     {
         /** @var TSLang $tstrlang */
         $tstrlang = Find::pushAndGet(TSLang::class, true, true);
-        return $tstrlang?->lang;
+        return $tstrlang?->locale;
     }
 
     /**
-     * @param string $lang
+     * @param string $locale
      * @return TSLang
      */
-    public static function of(string $lang): TSLang
+    public static function of(string $locale): TSLang
     {
-        return new TSLang($lang);
+        return new TSLang($locale);
     }
 
     function onNotReceived()

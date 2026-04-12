@@ -2,7 +2,6 @@
     "name": "monolitum/auth",
     "require": {
         "php": "^8.2",
-        "fightbulc/moment": "@stable",
         "monolitum/core": "*",
         "monolitum/model": "*",
         "monolitum/database": "*"

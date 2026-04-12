@@ -103,6 +103,14 @@ class HtmlElementNode extends Renderable_Node
         return $this->element->style();
     }
 
+    /**
+     * @param TS|string $content
+     * @param bool $raw
+     * @return $this
+     *
+     * @deprecated Use $this->append() instead.
+     */
+    #[\Deprecated]
     public function setContent(TS|string $content, bool $raw=false): self
     {
         if($raw){

@@ -2,7 +2,8 @@
 
 namespace monolitum\i18n;
 
-use Moment\Moment;
+use DateTime;
+use DateTimeInterface;
 use monolitum\frontend\html\HtmlElementContent;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Rendered;
@@ -65,7 +66,7 @@ abstract class TS
         }
     }
 
-    public abstract function getTranslation(?string $lang, ?array $params=null): ?string;
+    public abstract function getTranslation(?string $locale, ?array $params=null): ?string;
 
     public abstract function getRenderable(?string $lang, ?array $params=null): ?Renderable;
 
@@ -77,14 +78,19 @@ abstract class TS
         return TS_Default::ofStringArray($string);
     }
 
-    public static function fromMoment(Moment $moment, string $format): TS_Moment
+//    public static function fromMoment(Moment $moment, string $format): TS_Moment
+//    {
+//        return TS_Moment::newFromMoment($moment, $format);
+//    }
+//
+//    public static function fromDateTime(\DateTime $moment, string $format): TS_Moment
+//    {
+//        return TS_Moment::newFromDateTime($moment, $format);
+//    }
+//
+    public static function fromFormat(DateTimeInterface $dateTime, string $format): TS_Moment
     {
-        return TS_Moment::newFromMoment($moment, $format);
-    }
-
-    public static function fromDateTime(\DateTime $moment, string $format): TS_Moment
-    {
-        return TS_Moment::newFromDateTime($moment, $format);
+        return TS_Moment::newFromDateTime($dateTime, $format);
     }
 
 }

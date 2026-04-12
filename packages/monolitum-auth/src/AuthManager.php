@@ -2,7 +2,6 @@
 
 namespace monolitum\auth;
 
-
 use Closure;
 use monolitum\core\Find;
 use monolitum\core\MNode;

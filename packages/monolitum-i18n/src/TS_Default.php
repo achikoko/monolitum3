@@ -15,28 +15,28 @@ class TS_Default extends TS
 
     private array $stringsByLanguage = [];
 
-    public function getTranslation(?string $lang, array $params = null): ?string
+    public function getTranslation(?string $locale, array $params = null): ?string
     {
-        if($lang === null){
+        if($locale === null){
             if($this->defaultString !== null){
                 if($this->defaultString instanceof TS){
-                    return $this->defaultString->getTranslation($lang, $params);
+                    return $this->defaultString->getTranslation($locale, $params);
                 }
                 return $this->defaultString;
             }else{
                 foreach ($this->stringsByLanguage as $key => $value){
                     if($value instanceof TS){
-                        return $value->getTranslation($lang, $params);
+                        return $value->getTranslation($locale, $params);
                     }
                     return $value;
                 }
                 return null;
             }
         }else{
-            if(array_key_exists($lang, $this->stringsByLanguage)){
-                $selected = $this->stringsByLanguage[$lang];
+            if(array_key_exists($locale, $this->stringsByLanguage)){
+                $selected = $this->stringsByLanguage[$locale];
                 if($selected instanceof TS){
-                    return $selected->getTranslation($lang, $params);
+                    return $selected->getTranslation($locale, $params);
                 }
                 return $selected;
             }else{

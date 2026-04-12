@@ -4,15 +4,13 @@ namespace monolitum\bootstrap\datatable;
 
 use Closure;
 use DateTime;
-use Moment\Moment;
 use monolitum\core\panic\DevPanic;
 use monolitum\frontend\component\Text;
 use monolitum\frontend\form\FormControl_CheckBox;
 use monolitum\frontend\Reference;
 use monolitum\frontend\Renderable_Node;
 use monolitum\frontend\Rendered;
-use monolitum\i18n\TS_Moment;
-use monolitum\i18n\TSLang;
+use monolitum\i18n\TS;
 use monolitum\model\attr\Attr;
 use monolitum\model\attr\Attr_Bool;
 use monolitum\model\attr\Attr_Date;
@@ -85,12 +83,13 @@ class CellRenderer_As implements CellRenderer
 
                 //if(PHP_MAJOR_VERSION == 8 && PHP_MINOR_VERSION > 1 || PHP_MAJOR_VERSION > 8){
                     return Text::of($val !== null ?
-                        TS_Moment::format(
-                            Moment::fromDateTime($val), ($this->format !== null ? $this->format : null), TSLang::pushAndGetLangWithOverwritten()
+                        TS::fromFormat($val, $this->format)
+//                        TS_Moment::format(
+//                            Moment::fromDateTime($val), ($this->format !== null ? $this->format : null), TSLang::pushAndGetLangWithOverwritten()
 //                        Moment::fromDateTime($val)->format(
 //                        ($this->format !== null ? $this->format : null),//"%Y-%m-%d")
 //                        new MomentJs()
-                    ) : "");
+                     : "");
                 /*}else{
                     return Text::of($val !== null ? strftime(
                         ($this->format !== null ? $this->format : "%Y-%m-%d"), $val->getTimestamp()

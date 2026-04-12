@@ -2,7 +2,7 @@
     "name": "monolitum/i18n",
     "require": {
         "php": "^8.2",
-        "fightbulc/moment": "@stable",
+        "nesbot/carbon": "^3",
         "monolitum/core": "*"
     },
     "autoload": {

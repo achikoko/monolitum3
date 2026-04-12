@@ -12,15 +12,15 @@ class WK extends TS
 
     }
 
-    public function getTranslation(?string $lang, array $params = null): ?string
+    public function getTranslation(?string $locale, array $params = null): ?string
     {
         if(is_string($this->source)){
             return $this->source;
         }else if(is_array($this->source)){
 
-            if($lang !== null){
-                if(array_key_exists($lang, $this->source)){
-                    $s = $this->source[$lang];
+            if($locale !== null){
+                if(array_key_exists($locale, $this->source)){
+                    $s = $this->source[$locale];
                     if(is_string($s)){
                         return $s;
                     }
@@ -37,7 +37,7 @@ class WK extends TS
             return null;
 
         }else{
-            return $this->source->getTranslation($lang, $params);
+            return $this->source->getTranslation($locale, $params);
         }
     }
 

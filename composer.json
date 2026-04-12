@@ -4,8 +4,8 @@
         "ext-fileinfo": "*",
         "ext-openssl": "*",
         "ext-pdo": "*",
-        "fightbulc/moment": "@stable",
         "nadar/quill-delta-parser": "3.5.0",
+        "nesbot/carbon": "^3",
         "php": "^8.2",
         "phpmailer/phpmailer": "v6.10.0"
     },

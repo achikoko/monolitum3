@@ -1,7 +1,10 @@
 <?php
 namespace monolitum\model;
 
+use Carbon\CarbonImmutable;
 use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use monolitum\core\panic\DevPanic;
 use monolitum\core\panic\UserPanic;
 use monolitum\model\attr\Attr;
@@ -59,6 +62,8 @@ abstract class Entity
             throw new DevPanic("Entity is not writable.");
         if($attr instanceof Attr)
             $attr = $attr->getId();
+        if($value instanceof DateTimeInterface)
+            $value = DateTimeImmutable::createFromInterface($value);
         $this->values[$attr] = $value;
         if ($this->updateAttrs !== null) {
             $this->updateAttrs[$attr] = $value;
@@ -155,7 +160,7 @@ abstract class Entity
         return $this->_set($attr, $bool);
     }
 
-    public function getDate(Attr|string $attr): ?DateTime
+    public function getDate(Attr|string $attr): ?DateTimeImmutable
     {
         if($attr instanceof Attr)
             $attr = $attr->getId();
@@ -167,7 +172,7 @@ abstract class Entity
      * @param DateTime $date
      * @return $this
      */
-    public function setDate(Attr|string $attr, ?DateTime $date): self
+    public function setDate(Attr|string $attr, ?DateTimeInterface $date): self
     {
         return $this->_set($attr, $date);
     }
