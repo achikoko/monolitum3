@@ -41,16 +41,16 @@ class WK extends TS
         }
     }
 
-    public function getRenderable(?string $lang, ?array $params = null): ?Renderable
+    public function getRenderable(?string $locale, ?array $params = null): ?Renderable
     {
         if(is_string($this->source)){
             $p = new WikiMarkParser();
             return $p->parse($this->source);
         }else if(is_array($this->source)){
 
-            if($lang !== null){
-                if(array_key_exists($lang, $this->source)){
-                    $s = $this->source[$lang];
+            if($locale !== null){
+                if(array_key_exists($locale, $this->source)){
+                    $s = $this->source[$locale];
                     if(is_string($s)){
                         $p = new WikiMarkParser();
                         return $p->parse($this->source);
@@ -69,7 +69,7 @@ class WK extends TS
             return null;
 
         }else{
-            return $this->source->getRenderable($lang, $params);
+            return $this->source->getRenderable($locale, $params);
         }
     }
 

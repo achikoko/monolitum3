@@ -68,13 +68,13 @@ abstract class TS
 
     public abstract function getTranslation(?string $locale, ?array $params=null): ?string;
 
-    public abstract function getRenderable(?string $lang, ?array $params=null): ?Renderable;
+    public abstract function getRenderable(?string $locale, ?array $params=null): ?Renderable;
 
     /**
      * @param string[] $string
      * @return TS_Default
      */
-    public static function from(array $string): TS_Default{
+    public static function from(array|string $string): TS_Default{
         return TS_Default::ofStringArray($string);
     }
 

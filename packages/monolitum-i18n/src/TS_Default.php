@@ -4,6 +4,7 @@ namespace monolitum\i18n;
 
 use monolitum\frontend\html\HtmlElementContent;
 use monolitum\frontend\Renderable;
+use monolitum\frontend\wikimark\WK;
 
 /**
  * Translatable string
@@ -45,12 +46,12 @@ class TS_Default extends TS
         }
     }
 
-    public function getRenderable(?string $lang, ?array $params = null): ?Renderable
+    public function getRenderable(?string $locale, ?array $params = null): ?Renderable
     {
-        if($lang === null){
+        if($locale === null){
             if($this->defaultString !== null){
                 if($this->defaultString instanceof TS){
-                    return $this->defaultString->getRenderable($lang, $params);
+                    return $this->defaultString->getRenderable($locale, $params);
                 }else if(is_string($this->defaultString)){
                     return new HtmlElementContent($this->defaultString);
                 }else{
@@ -59,7 +60,7 @@ class TS_Default extends TS
             }else{
                 foreach ($this->stringsByLanguage as $key => $value){
                     if($value instanceof TS){
-                        return $value->getRenderable($lang, $params);
+                        return $value->getRenderable($locale, $params);
                     }else if(is_string($value)){
                         return new HtmlElementContent($value);
                     }
@@ -68,10 +69,10 @@ class TS_Default extends TS
                 return null;
             }
         }else{
-            if(array_key_exists($lang, $this->stringsByLanguage)){
-                $selected = $this->stringsByLanguage[$lang];
+            if(array_key_exists($locale, $this->stringsByLanguage)){
+                $selected = $this->stringsByLanguage[$locale];
                 if($selected instanceof TS){
-                    return $selected->getRenderable($lang, $params);
+                    return $selected->getRenderable($locale, $params);
                 }else if(is_string($selected)){
                     return new HtmlElementContent($selected);
                 }
@@ -86,14 +87,37 @@ class TS_Default extends TS
      * @param string[] $string
      * @return TS_Default
      */
-    public static function ofStringArray(array $string): TS_Default
+    public static function ofStringArray(array|string $string): TS_Default
     {
         $ts = new TS_Default();
-        foreach ($string as $lang => $value){
-            if($lang === null){
-                $ts->defaultString = $value;
-            }else{
-                $ts->stringsByLanguage[$lang] = $value;
+        if(is_string($string)){
+            $ts->defaultString = WK::of($string);
+        }else {
+            foreach ($string as $lang => $value) {
+                if ($lang === null) {
+                    $ts->defaultString = WK::of($value);
+                } else if (is_array($value)) {
+                    $props = [];
+                    $wkValue = null;
+                    foreach ($value as $prop => $propValue) {
+                        if (is_string($prop)) {
+                            $props[$prop] = $propValue;
+                        } else {
+                            if ($propValue instanceof TS) {
+                                // TODO support concatenating strings
+                            } else {
+                                $wkValue = WK::of($propValue);
+                            }
+                        }
+                    }
+
+                    if ($wkValue !== null) {
+                        // TODO use $props
+                        $ts->stringsByLanguage[$lang] = $wkValue;
+                    }
+                } else {
+                    $ts->stringsByLanguage[$lang] = WK::of($value);
+                }
             }
         }
         return $ts;

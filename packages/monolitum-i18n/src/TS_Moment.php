@@ -39,9 +39,9 @@ class TS_Moment extends TS
         }
     }
 
-    public function getRenderable(?string $lang, ?array $params = null): ?Renderable
+    public function getRenderable(?string $locale, ?array $params = null): ?Renderable
     {
-        $s = $this->getTranslation($lang, $params);
+        $s = $this->getTranslation($locale, $params);
         if($s !== null){
             return new HtmlElementContent($s);
         }
