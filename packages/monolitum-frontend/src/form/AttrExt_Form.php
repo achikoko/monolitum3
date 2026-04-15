@@ -7,7 +7,7 @@ use monolitum\model\AttrExt;
 class AttrExt_Form extends AttrExt
 {
 
-    private TS|string $label;
+    private TS|string|null $label = null;
 
     private TS|string|null $nullLabel = null;
 
@@ -16,8 +16,8 @@ class AttrExt_Form extends AttrExt
     private bool $substituteNotValid = false;
     private bool $substituteNullValues = false;
 
-    function label(TS|string $label): self {
-        $this->label = $label;
+    function label(TS|array|string $label): self {
+        $this->label = is_array($label) ? TS::from($label) : $label;
         return $this;
     }
 
@@ -25,8 +25,8 @@ class AttrExt_Form extends AttrExt
      * @param string|string[] $nullLabel
      * @return $this
      */
-    function nullLabel(array|string $nullLabel): self {
-        $this->nullLabel = $nullLabel;
+    function nullLabel(TS|array|string $nullLabel): self {
+        $this->nullLabel = is_array($nullLabel) ? TS::from($nullLabel) : $nullLabel;
         return $this;
     }
 
@@ -44,7 +44,7 @@ class AttrExt_Form extends AttrExt
         return $this;
     }
 
-    public function getLabel(): string|TS
+    public function getLabel(): string|TS|null
     {
         return $this->label;
     }
