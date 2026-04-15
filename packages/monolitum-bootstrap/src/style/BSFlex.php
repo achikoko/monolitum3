@@ -7,6 +7,8 @@ use monolitum\frontend\HtmlElementNode;
 class BSFlex extends BSDisplay
 {
 
+    private ?BSJustifyContent $justifyContent = null;
+
     private ?bool $row = null;
     private ?bool $reverse = null;
 
@@ -40,6 +42,12 @@ class BSFlex extends BSDisplay
         return $this;
     }
 
+    public function justifyContent(BSJustifyContent $justifyContent): self
+    {
+        $this->justifyContent = $justifyContent;
+        return $this;
+    }
+
     public function buildInto(HtmlElementNode $component, bool $inverted = false): void
     {
         parent::buildInto($component, $inverted);
@@ -58,6 +66,8 @@ class BSFlex extends BSDisplay
                     $component->addClass("flex-column");
             }
         }
+
+        $this->justifyContent?->buildInto($component);
 
     }
 
