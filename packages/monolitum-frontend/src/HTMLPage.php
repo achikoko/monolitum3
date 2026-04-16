@@ -57,15 +57,29 @@ class HTMLPage extends MNode {
             $this->buildChildManually($object);
             $this->head_components[] = $object;
             return true;
-        }else if($object instanceof HtmlElementNodeExtension){
-            $this->htmlElementNodeExtensions[] = $object;
-            return true;
-        }else if($object instanceof MNode){
-            $this->body_components[] = $object;
-            return true;
-        }else
-
-            return parent::doAcceptChild($object);
+        }else {
+            if($this->body !== null){
+                if ($object instanceof HtmlElementNodeExtension) {
+                    $this->body->receive($object);
+                    return true;
+                } else if ($object instanceof MNode) {
+                    $this->body->receive($object);
+                    return true;
+                } else {
+                    return parent::doAcceptChild($object);
+                }
+            }else {
+                if ($object instanceof HtmlElementNodeExtension) {
+                    $this->htmlElementNodeExtensions[] = $object;
+                    return true;
+                } else if ($object instanceof MNode) {
+                    $this->body_components[] = $object;
+                    return true;
+                } else {
+                    return parent::doAcceptChild($object);
+                }
+            }
+        }
     }
 
     /**
@@ -89,9 +103,8 @@ class HTMLPage extends MNode {
         $this->pageConstants[$key] = $value;
     }
 
-    protected function onAfterBuild(): void
+    protected function onBuild(): void
     {
-
         $this->body = new HtmlElementNode(new HtmlElement('body'), function (HtmlElementNode $it) {
 
             foreach ($this->htmlElementNodeExtensions as $child) {
@@ -103,10 +116,13 @@ class HTMLPage extends MNode {
             }
 
         });
+        parent::onBuild();
+    }
+
+    protected function onAfterBuild(): void
+    {
         $this->buildChildManually($this->body);
-
         parent::onAfterBuild();
-
     }
 
     protected function onExecute(): void
