@@ -23,6 +23,7 @@ use monolitum\frontend\form\FormControl_Select_OptionGroup;
 use monolitum\frontend\form\FormControl_Text;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\HtmlElementNode;
+use monolitum\frontend\HtmlElementNodeExtension;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Renderable_Node;
 use monolitum\i18n\TS;
@@ -61,6 +62,11 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
     private array $inputGroupBefore = [];
     private array $inputGroupAfter = [];
+
+    /**
+     * @var array<HtmlElementNodeExtension>
+     */
+    private array $inputFieldExtensions = [];
 
     public function __construct(Attr|string $attrId, ?Closure $builder = null)
     {
@@ -517,6 +523,11 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
             });
         }
 
+        foreach ($this->inputFieldExtensions as $inputFieldExtension){
+            $inputFieldExtension->_setElementComponent($formControl);
+            $inputFieldExtension->apply();
+        }
+
         return $formControl;
 
     }
@@ -653,4 +664,9 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
         });
     }
 
+    public function addExtensionToInputField(HtmlElementNodeExtension $extension): self
+    {
+        $this->inputFieldExtensions[] = $extension;
+        return $this;
+    }
 }
