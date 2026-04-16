@@ -56,4 +56,8 @@ class TS_Moment extends TS
         return $ts;
     }
 
+    public function worthRenderAsRenderable(?string $locale, ?array $params = null): ?bool
+    {
+        return false;
+    }
 }

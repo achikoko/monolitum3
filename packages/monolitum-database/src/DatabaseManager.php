@@ -3,6 +3,7 @@
 namespace monolitum\database;
 
 use DateTime;
+use DateTimeInterface;
 use monolitum\core\Find;
 use monolitum\core\MNode;
 use monolitum\core\panic\DevPanic;
@@ -318,7 +319,7 @@ class DatabaseManager extends MNode implements EntityPersister
                 $stmt->bindValue($idx+1, $value, PDO::PARAM_BOOL);
             }else if(is_int($value)){
                 $stmt->bindValue($idx+1, $value, PDO::PARAM_INT);
-            }else if($value instanceof DateTime){
+            }else if($value instanceof DateTimeInterface){
                 $stmt->bindValue($idx+1, date_format($value, 'Y-m-d\TH:i:s'));
             }else{
                 $stmt->bindValue($idx+1, $value);
