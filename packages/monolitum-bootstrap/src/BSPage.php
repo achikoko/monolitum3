@@ -6,9 +6,9 @@ use monolitum\backend\params\Path;
 use monolitum\bootstrap\style\BSBounds;
 use monolitum\bootstrap\values\BSSize;
 use monolitum\frontend\component\CSSLink;
+use monolitum\frontend\component\JSInlineScript;
 use monolitum\frontend\component\JSScript;
 use monolitum\frontend\component\Meta;
-use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\HTMLPage;
 
 class BSPage extends HTMLPage{
@@ -62,11 +62,32 @@ class BSPage extends HTMLPage{
         }
     }
 
-    public function includePopperIfNot(): void
+    public function includePopperIfNot(string... $variants): void
     {
         if(!$this->getConstant("popper-js")){
             $this->receive(JSScript::of(Path::fromRelativeToClass(BSPage::class,"res", "popper.min.js")));
             $this->setConstant("popper-js");
+        }
+
+        if ($variants !== null){
+            foreach ($variants as $variant){
+                if(!$this->getConstant("popper-js-" . $variant)){
+                    if($variant === "tooltip"){
+                        $this->receive(new JSInlineScript(function (JSInlineScript $it){
+                            $it->addScript(
+"
+(function() {
+const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle=\"tooltip\"]')
+const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+})();
+"
+                            );
+                        }));
+                    }
+
+                    $this->setConstant("popper-js" . $variant);
+                }
+            }
         }
     }
 
