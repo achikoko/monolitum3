@@ -15,14 +15,16 @@ class WK extends TS
     public function getTranslation(?string $locale, array $params = null): ?string
     {
         if(is_string($this->source)){
-            return $this->source;
+            $p = new WikiMarkParser();
+            return $p->removeEscapes($this->source);
         }else if(is_array($this->source)){
 
             if($locale !== null){
                 if(array_key_exists($locale, $this->source)){
                     $s = $this->source[$locale];
                     if(is_string($s)){
-                        return $s;
+                        $p = new WikiMarkParser();
+                        return $p->removeEscapes($s);
                     }
                 }
             }
@@ -30,7 +32,8 @@ class WK extends TS
             foreach($this->source as $firstValue){
                 $s = $firstValue;
                 if(is_string($s)){
-                    return $s;
+                    $p = new WikiMarkParser();
+                    return $p->removeEscapes($s);
                 }
             }
 
@@ -70,6 +73,38 @@ class WK extends TS
 
         }else{
             return $this->source->getRenderable($locale, $params);
+        }
+    }
+
+    public function worthRenderAsRenderable(?string $locale, ?array $params = null): ?bool
+    {
+        if(is_string($this->source)){
+            $p = new WikiMarkParser();
+            return $p->hasMarks($this->source);
+        }else if(is_array($this->source)){
+
+            if($locale !== null){
+                if(array_key_exists($locale, $this->source)){
+                    $s = $this->source[$locale];
+                    if(is_string($s)){
+                        $p = new WikiMarkParser();
+                        return $p->hasMarks($this->source);
+                    }
+                }
+            }
+
+            foreach($this->source as $firstValue){
+                $s = $firstValue;
+                if(is_string($s)){
+                    $p = new WikiMarkParser();
+                    return $p->hasMarks($this->source);
+                }
+            }
+
+            return false;
+
+        }else{
+            return $this->source->worthRenderAsRenderable($locale, $params);
         }
     }
 

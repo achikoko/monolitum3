@@ -83,6 +83,38 @@ class TS_Default extends TS
         }
     }
 
+    public function worthRenderAsRenderable(?string $locale, ?array $params = null): bool
+    {
+        if($locale === null){
+            if($this->defaultString !== null){
+                if($this->defaultString instanceof TS){
+                    return $this->defaultString->worthRenderAsRenderable($locale, $params);
+                }else{
+                    return false;
+                }
+            }else{
+                foreach ($this->stringsByLanguage as $key => $value){
+                    if($value instanceof TS){
+                        return $value->worthRenderAsRenderable($locale, $params);
+                    }else{
+                        return false;
+                    }
+                }
+                return false;
+            }
+        }else{
+            if(array_key_exists($locale, $this->stringsByLanguage)){
+                $selected = $this->stringsByLanguage[$locale];
+                if($selected instanceof TS){
+                    return $selected->worthRenderAsRenderable($locale, $params);
+                }
+                return false;
+            }else{
+                return $this->worthRenderAsRenderable(null, $params);
+            }
+        }
+    }
+
     /**
      * @param string[] $string
      * @return TS_Default

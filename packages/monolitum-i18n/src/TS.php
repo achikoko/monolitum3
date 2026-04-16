@@ -2,7 +2,6 @@
 
 namespace monolitum\i18n;
 
-use DateTime;
 use DateTimeInterface;
 use monolitum\frontend\html\HtmlElementContent;
 use monolitum\frontend\Renderable;
@@ -66,9 +65,31 @@ abstract class TS
         }
     }
 
+    public static function shouldBeRenderedAsRenderable(mixed $string, ?string $lang=null, ?array $params=null): bool
+    {
+        if(is_string($string)){
+            return false;
+        }else if($string instanceof TS){
+            return $string->worthRenderAsRenderable($lang, $params);
+        }else if(is_array($string)){
+            if(array_key_exists($lang, $string)){
+                return self::shouldBeRenderedAsRenderable($string[$lang], $lang, $params);
+            }else{
+                foreach($string as $firstValue){
+                    return self::shouldBeRenderedAsRenderable($firstValue, $lang, $params);
+                }
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
     public abstract function getTranslation(?string $locale, ?array $params=null): ?string;
 
     public abstract function getRenderable(?string $locale, ?array $params=null): ?Renderable;
+
+    public abstract function worthRenderAsRenderable(?string $locale, ?array $params=null): ?bool;
 
     /**
      * @param string[] $string

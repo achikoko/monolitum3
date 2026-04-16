@@ -8,6 +8,26 @@ use monolitum\frontend\Rendered;
 
 class WikiMarkParser
 {
+    const regexSpecialChars = "*´_`~^¬|";
+    const regexSpecialCharsWithScape = self::regexSpecialChars . "\\\\";
+
+    function hasMarks(string $string): bool
+    {
+        return preg_match(
+            "/(^[" . self::regexSpecialChars . "])"
+            . "|[^\\\\][" . self::regexSpecialChars . "]/",
+            $string
+        );
+    }
+
+    public function removeEscapes(string $source): string
+    {
+        return preg_replace(
+            "/\\\\([" . self::regexSpecialCharsWithScape . "])$/",
+            '${1}',
+            $source
+        );
+    }
 
     function parse(string $string): Renderable
     {
