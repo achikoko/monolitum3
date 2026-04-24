@@ -185,7 +185,7 @@ abstract class Entity
         $decimals = $attr->getDecimals();
         $fixedPointValue = $this->getInt($attr);
         if($fixedPointValue !== null){
-            return $fixedPointValue/$decimals;
+            return $fixedPointValue/pow(10, $decimals);
         }
         return null;
     }
