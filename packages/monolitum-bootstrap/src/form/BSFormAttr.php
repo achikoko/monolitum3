@@ -147,7 +147,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                 if($this->formControl instanceof FormControl){
                     $this->formControl->addClass("is-invalid");
                 }
-            }else{
+            }else if($this->isValid() === true){
                 if($this->formControl instanceof FormControl){
                     $this->formControl->addClass("is-valid");
                 }
