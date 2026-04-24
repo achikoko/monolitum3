@@ -25,6 +25,9 @@ class AttrExt_Validate_String extends AttrExt_Validate
 
     private TS|string|null $maxCharsError = null;
 
+    /**
+     * @var Closure|null (VALUE, ENTITY) -> bool
+     */
     private ?Closure $validatorFunction = null;
 
     private TS|string|null $validatorFunctionError = null;
@@ -32,15 +35,20 @@ class AttrExt_Validate_String extends AttrExt_Validate
     private ?Closure $postprocessorFunction = null;
 
     private bool $trim = false;
+    private bool $nullifyEmpty = false;
 
-    /**
-     * @return $this
-     */
     public function trim(): self
     {
         $this->trim = true;
         return $this;
     }
+
+    public function nullifyEmpty(): self
+    {
+        $this->nullifyEmpty = true;
+        return $this;
+    }
+
 
     /**
      * @param int $maxChars
@@ -61,10 +69,10 @@ class AttrExt_Validate_String extends AttrExt_Validate
      * @param string|TS|null $regexError
      * @return $this
      */
-    public function regex(string $regex, string|TS|null $regexError = null): self
+    public function regex(string $regex, string|TS|array|null $regexError = null): self
     {
         $this->regex = $regex;
-        $this->regexError = $regexError;
+        $this->regexError = is_array($regexError) ? TS::from($regexError) : $regexError;
         return $this;
     }
 
@@ -80,15 +88,10 @@ class AttrExt_Validate_String extends AttrExt_Validate
         return $this;
     }
 
-    /**
-     * @param int $filterValidate
-     * @param string|TS|null $filterValidateError
-     * @return $this
-     */
-    public function filter_validate(int $filterValidate, string|TS $filterValidateError = null): self
+    public function filter_validate(int $filterValidate, string|TS|array|null $filterValidateError = null): self
     {
         $this->filterValidate = $filterValidate;
-        $this->filterValidateError = $filterValidateError;
+        $this->filterValidateError = is_array($filterValidateError) ? TS::from($filterValidateError) : $filterValidateError;
         return $this;
     }
 
@@ -118,9 +121,18 @@ class AttrExt_Validate_String extends AttrExt_Validate
     public function validate(ValidatedValue $validatedValue): ValidatedValue
     {
         // Transform the value before validating
-        if($validatedValue->isWellFormat() && $this->trim){
-            $value = $validatedValue->getValue();
-            $value = is_string($value) ? trim($value) : $value;
+        if($validatedValue->isWellFormat() && ($this->trim || $this->nullifyEmpty)){
+            $value = null;
+
+            if($this->trim){
+                $value = $validatedValue->getValue();
+                $value = is_string($value) ? trim($value) : $value;
+            }
+
+            if($value !== null && $this->nullifyEmpty && strlen($value) == 0){
+                $value = null;
+            }
+
             $validatedValue = new ValidatedValue(
                 $validatedValue->isValid(),
                 $validatedValue->isWellFormat(),
@@ -134,6 +146,8 @@ class AttrExt_Validate_String extends AttrExt_Validate
 
         if(!$validatedValue->isValid())
             return $validatedValue;
+
+
 
         $error = false;
         $errorMessage = null;

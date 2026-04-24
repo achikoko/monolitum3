@@ -259,7 +259,7 @@ class Form extends HtmlElementNode
      * @param string $attr
      * @param string|TS $errorString
      */
-    public function invalidate(string $attr, string|TS $errorString): void
+    public function invalidate(string $attr, string|TS|array $errorString): void
     {
         if($this->validator !== null){
             $this->validator->invalidate($attr, $errorString);
@@ -491,7 +491,7 @@ class Form extends HtmlElementNode
             if($this->isValidating()){
                 if($this->validator->isAttrInValidateList($attr)){
                     $validatedValue = $this->validator->getValidatedValue($attr);
-                    if($validatedValue->isValid() || $validatedValue->isWellFormat())
+                    if($validatedValue->isWellFormat())
                         return $validatedValue;
                 }
             }
@@ -502,7 +502,7 @@ class Form extends HtmlElementNode
                 $validatedValue = $this->validator->getDefaultValue($attr);
             }
 
-            if($validatedValue->isValid())
+            if($validatedValue->isWellFormat())
                 return $validatedValue;
 
         }
@@ -720,6 +720,10 @@ class Form extends HtmlElementNode
 
             }
 
+        }
+
+        foreach ($this->formAttrs as $value){
+            $value->onAfterBuildForm();
         }
 
         if($this->linkOrPath !== null){

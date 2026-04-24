@@ -2,29 +2,28 @@
 
 namespace monolitum\model;
 
+use monolitum\i18n\TS;
+
 class ValidatedValue
 {
 
-    private $isValid;
-    private $isWellFormat;
-    private $value;
+    private bool $isValid;
+    private bool $isWellFormat;
+    private mixed $value;
 
-    private $error;
+    private string|TS|null $error;
 
-    /**
-     * @var string|null
-     */
-    private $strValue;
+    private ?string $strValue;
 
     /*
      * TODO make this constructor private and create factory methods
      */
-    public function __construct($isValid=false, $wellFormat=false, $value = null, $error = null, $strValue = null)
+    public function __construct(bool $isValid=false, bool $wellFormat=false, mixed $value = null, string|TS|array|null $error = null, ?string $strValue = null)
     {
         $this->isValid = $isValid;
         $this->isWellFormat = $wellFormat;
         $this->value = $value;
-        $this->error = $error;
+        $this->error = is_array($error) ? TS::from($error) : $error;
 //        if($strValue !== null){
             $this->strValue = $strValue;
 //        }else if($value !== null){
@@ -41,7 +40,7 @@ class ValidatedValue
     /**
      * @return mixed
      */
-    public function isValid()
+    public function isValid(): bool
     {
         return $this->isValid;
     }
@@ -49,9 +48,9 @@ class ValidatedValue
     /**
      * @return mixed|null
      */
-    public function getValue(mixed $valueIfNotValid = null): mixed
+    public function getValue(bool $substituteIfNotValid = false, mixed $valueIfNotValid = null): mixed
     {
-        return $this->isValid ? $this->value : $valueIfNotValid;
+        return $substituteIfNotValid && !$this->isValid ? $valueIfNotValid : $this->value;
     }
 
     /**

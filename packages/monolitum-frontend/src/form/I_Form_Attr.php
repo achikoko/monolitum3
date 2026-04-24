@@ -15,4 +15,11 @@ interface I_Form_Attr
      */
     public function onBeforeBuildForm(): void;
 
+    /**
+     * Called by the form, when it's just built and validated.
+     * This method is called at the end because the user may be invalidated some fields.
+     * @return void
+     */
+    public function onAfterBuildForm(): void;
+
 }

@@ -21,10 +21,10 @@ class AttrExt_Validate extends AttrExt
 //    private $def = null;
 //    private $substituteNotValid = false;
 
-    public function nonNullable(string|TS|null $nullableError = null): self
+    public function nonNullable(string|TS|array|null $nullableError = null): self
     {
         $this->nullable = false;
-        $this->nullableError = $nullableError;
+        $this->nullableError = is_array($nullableError) ? TS::from($nullableError) : $nullableError;
         return $this;
     }
 

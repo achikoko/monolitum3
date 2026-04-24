@@ -126,12 +126,9 @@ trait Trait_From_Attr
         $this->overwrittenLanguage = $language;
     }
 
-    /**
-     * @param string|TS $placeholder
-     */
-    public function placeholder(string|TS $placeholder): void
+    public function placeholder(string|TS|array $placeholder): void
     {
-        $this->placeholder = $placeholder;
+        $this->placeholder = is_array($placeholder) ? TS::from($placeholder) : $placeholder;
     }
 
     /**
@@ -168,10 +165,10 @@ trait Trait_From_Attr
             $validationDisplay = $this->form->getValidationDisplay();
         if($validationDisplay === ValidationDisplayType::NOT_AT_ALL)
             return null;
-        $isValid = $this->form->getValidatedValue($this->attr);
-        if($isValid === null)
+        $validatedValue = $this->form->getValidatedValue($this->attr);
+        if($validatedValue === null)
             return null;
-        $isValid = $isValid && !$this->userSetInvalid;
+        $isValid = $validatedValue->isValid() && !$this->userSetInvalid;
         if($validationDisplay === ValidationDisplayType::ONLY_ERRORS){
             return !$isValid ? false : null;
         }
@@ -184,7 +181,7 @@ trait Trait_From_Attr
      */
     protected function getInvalidText(): HtmlElementNode|string|TS|null
     {
-        if($this->form->getValidationDisplay())
+        if($this->form->getValidationDisplay() == ValidationDisplayType::NOT_AT_ALL)
             return null;
         $isValid = $this->form->getValidatedValue($this->attr);
         if($isValid === null || ($isValid->isValid() && !$this->userSetInvalid))

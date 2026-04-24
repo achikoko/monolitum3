@@ -10,7 +10,7 @@ use monolitum\frontend\HtmlElementNode;
 class Alert extends HtmlElementNode
 {
 
-    private BSColor $color;
+    private ?BSColor $color = null;
 
     public function __construct(?Closure $builder = null)
     {

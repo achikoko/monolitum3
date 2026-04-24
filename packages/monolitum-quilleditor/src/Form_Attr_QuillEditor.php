@@ -102,4 +102,8 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
 
     }
 
+    public function onAfterBuildForm(): void
+    {
+        // TODO: Implement onAfterBuildForm() method.
+    }
 }

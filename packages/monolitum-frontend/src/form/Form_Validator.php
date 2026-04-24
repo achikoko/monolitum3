@@ -159,7 +159,7 @@ abstract class Form_Validator
      * @param string|Attr $attrId
      * @param string|TS $errorString
      */
-    public function invalidate(Attr|string $attrId, TS|string $errorString): void
+    public function invalidate(Attr|string $attrId, TS|string|array $errorString): void
     {
         $attr = $this->getAttr($attrId);
         $validatedValue = $this->getValidatedValue($attr->getId());
