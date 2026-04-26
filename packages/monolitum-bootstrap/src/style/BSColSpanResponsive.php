@@ -24,6 +24,16 @@ class BSColSpanResponsive extends HtmlElementNodeExtension implements BSBuiltInt
         return new BSColSpanResponsive($def);
     }
 
+    public function def(BSColSpan|int $def): self
+    {
+        if (is_int($def)) {
+            $this->def = (BSColSpan::of($def));
+        } else {
+            $this->def = $def;
+        }
+        return $this;
+    }
+
     public function sm(BSColSpan|int $sm): self
     {
         if (is_int($sm)) {
@@ -42,11 +52,10 @@ class BSColSpanResponsive extends HtmlElementNodeExtension implements BSBuiltInt
     {
         if (is_int($md)) {
             $this->md = BSColSpan::of($md);
-            return $this;
         } else {
             $this->md = $md;
-            return $this;
         }
+        return $this;
     }
 
     /**
@@ -57,11 +66,10 @@ class BSColSpanResponsive extends HtmlElementNodeExtension implements BSBuiltInt
     {
         if (is_int($lg)) {
             $this->lg = BSColSpan::of($lg);
-            return $this;
         } else {
             $this->lg = $lg;
-            return $this;
         }
+        return $this;
     }
 
     /**
@@ -72,11 +80,10 @@ class BSColSpanResponsive extends HtmlElementNodeExtension implements BSBuiltInt
     {
         if (is_int($xl)) {
             $this->xl = BSColSpan::of($xl);
-            return $this;
         } else {
             $this->xl = $xl;
-            return $this;
         }
+        return $this;
     }
 
     /**
@@ -87,11 +94,10 @@ class BSColSpanResponsive extends HtmlElementNodeExtension implements BSBuiltInt
     {
         if (is_int($xxl)) {
             $this->xxl = BSColSpan::of($xxl);
-            return $this;
         } else {
             $this->xxl = $xxl;
-            return $this;
         }
+        return $this;
     }
 
     /**
