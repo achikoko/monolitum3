@@ -2,11 +2,11 @@
 
 namespace monolitum\model\enum;
 
-use BackedEnum;
 use IteratorAggregate;
 use monolitum\core\panic\DevPanic;
 use monolitum\i18n\TS;
 use Traversable;
+use UnitEnum;
 
 class Enumeration implements IteratorAggregate
 {
@@ -24,7 +24,7 @@ class Enumeration implements IteratorAggregate
     private array $enumKeyIndexes = [];
 
     /**
-     * @var array<array{string|BackedEnum, string|TS, ?int}> tuples of <$key, $label, $group>
+     * @var array<array{string|UnitEnum, string|TS, ?int}> tuples of <$key, $label, $group>
      */
     private array $enumValues = [];
 
@@ -41,7 +41,7 @@ class Enumeration implements IteratorAggregate
         return $this;
     }
 
-    public function appendValue(string|int|BackedEnum $key, string|TS $label): self
+    public function appendValue(string|int|UnitEnum $key, string|TS $label): self
     {
         if(is_string($key) || is_int($key)){
             $this->enumKeyIndexes[$key] = count($this->enumValues);
@@ -70,17 +70,17 @@ class Enumeration implements IteratorAggregate
     {
         if(key_exists($key, $this->enumKeyIndexes)){
             return $this->enumValues[$this->enumKeyIndexes[$key]][self::ENUM_VALUE_TUPLE_LABEL];
-        }else if($key instanceof BackedEnum) {
+        }else if($key instanceof UnitEnum) {
             foreach ($this->enumValues as $enumValue){
                 $tupleKey = $enumValue[self::ENUM_VALUE_TUPLE_KEY];
-                if($tupleKey instanceof BackedEnum){
+                if($tupleKey instanceof UnitEnum){
                     if($tupleKey === $key) return $enumValue[self::ENUM_VALUE_TUPLE_LABEL];
                 }
             }
         }else {
             foreach ($this->enumValues as $enumValue){
                 $tupleKey = $enumValue[self::ENUM_VALUE_TUPLE_KEY];
-                if($tupleKey instanceof BackedEnum){
+                if($tupleKey instanceof UnitEnum){
                     if($tupleKey->name === $key) return $enumValue[self::ENUM_VALUE_TUPLE_LABEL];
                 }else{
                     if($tupleKey === $key) return $enumValue[self::ENUM_VALUE_TUPLE_LABEL];
@@ -95,17 +95,17 @@ class Enumeration implements IteratorAggregate
     {
         if(key_exists($key, $this->enumKeyIndexes)){
             return true;
-        }else if($key instanceof BackedEnum) {
+        }else if($key instanceof UnitEnum) {
             foreach ($this->enumValues as $enumValue){
                 $tupleKey = $enumValue[self::ENUM_VALUE_TUPLE_KEY];
-                if($tupleKey instanceof BackedEnum){
+                if($tupleKey instanceof UnitEnum){
                     if($tupleKey === $key) return true;
                 }
             }
         }else {
             foreach ($this->enumValues as $enumValue){
                 $tupleKey = $enumValue[self::ENUM_VALUE_TUPLE_KEY];
-                if($tupleKey instanceof BackedEnum){
+                if($tupleKey instanceof UnitEnum){
                     if($tupleKey->name === $key) return true;
                 }else{
                     if($tupleKey === $key) return true;
@@ -123,7 +123,9 @@ class Enumeration implements IteratorAggregate
 
             if (is_array($itemValue)) {
                 $enumeration->appendValue($itemValue[0], $itemValue[1]);
-            } else if (is_string($itemKey) || is_int($itemKey)) {
+            } else if ($itemValue instanceof UnitEnum) {
+                $enumeration->appendValue($itemValue->name, $itemValue->name);
+            }else if (is_string($itemValue) || $itemValue instanceof TS) {
                 $enumeration->appendValue($itemKey, $itemValue);
             } else {
                 throw new DevPanic("Enum constant not found");
