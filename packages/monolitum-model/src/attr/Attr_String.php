@@ -3,6 +3,7 @@ namespace monolitum\model\attr;
 
 use DateTime;
 use monolitum\model\ValidatedValue;
+use UnitEnum;
 
 class Attr_String extends AbstractAttr
 {
@@ -30,6 +31,8 @@ class Attr_String extends AbstractAttr
     {
         if(is_string($value)) {
             return $value;
+        }else if ($value instanceof UnitEnum){
+            return $value->name;
         }
         return "";
     }
