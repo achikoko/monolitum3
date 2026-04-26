@@ -1,6 +1,7 @@
 <?php
 namespace monolitum\model\attr;
 
+use DateTimeInterface;
 use monolitum\model\ValidatedValue;
 
 class Attr_Date extends AbstractAttr
@@ -37,7 +38,7 @@ class Attr_Date extends AbstractAttr
     #[\Override]
     public function stringValue(mixed $value): string
     {
-        if($value instanceof \DateTime){
+        if($value instanceof DateTimeInterface){
             return $value->format('Y-m-d');
         }
         return "";
