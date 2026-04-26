@@ -44,8 +44,10 @@ class EntitiesManager extends MNode implements EntityPersister
     }
 
     /**
-     * @param string|Model $entityModel
-     * @param bool $forInsert
+     * Instances a new entity for the provided model.
+     * @param string|Model $entityModel Model of the entity
+     * @param bool $forInsert Flag to tell the entity to store database changes then to be applyed.
+     * @param Entity|null $cloneOf Optional entity to copy attributes from.
      * @return Entity
      */
     public function instance(Model|string $entityModel, bool $forInsert = false, ?Entity $cloneOf = null): Entity
@@ -72,6 +74,57 @@ class EntitiesManager extends MNode implements EntityPersister
         }
 
         return $inst;
+    }
+
+    /**
+     * Instances a new entity and "parses" the data array (overwrites cloned attributes from `$cloneOf` param).
+     *
+     * Values in the data array are passed through Attr->validate(...) to get the actual value. Just if `ValidatedValue->isWellFormat()`
+     * returns `true`, the value is included in the entity.
+     * @param Model|string $entityModel
+     * @param array $data
+     * @param bool $forInsert
+     * @param Entity|null $cloneOf
+     * @return Entity
+     */
+    public function instanceWithData(Model|string $entityModel, array $data, bool $forInsert = false, ?Entity $cloneOf = null): Entity
+    {
+        $model = $this->getModel($entityModel);
+
+        $inst = $this->instance($entityModel, $forInsert, $cloneOf);
+
+        foreach($model->getAttrs() as $attr){
+            if(array_key_exists($attr->getId(), $data)){
+                $validated = $attr->validate($data[$attr->getId()]);
+                if($validated->isWellFormat()){
+                    $inst->setValue($attr, $validated->getValue());
+                }
+            }
+        }
+
+        return $inst;
+    }
+
+    public function extendModel(Model|string $baseModel, string $instanceableEntityClass, ?string $id = null): Model
+    {
+        return $this->getModel($baseModel)->clone($instanceableEntityClass, $id);
+    }
+
+    public function extendModelToAnonymous(Model|string $baseModel): AnonymousModel
+    {
+        return $this->getModel($baseModel)->cloneAnonymous();
+    }
+
+    public function writeToArray(Entity $entity): array
+    {
+        $array = [];
+        foreach ($entity->getModel()->getAttrs() as $attr){
+            $value = $entity->getValue($attr);
+            if($value !== null){
+                $array[$attr->getId()] = $attr->stringValue($value);
+            }
+        }
+        return $array;
     }
 
     /**
@@ -104,16 +157,6 @@ class EntitiesManager extends MNode implements EntityPersister
         /** @var EntityPersister $face */
         $face = Find::push(EntityPersister::class)->getResponse();
         return $face->_executeDeleteEntity($entity);
-    }
-
-    public function extendModel(Model|string $baseModel, string $instanceableEntityClass, ?string $id = null): Model
-    {
-        return $this->getModel($baseModel)->clone($instanceableEntityClass, $id);
-    }
-
-    public function extendModelToAnonymous(Model|string $baseModel): AnonymousModel
-    {
-        return $this->getModel($baseModel)->cloneAnonymous();
     }
 
 }
