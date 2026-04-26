@@ -52,13 +52,13 @@ class AttrExt_Validate_String extends AttrExt_Validate
 
     /**
      * @param int $maxChars
-     * @param string|TS|null $maxCharsError
+     * @param string|TS|array|null $maxCharsError
      * @return $this
      */
-    public function maxChars(int $maxChars, string|TS $maxCharsError = null): self
+    public function maxChars(int $maxChars, string|TS|array|null $maxCharsError = null): self
     {
         $this->maxChars = $maxChars;
-        $this->maxCharsError = $maxCharsError;
+        $this->maxCharsError = is_array($maxCharsError) ? TS::from($maxCharsError) : $maxCharsError;
         return $this;
     }
 
@@ -66,7 +66,7 @@ class AttrExt_Validate_String extends AttrExt_Validate
      * Set a regular expression to validate the string.
      * It must follow the following pattern "/^...$/"
      * @param string $regex
-     * @param string|TS|null $regexError
+     * @param string|TS|array|null $regexError
      * @return $this
      */
     public function regex(string $regex, string|TS|array|null $regexError = null): self

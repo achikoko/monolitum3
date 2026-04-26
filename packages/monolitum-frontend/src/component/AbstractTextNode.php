@@ -14,10 +14,7 @@ abstract class AbstractTextNode extends HtmlElementNode
         parent::__construct($element, $builder);
     }
 
-    /**
-     * @param string|TS $text
-     */
-    public function appendText(string|TS $text, bool $raw = false): void
+    public function appendText(string|TS|array $text, bool $raw = false): void
     {
         if ($raw){
             $this->append(new HtmlElementContent(TS::unwrapAuto($text), true));
