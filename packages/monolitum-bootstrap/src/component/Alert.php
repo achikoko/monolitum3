@@ -4,10 +4,10 @@ namespace monolitum\bootstrap\component;
 
 use Closure;
 use monolitum\bootstrap\values\BSColor;
+use monolitum\frontend\component\AbstractTextNode;
 use monolitum\frontend\html\HtmlElement;
-use monolitum\frontend\HtmlElementNode;
 
-class Alert extends HtmlElementNode
+class Alert extends AbstractTextNode
 {
 
     private ?BSColor $color = null;

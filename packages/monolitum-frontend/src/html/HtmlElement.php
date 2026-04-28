@@ -168,19 +168,22 @@ class HtmlElement implements Renderable
         return $this;
     }
 
-    public function addClass(string ...$classes): self
+    public function addClass(?string ...$classes): self
     {
         foreach ($classes as $class)
-            $this->classes[] = $class;
+            if($class !== null)
+                $this->classes[] = $class;
         return $this;
     }
 
-    public function removeClass(string ...$classes): self
+    public function removeClass(?string ...$classes): self
     {
         foreach ($classes as $class){
-            $key = array_search($class, $this->classes);
-            if($key !== false)
-                array_splice($array, $key, 1);
+            if($class !== null) {
+                $key = array_search($class, $this->classes);
+                if ($key !== false)
+                    array_splice($array, $key, 1);
+            }
         }
         return $this;
     }

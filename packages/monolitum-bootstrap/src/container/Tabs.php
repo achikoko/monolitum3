@@ -3,6 +3,7 @@
 namespace monolitum\bootstrap\container;
 
 use monolitum\backend\globals\Request_NewId;
+use monolitum\bootstrap\style\BSJustifyContent;
 use monolitum\core\ExplicitAcceptChildNode;
 use monolitum\core\MObject;
 use monolitum\core\panic\DevPanic;
@@ -20,7 +21,9 @@ use function monolitum\core\m;
 class Tabs extends HtmlElementNode
 {
 
+    private bool $links = false;
     private bool $pills = false;
+    private ?BSJustifyContent $navJustify = null;
 
     /** @var array<Tabs_Item> */
     private array $items = [];
@@ -37,7 +40,23 @@ class Tabs extends HtmlElementNode
     public function asPills(bool $pills = true): Tabs
     {
         $this->pills = $pills;
+        $this->links = false;
         return $this;
+    }
+
+    public function asLinks(bool $links = true): Tabs
+    {
+        $this->links = $links;
+        $this->pills = false;
+        return $this;
+    }
+
+    /**
+     * @param BSJustifyContent|null $navJustify
+     */
+    public function setNavJustify(?BSJustifyContent $navJustify): void
+    {
+        $this->navJustify = $navJustify;
     }
 
     public function doAcceptChild(MObject $object): bool
@@ -62,8 +81,10 @@ class Tabs extends HtmlElementNode
         $this->setId($id);
 
         $ul = new HtmlElement("ul");
-        $ul->addClass("nav", $this->pills ? "nav-pills" : "nav-tabs");
+        $ul->addClass("nav", $this->pills ? "nav-pills" : (!$this->links ? "nav-tabs" : null));
         $ul->setAttribute("role", "tablist");
+
+        $this->navJustify?->buildIntoElement($ul);
 
         $ids = [];
 

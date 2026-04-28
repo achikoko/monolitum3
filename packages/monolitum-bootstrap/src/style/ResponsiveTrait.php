@@ -2,6 +2,7 @@
 
 namespace monolitum\bootstrap\style;
 
+use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\HtmlElementNode;
 
 trait ResponsiveTrait
@@ -19,7 +20,7 @@ trait ResponsiveTrait
 
     protected ?ResponsiveProperty $xxl = null;
 
-    protected function _buildInto(HtmlElementNode $component, ?string $prefix, bool $inverted = false): void
+    protected function _buildInto(HtmlElementNode|HtmlElement $component, ?string $prefix, bool $inverted = false): void
     {
 
         if($this->def != null)
@@ -42,7 +43,7 @@ trait ResponsiveTrait
 
     }
 
-    protected function _buildIntoForBreakpoint(HtmlElementNode $component, string $prefix, ?string $breakpoint, ResponsiveProperty $responsiveProperty, bool $inverted = false): void
+    protected function _buildIntoForBreakpoint(HtmlElementNode|HtmlElement $component, string $prefix, ?string $breakpoint, ResponsiveProperty $responsiveProperty, bool $inverted = false): void
     {
 
         if($breakpoint != null){

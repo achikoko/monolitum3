@@ -2,10 +2,11 @@
 
 namespace monolitum\bootstrap\style;
 
+use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\HtmlElementNode;
 use monolitum\frontend\HtmlElementNodeExtension;
 
-class BSJustifyContentResponsive extends HtmlElementNodeExtension implements BSBuiltIntoInterface
+class BSJustifyContentResponsive extends HtmlElementNodeExtension implements BSBuiltIntoInterface, BSBuiltIntoInterface_ElementCompatible
 {
     use ResponsiveTrait;
 
@@ -53,6 +54,11 @@ class BSJustifyContentResponsive extends HtmlElementNodeExtension implements BSB
     public function buildInto(HtmlElementNode $component, bool $inverted = false): void
     {
         $this->_buildInto($component, "justify-content",  $inverted);
+    }
+
+    public function buildIntoElement(HtmlElement $element, bool $inverted = false): void
+    {
+        $this->_buildInto($element, "justify-content",  $inverted);
     }
 
     public function apply(): void
