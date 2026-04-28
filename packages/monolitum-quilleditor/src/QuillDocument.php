@@ -95,29 +95,16 @@ class QuillDocument
         $json = $this->lexer->getJsonArray();
 
         foreach ($json as &$jsonValue) {
+            if(isset($jsonValue["attributes"])){
+                $attributes = &$jsonValue["attributes"];
+                if(isset($attributes["link"])){
+                    $attributes["link"] = $this->replaceString($searchPattern, $function, $captureGroup, $attributes["link"]);
+                }
+            }
             if(isset($jsonValue["insert"])){
                 $insert = $jsonValue["insert"];
                 if(is_string($insert)){
-                    $jsonValue["insert"] = preg_replace_callback(
-                        $searchPattern,
-                        function ($match) use ($function, $captureGroup) {
-
-                            $matchedKey = $match[$captureGroup];
-
-                            if(is_array($function)){
-                                $toReplace = $function[$matchedKey] ?? null;
-                            }else{
-                                $toReplace = $function($matchedKey);
-                            }
-
-                            if($toReplace === null){
-                                return $match[0];
-                            }
-
-                            return $toReplace;
-                        },
-                        $insert
-                    );
+                    $jsonValue["insert"] = $this->replaceString($searchPattern, $function, $captureGroup, $insert);
 
                 }
             }
@@ -178,6 +165,37 @@ class QuillDocument
 
         $lexer->registerListener(new HorizontalRow());
         $lexer->registerListener(new Size());
+    }
+
+    /**
+     * @param string $searchPattern
+     * @param array|Closure $function
+     * @param int $captureGroup
+     * @param string $insert
+     * @return array|string|string[]|null
+     */
+    public function replaceString(string $searchPattern, array|Closure $function, int $captureGroup, string $insert): string|array|null
+    {
+        return preg_replace_callback(
+            $searchPattern,
+            function ($match) use ($function, $captureGroup) {
+
+                $matchedKey = $match[$captureGroup];
+
+                if (is_array($function)) {
+                    $toReplace = $function[$matchedKey] ?? null;
+                } else {
+                    $toReplace = $function($matchedKey);
+                }
+
+                if ($toReplace === null) {
+                    return $match[0];
+                }
+
+                return $toReplace;
+            },
+            $insert
+        );
     }
 
 
