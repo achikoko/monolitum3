@@ -5,8 +5,6 @@ namespace monolitum\backend\resources;
 use monolitum\backend\params\Link;
 use monolitum\backend\params\Path;
 use monolitum\core\MNode;
-use monolitum\core\Node;
-use monolitum\core\Passive;
 
 class HrefResolver_Impl implements HrefResolver
 {
@@ -20,6 +18,7 @@ class HrefResolver_Impl implements HrefResolver
         public readonly HrefResolverManager $manager,
         public readonly Link|Path           $link,
         public readonly bool                $obtainParamsAlone,
+        public readonly bool                $isPrependHost,
         public readonly MNode               $callerNode)
     {
 

@@ -14,6 +14,8 @@ class Request_HrefResolver implements MObject
 
     private bool $setParamsAlone = false;
 
+    private bool $prependHost = false;
+
     /**
      * @param Link|Path $link
      */
@@ -27,14 +29,26 @@ class Request_HrefResolver implements MObject
         return $this->setParamsAlone;
     }
 
-    public function setHrefResolver(HrefResolver $hrefResolver): void
+    public function setHrefResolver(HrefResolver $hrefResolver): Request_HrefResolver
     {
         $this->hrefResolver = $hrefResolver;
+        return $this;
+    }
+
+    public function setPrependHost(bool $prependHost=true): Request_HrefResolver
+    {
+        $this->prependHost = $prependHost;
+        return $this;
     }
 
     public function getHrefResolver(): HrefResolver
     {
         return $this->hrefResolver;
+    }
+
+    public function isPrependHost(): bool
+    {
+        return $this->prependHost;
     }
 
     function onNotReceived()
