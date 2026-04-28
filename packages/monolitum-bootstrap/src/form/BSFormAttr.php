@@ -555,11 +555,14 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
                 $it->setAttribute("data-placeholder", TS::unwrap($nullLabel, $finalLanguage));
 
+                // TODO there is a weird bug when field is not nullable but $nullLabel is null, an empty option appears
+                // Look at the registration form, field nif_type
                 M(new FormControl_Select_Option(
                     "",
                     function (FormControl_Select_Option $it) use ($selected) {
-                        $it->setContent("");
-                    }));
+                        $it->append("");
+                    })
+                );
 
             }
 
