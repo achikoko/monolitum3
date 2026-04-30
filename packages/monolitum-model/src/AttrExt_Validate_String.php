@@ -26,11 +26,11 @@ class AttrExt_Validate_String extends AttrExt_Validate
     private TS|string|null $maxCharsError = null;
 
     /**
-     * @var Closure|null (VALUE, ENTITY) -> bool
+     * @var Closure|null (VALUE, ENTITY) -> bool // TODO change by context
      */
-    private ?Closure $validatorFunction = null;
+    private ?Closure $postStringValidatorFunction = null;
 
-    private TS|string|null $validatorFunctionError = null;
+    private TS|string|null $postStringValidatorFunctionError = null;
 
     private ?Closure $postprocessorFunction = null;
 
@@ -96,14 +96,16 @@ class AttrExt_Validate_String extends AttrExt_Validate
     }
 
     /**
+     * The given function will be executed after validating nullability AND all string constraints. But before
+     * executing the "postStringProcess" function if given one.
      * @param Closure $validatorFunction
      * @param string|TS|null $validatorFunctionError
      * @return $this
      */
-    public function func_validator(Closure $validatorFunction, string|TS $validatorFunctionError = null): self
+    public function postStringValidate(Closure $validatorFunction, string|TS $validatorFunctionError = null): self
     {
-        $this->validatorFunction = $validatorFunction;
-        $this->validatorFunctionError = $validatorFunctionError;
+        $this->postStringValidatorFunction = $validatorFunction;
+        $this->postStringValidatorFunctionError = $validatorFunctionError;
         return $this;
     }
 
@@ -111,7 +113,7 @@ class AttrExt_Validate_String extends AttrExt_Validate
      * @param Closure $postprocessorFunction
      * @return $this
      */
-    public function func_postprocessor(Closure $postprocessorFunction): self
+    public function postStringProcess(Closure $postprocessorFunction): self
     {
         $this->postprocessorFunction = $postprocessorFunction;
         return $this;
@@ -178,12 +180,12 @@ class AttrExt_Validate_String extends AttrExt_Validate
                     $errorMessage = $this->filterValidateError;
                 }
             }
-            if(!$error && $this->validatorFunction !== null){
-                $vf = $this->validatorFunction;
+            if(!$error && $this->postStringValidatorFunction !== null){
+                $vf = $this->postStringValidatorFunction;
                 $result = $vf($validatedValue->getValue());
                 if(!$result){
                     $error = true;
-                    $errorMessage = $this->validatorFunctionError;
+                    $errorMessage = $this->postStringValidatorFunctionError;
                 }
             }
         }

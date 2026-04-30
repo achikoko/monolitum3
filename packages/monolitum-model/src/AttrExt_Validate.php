@@ -2,6 +2,7 @@
 
 namespace monolitum\model;
 
+use Closure;
 use monolitum\i18n\TS;
 
 class AttrExt_Validate extends AttrExt
@@ -17,9 +18,29 @@ class AttrExt_Validate extends AttrExt
     private bool $substituteNotValid = false;
     private bool $substituteNullValues = false;
 
+    /**
+     * @var Closure|null (VALUE) -> bool // TODO change by context
+     */
+    private ?Closure $postValidatorFunction = null;
+
+    private TS|string|null $postValidatorFunctionError = null;
+
 //    private $isDefaultSet = false;
 //    private $def = null;
 //    private $substituteNotValid = false;
+
+    /**
+     * The given function will be executed after validating nullability. And substituting values if it had a change.
+     * @param Closure $validatorFunction Signature: (VALUE) -> bool
+     * @param string|TS|null $validatorFunctionError
+     * @return $this
+     */
+    public function postValidate(Closure $validatorFunction, string|TS $validatorFunctionError = null): self
+    {
+        $this->postValidatorFunction = $validatorFunction;
+        $this->postValidatorFunctionError = $validatorFunctionError;
+        return $this;
+    }
 
     public function nonNullable(string|TS|array|null $nullableError = null): self
     {
@@ -69,16 +90,24 @@ class AttrExt_Validate extends AttrExt
 
             if($validatedValue->isNull()) {
                 if($this->isDefaultSet && $this->substituteNullValues){
-                    return new ValidatedValue(true, true, $this->def, null, $this->defStrValue);
+                    $validatedValue = new ValidatedValue(true, true, $this->def, null, $this->defStrValue);
                 }
 
-                if(!$this->isNullable())
-                    return new ValidatedValue(false, true, $validatedValue->getValue(), $this->nullableError, $validatedValue->getStrValue());
-
+                if(!$this->isNullable()) {
+                    $validatedValue = new ValidatedValue(false, true, $validatedValue->getValue(), $this->nullableError, $validatedValue->getStrValue());
+                }
             }
 
         }else if($this->isDefaultSet && $this->substituteNotValid){
-            return new ValidatedValue(true, true, $this->def, null, $this->defStrValue);
+            $validatedValue = new ValidatedValue(true, true, $this->def, null, $this->defStrValue);
+        }
+
+        if($validatedValue->isValid() && $this->postValidatorFunction !== null){
+            $vf = $this->postValidatorFunction;
+            $result = $vf($validatedValue->getValue());
+            if(!$result){
+                $validatedValue = new ValidatedValue(false, true, $validatedValue->getValue(), $this->postValidatorFunctionError, $validatedValue->getStrValue());
+            }
         }
 
         return $validatedValue;

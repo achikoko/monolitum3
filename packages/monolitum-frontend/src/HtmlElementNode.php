@@ -30,6 +30,11 @@ class HtmlElementNode extends Renderable_Node
         $this->element = $element instanceof HtmlElement ? $element : new HtmlElement($element);
     }
 
+    public function newToggleClassLinkHook(string|array $classes, ?bool $mode = null)
+    {
+        // TODO create a hook that when called, adds/removes/toggles a class
+    }
+
     /**
      * set attribute to html element
      */
