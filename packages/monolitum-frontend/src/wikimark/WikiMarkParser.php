@@ -43,6 +43,7 @@ class WikiMarkParser
             if($scapeCharacter){
                 $scapeCharacter = false;
                 $buildingString .= $char;
+                continue;
             }
 
             if($char === $lastCharacter){
