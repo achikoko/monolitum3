@@ -32,6 +32,8 @@ class Form extends HtmlElementNode
     use Trait_Form_Validate_Attrs;
 
     private const SUFFIX_CSRF_TOKEN = "csrf_token";
+    public const GLOBALS_CONTEXT_ID = "form";
+
     private ?Form_Validator $validator;
 
     /**
@@ -632,7 +634,7 @@ class Form extends HtmlElementNode
         // Generate an ID to identify the submission of this form if not exist
 
         if($this->getFormId() === null)
-            $this->setId(Request_NewId::pushAndGet("form"));
+            $this->setId(Request_NewId::pushAndGet(self::GLOBALS_CONTEXT_ID));
 
         // Find root form before all
         // If there are nested forms, they will find me and the real root form

@@ -13,9 +13,17 @@ class GlobalsManager extends MNode
 
     private array $uniqueIdByContext = [];
 
+    private array $prefixByContext = [];
+
     public function __construct(?Closure $builder = null)
     {
         parent::__construct($builder);
+    }
+
+    public function setPrefixByContext(string $contextId, string $prefix): self
+    {
+        $this->prefixByContext[$contextId] = $prefix;
+        return $this;
     }
 
     public function doReceive(MObject $object): bool
@@ -44,7 +52,9 @@ class GlobalsManager extends MNode
                 $id = 0;
             }
 
-            $newId->setId("uid_" . $newId->contextIds . "_" . $id);
+            $prefix = $this->prefixByContext[$newId->contextIds] ?? "";
+
+            $newId->setId("uid_" . $newId->contextIds . "_" . $prefix . $id);
 
         }
     }
