@@ -8,16 +8,15 @@ use monolitum\backend\params\Path;
 use monolitum\backend\resources\HrefResolver;
 use monolitum\backend\resources\Request_HrefResolver;
 use monolitum\bootstrap\form\BSFormSubmit;
-use monolitum\bootstrap\values\BSColor;
 use monolitum\core\MObject;
 use monolitum\core\Monolitum;
 use monolitum\core\panic\DevPanic;
-use monolitum\core\panic\NodePanicRouter;
 use monolitum\frontend\component\AbstractTextNode;
 use monolitum\frontend\form\Form;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\HtmlElementNodeExtension;
 use monolitum\frontend\LinkHook;
+use monolitum\frontend\LinkHookMode;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Renderable_Node;
 use monolitum\frontend\Rendered;
@@ -46,6 +45,8 @@ class BSButton extends AbstractTextNode
      * @var array<HtmlElementNodeExtension>
      */
     private array $extensions = [];
+
+    private ?LinkHookMode $finalLinkHookMode;
 
     public function __construct(?Closure $builder = null)
     {
@@ -103,7 +104,7 @@ class BSButton extends AbstractTextNode
     protected function onAfterBuild(): void
     {
         if($this->linkHook !== null){
-            $this->linkHook->buildLinkHook($this);
+            $this->finalLinkHookMode = $this->linkHook->buildLinkHook($this, LinkHookMode::MODIFY_RECEIVER, [], $this->getElement());
         }else if($this->onAction !== null) {
             // instance Form if post is set, Form has to be autodisabled when another form is in a parent.
             // when
@@ -227,7 +228,17 @@ class BSButton extends AbstractTextNode
                 $a->setTag("a");
                 $a->addClass("btn");
                 $a->setAttribute("role", "button");
-                $this->linkHook->renderLinkHook($this, $a);
+                if($this->finalLinkHookMode !== null){
+                    switch ($this->finalLinkHookMode) {
+                        case LinkHookMode::MODIFY_RECEIVER:
+                            $this->linkHook->renderLinkHookIntoElement($this, $a);
+                            break;
+                        case LinkHookMode::RENDER_JAVASCRIPT:
+                            $javascriptCode = $this->linkHook->renderLinkHookIntoJavascript($this, []);
+                            $a->setAttribute("onclick", $javascriptCode, false);
+                            break;
+                    }
+                }
                 $a->setRequireEndTag(true);
 
             }else if(is_string($this->pathOrLink)){

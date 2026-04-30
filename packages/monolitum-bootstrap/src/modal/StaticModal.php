@@ -45,7 +45,7 @@ use monolitum\frontend\Rendered;
 <a class="btn btn-primary" data-bs-toggle="modal" href="#exampleModalToggle" role="button">Open first modal</a>
  */
 
-class StaticModal extends Renderable_Node
+class StaticModal extends Renderable_Node implements HasModalId
 {
 
     use ModalHeaderTrait;

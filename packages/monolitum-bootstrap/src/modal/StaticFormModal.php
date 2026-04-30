@@ -65,7 +65,7 @@ class StaticFormModal extends Form implements HasModalId
     /**
      * @param Form_Validator|null $validator
      * @param string $formId
-     * @param callable|null $builder
+     * @param Closure|null $builder
      */
     public function __construct($validator, $formId, ?Closure $builder = null)
     {
@@ -137,7 +137,7 @@ class StaticFormModal extends Form implements HasModalId
     /**
      * Creates a Form using Manager_Params as provider and a Model as model.
      */
-    public static function fromModelAndEntity(Model|string $model, Entity $entity, ?Closure $builder): StaticFormModal
+    public static function fromModelAndEntity(AnonymousModel|string $model, Entity $entity, ?Closure $builder): StaticFormModal
     {
         /** @var ParamsManager $manager_params */
         $manager_params = Find::pushAndGet(ParamsManager::class);
@@ -151,7 +151,7 @@ class StaticFormModal extends Form implements HasModalId
     /**
      * Creates a Form using Manager_Params as provider and a Model as model.
      */
-    public static function fromModelAndId(Model|string $model, string $formId, ?Closure $builder): StaticFormModal
+    public static function fromModelAndId(AnonymousModel|string $model, ?string $formId, ?Closure $builder): StaticFormModal
     {
         /** @var ParamsManager $manager_params */
         $manager_params = Find::pushAndGet(ParamsManager::class);

@@ -16,12 +16,12 @@ class ModalToggleLinkHook implements LinkHook
         $this->modal = $modal;
     }
 
-    public function buildLinkHook(Renderable_Node $component, HtmlElement $element = null): void
+    public function buildLinkHook(Renderable_Node $triggerComponent, HtmlElement $element = null): void
     {
 
     }
 
-    public function renderLinkHook(Renderable_Node $component, HtmlElement $element): void
+    public function renderLinkHookIntoElement(Renderable_Node $renderable_Node, HtmlElement $element): void
     {
         $element->setAttribute("data-bs-toggle", "modal");
         $element->setAttribute("href", "#" . $this->modal->getModalId());

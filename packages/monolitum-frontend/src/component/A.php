@@ -11,6 +11,7 @@ use monolitum\backend\resources\Request_HrefResolver;
 use monolitum\core\Monolitum;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\LinkHook;
+use monolitum\frontend\LinkHookMode;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Renderable_Node;
 
@@ -20,6 +21,8 @@ class A extends AbstractTextNode
     private Path|string|Link|LinkHook|null $href = null;
 
     private ?HrefResolver $hrefResolver = null;
+
+    private ?LinkHookMode $finalLinkHookMode = null;
 
     public function __construct(?Closure $builder = null)
     {
@@ -38,7 +41,7 @@ class A extends AbstractTextNode
             if(is_string($this->href)){
                 $this->hrefResolver = new HrefResolver_String($this->href);
             }else if($this->href instanceof LinkHook){
-                $this->href->buildLinkHook($this, $this->getElement());
+                $this->finalLinkHookMode = $this->href->buildLinkHook($this, LinkHookMode::MODIFY_RECEIVER, [], $this->getElement());
             }else{
                 $active = new Request_HrefResolver($this->href);
                 Monolitum::getInstance()->push($active);
@@ -56,7 +59,19 @@ class A extends AbstractTextNode
         if($this->hrefResolver !== null){
             $a->setAttribute("href", $this->hrefResolver->resolve());
         }else if($this->href instanceof LinkHook){
-            $this->href->renderLinkHook($this, $this->getElement());
+
+            if($this->finalLinkHookMode !== null){
+                switch ($this->finalLinkHookMode) {
+                    case LinkHookMode::MODIFY_RECEIVER:
+                        $this->href->renderLinkHookIntoElement($this, $this->getElement());
+                        break;
+                    case LinkHookMode::RENDER_JAVASCRIPT:
+                        $javascriptCode = $this->href->renderLinkHookIntoJavascript($this, []);
+                        $a->setAttribute("onclick", $javascriptCode, false);
+                        break;
+                }
+            }
+//            $this->href->renderLinkHookIntoElement($this, $this->getElement());
         }else{
             $a->setAttribute("href", "#");
         }
