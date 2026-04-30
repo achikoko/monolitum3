@@ -147,6 +147,28 @@ abstract class Form_Validator
 
     /**
      * @param string|Attr $attrId
+     * @return bool
+     */
+    public function isValid(Attr|string $attrId): bool
+    {
+        $attr = $this->getAttr($attrId);
+
+        if($this->isValidatable($attr)){
+
+            $validatedValue = $this->getValidatedValue($attr);
+
+            if($validatedValue !== null && $validatedValue->isValid()){
+                return true;
+            }
+
+        }
+
+        return false;
+
+    }
+
+    /**
+     * @param string|Attr $attrId
      * @param ValidatedValue $value
      */
     public function overwriteValidatedValue(Attr|string $attrId, ValidatedValue $value): void
