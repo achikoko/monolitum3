@@ -19,7 +19,7 @@ class Attr_File extends AbstractAttr
     const ERROR_MULTIPLE_NOT_SUPPORTED = 10;
     const ERROR_MAX_SIZE = 11;
 
-    private int $maxSize = 1000000;
+    private ?int $maxSize = 1000000;
 
     /**
      * Max size in bytes
@@ -74,7 +74,7 @@ class Attr_File extends AbstractAttr
     public function stringValue($value): string
     {
         if($value instanceof File){
-            return $value->getName();
+            return $value->name;
         }
         return "";
     }
