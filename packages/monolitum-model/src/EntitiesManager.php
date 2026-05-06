@@ -115,13 +115,15 @@ class EntitiesManager extends MNode implements EntityPersister
         return $this->getModel($baseModel)->cloneAnonymous();
     }
 
-    public function writeToArray(Entity $entity): array
+    public function writeToArray(Entity $entity, ?array $filterAttrs = null): array
     {
         $array = [];
         foreach ($entity->getModel()->getAttrs() as $attr){
-            $value = $entity->getValue($attr);
-            if($value !== null){
-                $array[$attr->getId()] = $attr->stringValue($value);
+            if($filterAttrs === null || key_exists($attr->getId(), $filterAttrs)) {
+                $value = $entity->getValue($attr);
+                if ($value !== null) {
+                    $array[$attr->getId()] = $attr->stringValue($value);
+                }
             }
         }
         return $array;
