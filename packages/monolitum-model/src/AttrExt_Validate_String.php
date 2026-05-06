@@ -32,7 +32,10 @@ class AttrExt_Validate_String extends AttrExt_Validate
 
     private TS|string|null $postStringValidatorFunctionError = null;
 
-    private ?Closure $postprocessorFunction = null;
+    /**
+     * @var Closure|null (PostStringProcessContext) => void
+     */
+    private ?Closure $postStringProcessorFunction = null;
 
     private bool $trim = false;
     private bool $nullifyEmpty = false;
@@ -113,9 +116,9 @@ class AttrExt_Validate_String extends AttrExt_Validate
      * @param Closure $postprocessorFunction
      * @return $this
      */
-    public function postStringProcess(Closure $postprocessorFunction): self
+    public function postProcessString(Closure $postprocessorFunction): self
     {
-        $this->postprocessorFunction = $postprocessorFunction;
+        $this->postStringProcessorFunction = $postprocessorFunction;
         return $this;
     }
 
@@ -194,10 +197,24 @@ class AttrExt_Validate_String extends AttrExt_Validate
             return new ValidatedValue(false, true, $validatedValue->getValue(), $errorMessage, $validatedValue->getStrValue());
         }else{
 
-            if($this->postprocessorFunction !== null){
-                $vf = $this->postprocessorFunction;
-                $result = $vf($validatedValue->getValue());
-                return new ValidatedValue($validatedValue->isValid(), $validatedValue->isWellFormat(), $result, $validatedValue->getError(), $validatedValue->getStrValue());
+            if($this->postStringProcessorFunction !== null){
+                $context = new PostProcessStringContext($validatedValue->getValue());
+                call_user_func($this->postStringProcessorFunction, $context);
+                if(!$context->getResultValid()){
+                    $validatedValue = new ValidatedValue(
+                        false, true,
+                        $validatedValue->getValue(),
+                        $context->getResultError(),
+                        $validatedValue->getStrValue()
+                    );
+                }else if($context->isPostProcessed()){
+                    $validatedValue = new ValidatedValue(
+                        true, true,
+                        $context->getPostProcessResult(),
+                        null,
+                        $context->getPostProcessResult() ?? "",
+                    );
+                }
             }
 
             return $validatedValue;

@@ -19,11 +19,9 @@ class AttrExt_Validate extends AttrExt
     private bool $substituteNullValues = false;
 
     /**
-     * @var Closure|null (VALUE) -> bool // TODO change by context
+     * @var Closure|null (PostValidatorContext) -> void // TODO change by context
      */
     private ?Closure $postValidatorFunction = null;
-
-    private TS|string|null $postValidatorFunctionError = null;
 
 //    private $isDefaultSet = false;
 //    private $def = null;
@@ -31,14 +29,12 @@ class AttrExt_Validate extends AttrExt
 
     /**
      * The given function will be executed after validating nullability. And substituting values if it had a change.
-     * @param Closure $validatorFunction Signature: (VALUE) -> bool
-     * @param string|TS|null $validatorFunctionError
+     * @param Closure $validatorFunction Signature: (PostValidatorContext) -> void
      * @return $this
      */
-    public function postValidate(Closure $validatorFunction, string|TS $validatorFunctionError = null): self
+    public function postValidate(Closure $validatorFunction): self
     {
         $this->postValidatorFunction = $validatorFunction;
-        $this->postValidatorFunctionError = $validatorFunctionError;
         return $this;
     }
 
@@ -103,10 +99,15 @@ class AttrExt_Validate extends AttrExt
         }
 
         if($validatedValue->isValid() && $this->postValidatorFunction !== null){
-            $vf = $this->postValidatorFunction;
-            $result = $vf($validatedValue->getValue());
-            if(!$result){
-                $validatedValue = new ValidatedValue(false, true, $validatedValue->getValue(), $this->postValidatorFunctionError, $validatedValue->getStrValue());
+            $context = new PostValidatorContext($validatedValue->getValue());
+            call_user_func($this->postValidatorFunction, $context);
+            if(!$context->getResultValid()){
+                $validatedValue = new ValidatedValue(
+                    false, true,
+                    $validatedValue->getValue(),
+                    $context->getResultError(),
+                    $validatedValue->getStrValue()
+                );
             }
         }
 
