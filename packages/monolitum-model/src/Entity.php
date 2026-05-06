@@ -62,8 +62,8 @@ abstract class Entity
             throw new DevPanic("Entity is not writable.");
         if($attr instanceof Attr)
             $attr = $attr->getId();
-        if($value instanceof DateTimeInterface)
-            $value = DateTimeImmutable::createFromInterface($value);
+//        if($value instanceof DateTimeInterface)
+//            $value = DateTimeImmutable::createFromInterface($value);
         $this->values[$attr] = $value;
         if ($this->updateAttrs !== null) {
             $this->updateAttrs[$attr] = $value;
@@ -174,7 +174,36 @@ abstract class Entity
      */
     public function setDate(Attr|string $attr, ?DateTimeInterface $date): self
     {
-        return $this->_set($attr, $date);
+        // Inefficient but I want to assure no time is stored
+        if($date === null){
+            return $this->_set($attr, null);
+        }else {
+            $d = DateTime::createFromImmutable($date);
+            $d->setTime(0, 0, 0, 0);
+            return $this->_set($attr, DateTimeImmutable::createFromMutable($d));
+        }
+    }
+
+    public function getDateTime(Attr|string $attr): ?DateTimeImmutable
+    {
+        if($attr instanceof Attr)
+            $attr = $attr->getId();
+        return key_exists($attr, $this->values) ? $this->values[$attr] : null;
+    }
+
+    /**
+     * @param Attr|string $attr
+     * @param DateTime $date
+     * @return $this
+     */
+    public function setDateTime(Attr|string $attr, ?DateTimeInterface $date): self
+    {
+        // Inefficient but I want to assure no time is stored
+        if($date === null){
+            return $this->_set($attr, null);
+        }else {
+            return $this->_set($attr, DateTimeImmutable::createFromInterface($date));
+        }
     }
 
     public function getDecimalAsFloat(Attr|string $attr): ?float
