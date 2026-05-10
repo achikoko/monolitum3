@@ -8,6 +8,7 @@ class BSFlex extends BSDisplay
 {
 
     private ?BSJustifyContent $justifyContent = null;
+    private ?BSAlignItems $alignItems = null;
 
     private ?bool $row = null;
     private ?bool $reverse = null;
@@ -48,6 +49,12 @@ class BSFlex extends BSDisplay
         return $this;
     }
 
+    public function alignItems(BSAlignItems $alignItems): self
+    {
+        $this->alignItems = $alignItems;
+        return $this;
+    }
+
     public function buildInto(HtmlElementNode $component, bool $inverted = false): void
     {
         parent::buildInto($component, $inverted);
@@ -68,6 +75,8 @@ class BSFlex extends BSDisplay
         }
 
         $this->justifyContent?->buildInto($component);
+
+        $this->alignItems?->buildInto($component);
 
     }
 
