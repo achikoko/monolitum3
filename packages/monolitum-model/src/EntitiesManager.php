@@ -119,7 +119,7 @@ class EntitiesManager extends MNode implements EntityPersister
     {
         $array = [];
         foreach ($entity->getModel()->getAttrs() as $attr){
-            if($filterAttrs === null || key_exists($attr->getId(), $filterAttrs)) {
+            if($filterAttrs === null || in_array($attr->getId(), $filterAttrs)) {
                 $value = $entity->getValue($attr);
                 if ($value !== null) {
                     $array[$attr->getId()] = $attr->stringValue($value);
