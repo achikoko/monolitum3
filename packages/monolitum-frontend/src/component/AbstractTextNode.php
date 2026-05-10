@@ -19,7 +19,7 @@ abstract class AbstractTextNode extends HtmlElementNode
         if ($raw){
             $this->append(new HtmlElementContent(TS::unwrapAuto($text), true));
         }else{
-            $this->append(TS::renderAuto($text));
+            $this->append(TS::from($text));
         }
     }
 
