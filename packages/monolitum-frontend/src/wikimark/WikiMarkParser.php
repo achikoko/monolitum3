@@ -58,6 +58,8 @@ class WikiMarkParser
                     }else{
                         $root[] = $closeElement;
                     }
+                }else{
+                    $root[] = $closeElement;
                 }
                 continue;
             }
