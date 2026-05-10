@@ -9,10 +9,10 @@ use monolitum\backend\params\Link;
 use monolitum\backend\params\Path;
 use monolitum\backend\resources\HrefResolver;
 use monolitum\core\Find;
+use monolitum\frontend\component\AbstractTextNode;
 use monolitum\frontend\html\HtmlElement;
-use monolitum\frontend\HtmlElementNode;
 
-abstract class FormSubmit extends HtmlElementNode
+abstract class FormSubmit extends AbstractTextNode
 {
     use Trait_Form_Validate_Attrs;
 
@@ -24,38 +24,12 @@ abstract class FormSubmit extends HtmlElementNode
 
     protected ?HrefResolver $linkResolver = null;
 
-
-    // Method is defined in the form
-//    /**
-//     * @var string
-//     */
-//    protected $method = null;
-
     private ?Closure $onValidated = null;
-
 
     public function __construct(HtmlElement $element, ?Closure $builder = null)
     {
         parent::__construct($element, $builder);
     }
-
-//    public function setMethodGET()
-//    {
-//        $this->method = "get";
-//    }
-//
-//    public function setMethodPOST()
-//    {
-//        $this->method = "post";
-//    }
-//
-//    /**
-//     * @return string|null
-//     */
-//    public function getMethod()
-//    {
-//        return $this->method;
-//    }
 
     /**
      * @return string|null
@@ -105,9 +79,6 @@ abstract class FormSubmit extends HtmlElementNode
         $this->submitKey = $submitKey;
     }
 
-    /**
-     * @return string
-     */
     public function getSubmitKey(): ?string
     {
         return $this->submitKey;
