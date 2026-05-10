@@ -270,6 +270,9 @@ abstract class Entity
 
     public function update(): void
     {
+        if($this->manager === null){
+            throw new DevPanic("This entity is not marked to touch the database.");
+        }
         $this->manager->_executeUpdateEntity($this);
         $this->updateAttrs = [];
         $this->hasBeenNotified = false;
@@ -280,6 +283,9 @@ abstract class Entity
      */
     public function insert(): false|int
     {
+        if($this->manager === null){
+            throw new DevPanic("This entity is not marked to touch the database.");
+        }
         $returned = $this->manager->_executeInsertEntity($this);
         $this->updateAttrs = [];
         $this->hasBeenNotified = false;
@@ -288,6 +294,9 @@ abstract class Entity
 
     public function delete(): void
     {
+        if($this->manager === null){
+            throw new DevPanic("This entity is not marked to touch the database.");
+        }
         $this->manager->_executeDeleteEntity($this);
     }
 
