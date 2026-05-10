@@ -15,6 +15,8 @@ class FA_Icon extends HtmlElementNode
 
     private string $icon;
 
+    private ?string $size = null;
+
     /**
      * @param callable $builder
      */
@@ -29,6 +31,11 @@ class FA_Icon extends HtmlElementNode
         $this->icon = $icon;
     }
 
+    public function setCollection(string $collection): void
+    {
+        $this->collection = $collection;
+    }
+
     /**
      * @param string $icon
      */
@@ -37,9 +44,47 @@ class FA_Icon extends HtmlElementNode
         $this->icon = $icon;
     }
 
+    public function setSize2XS(): self {
+        $this->size = "2xs";
+        return $this;
+    }
+
+    public function setSizeXS(): self {
+        $this->size = "xs";
+        return $this;
+    }
+
+    public function setSizeSM(): self {
+        $this->size = "sm";
+        return $this;
+    }
+
+    public function setSizeNormal(): self {
+        $this->size = null;
+        return $this;
+    }
+
+    public function setSizeLG(): self {
+        $this->size = "lg";
+        return $this;
+    }
+
+    public function setSizeXL(): self {
+        $this->size = "xl";
+        return $this;
+    }
+
+    public function setSize2XL(): self {
+        $this->size = "2xl";
+        return $this;
+    }
+
     protected function onAfterBuild(): void
     {
         $this->addClass("fa-" . $this->collection, "fa-" . $this->icon);
+        if($this->size !== null){
+            $this->addClass("fa-" . $this->size);
+        }
         parent::onAfterBuild();
     }
 
