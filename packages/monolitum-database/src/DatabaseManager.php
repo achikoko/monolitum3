@@ -1108,12 +1108,14 @@ class DatabaseManager extends MNode implements EntityPersister
     public function _executeInsertEntity(Entity $entity): array
     {
 
-        $query = $this->newInsert($entity->getModel());
+        $model = $entity->getModel();
+
+        $query = $this->newInsert($model);
 
         // TODO check autoincrement is null and rest of ids are not null
 
         // Default values
-        foreach ($entity->getModel()->getAttrs() as $attr){
+        foreach ($model->getAttrs() as $attr){
             /** @var ?AttrExt_DB $databaseExt */
             $databaseExt = $attr->findExtension(AttrExt_DB::class);
             if($databaseExt !== null && $databaseExt->isDefaultSet()){
@@ -1122,7 +1124,12 @@ class DatabaseManager extends MNode implements EntityPersister
         }
 
         foreach ($entity->getUpdateAttrs() as $attrName => $value){
-            $query->addValue($attrName, $value);
+            $attr = $model->getAttr($attrName);
+            /** @var ?AttrExt_DB $databaseExt */
+            $databaseExt = $attr->findExtension(AttrExt_DB::class);
+            if($databaseExt !== null){
+                $query->addValue($attrName, $value);
+            }
         }
 
         return $query->execute();
@@ -1131,10 +1138,17 @@ class DatabaseManager extends MNode implements EntityPersister
 
     public function _executeUpdateEntity(Entity $entity): array
     {
-        $query = $this->newUpdate($entity->getModel());
+        $model = $entity->getModel();
+
+        $query = $this->newUpdate($model);
 
         foreach ($entity->getUpdateAttrs() as $attrName => $value){
-            $query->addValue($attrName, $value);
+            $attr = $model->getAttr($attrName);
+            /** @var ?AttrExt_DB $databaseExt */
+            $databaseExt = $attr->findExtension(AttrExt_DB::class);
+            if($databaseExt !== null){
+                $query->addValue($attrName, $value);
+            }
         }
 
         $ids = $this->generate_ids_filter($entity);
