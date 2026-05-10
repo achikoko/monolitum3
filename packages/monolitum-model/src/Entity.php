@@ -169,7 +169,7 @@ abstract class Entity
 
     /**
      * @param Attr|string $attr
-     * @param DateTime $date
+     * @param DateTimeInterface|null $date
      * @return $this
      */
     public function setDate(Attr|string $attr, ?DateTimeInterface $date): self
@@ -178,7 +178,7 @@ abstract class Entity
         if($date === null){
             return $this->_set($attr, null);
         }else {
-            $d = DateTime::createFromImmutable($date);
+            $d = DateTime::createFromInterface($date);
             $d->setTime(0, 0, 0, 0);
             return $this->_set($attr, DateTimeImmutable::createFromMutable($d));
         }

@@ -1,6 +1,7 @@
 <?php
 namespace monolitum\model\attr;
 
+use DateTimeImmutable;
 use DateTimeInterface;
 use monolitum\model\ValidatedValue;
 
@@ -24,7 +25,7 @@ class Attr_Date extends AbstractAttr
                 // Force to be a date, not a datetime
                 $date = date_time_set($date, 0, 0);
 
-                return new ValidatedValue(true, true, $date, null, $value);
+                return new ValidatedValue(true, true, DateTimeImmutable::createFromMutable($date), null, $value);
             }else{
                 return new ValidatedValue(true, true, null, null, "");
             }

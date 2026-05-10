@@ -2,6 +2,7 @@
 namespace monolitum\model\attr;
 
 use DateTime;
+use DateTimeImmutable;
 use monolitum\model\ValidatedValue;
 
 class Attr_DateTime extends AbstractAttr
@@ -21,7 +22,7 @@ class Attr_DateTime extends AbstractAttr
                 if($date === false)
                     return new ValidatedValue(false);
 
-                return new ValidatedValue(true, true, $date, null, $value);
+                return new ValidatedValue(true, true, DateTimeImmutable::createFromMutable($date), null, $value);
             }else{
                 return new ValidatedValue(true, true, null, null, "");
             }
