@@ -8,10 +8,10 @@ use monolitum\frontend\HtmlElementNodeExtension;
 class BSColSpan extends HtmlElementNodeExtension implements BSBuiltIntoInterface, ResponsiveProperty
 {
 
-    private function __construct(private readonly int $value)
+    private function __construct(private readonly int $value, private ?string $auto = null)
     {
         parent::__construct();
-        assert(1 <= $value && $value <= 12, "Col span should be between 1 and 12");
+        assert($this->auto !== null || 1 <= $value && $value <= 12, "Col span should be between 1 and 12");
     }
 
     public static function of(int $value): static
@@ -19,12 +19,17 @@ class BSColSpan extends HtmlElementNodeExtension implements BSBuiltIntoInterface
         return new BSColSpan($value);
     }
 
+    public static function auto(): static
+    {
+        return new BSColSpan(0, "auto");
+    }
+
     /**
      * @return int
      */
     public function getValue(bool $inverted = false): string
     {
-        return $inverted ? 12 - $this->value : $this->value;
+        return $this->auto !== null ? $this->auto : ($inverted ? 12 - $this->value : $this->value);
     }
 
     public function buildInto(HtmlElementNode $component, bool $inverted = false): void
