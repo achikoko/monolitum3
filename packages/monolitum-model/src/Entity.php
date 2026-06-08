@@ -1,7 +1,6 @@
 <?php
 namespace monolitum\model;
 
-use Carbon\CarbonImmutable;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -232,6 +231,8 @@ abstract class Entity
         $decimals = $attr->getDecimals();
         $intValue = intval($value * pow(10, $decimals));
         $this->setInt($attr, $intValue);
+
+        return $this;
     }
 
     public function getValue(Attr|string $attr): mixed
@@ -273,8 +274,10 @@ abstract class Entity
         if($this->manager === null){
             throw new DevPanic("This entity is not marked to touch the database.");
         }
-        $this->manager->_executeUpdateEntity($this);
-        $this->updateAttrs = [];
+        if(!empty($this->updateAttrs)) {
+            $this->manager->_executeUpdateEntity($this);
+            $this->updateAttrs = [];
+        }
         $this->hasBeenNotified = false;
     }
 
