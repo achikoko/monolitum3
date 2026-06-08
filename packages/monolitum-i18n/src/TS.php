@@ -95,8 +95,8 @@ abstract class TS
      * @param string[] $string
      * @return TS_Default
      */
-    public static function from(array|string $string): TS_Default{
-        return TS_Default::ofStringArray($string);
+    public static function from(array|string|TS_Default $string): TS{
+        return $string instanceof TS ? $string :  TS_Default::ofStringArray($string);
     }
 
 //    public static function fromMoment(Moment $moment, string $format): TS_Moment
