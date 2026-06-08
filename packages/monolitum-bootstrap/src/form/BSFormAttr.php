@@ -133,6 +133,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
     public function onAfterBuildForm(): void
     {
+        $this->callOnAfterBuildFormClosures();
+
         if($this->hidden !== true){
 
             $invalidFeedback = null;
@@ -180,6 +182,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
     public function onBeforeBuildForm(): void
     {
+        $this->callOnBeforeBuildFormCallables();
+
         $attr = $this->getAttr();
 
         // TODO disable ENTER key using https://stackoverflow.com/questions/895171/prevent-users-from-submitting-a-form-by-hitting-enter
@@ -633,4 +637,5 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
         $this->inputFieldExtensions[] = $extension;
         return $this;
     }
+
 }

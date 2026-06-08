@@ -55,6 +55,7 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
 
     public function onBeforeBuildForm(): void
     {
+        $this->callOnBeforeBuildFormCallables();
 
         if($this->hidden){
             $component = new FormControl_Hidden(function (FormControl_Hidden $it){
@@ -104,6 +105,6 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
 
     public function onAfterBuildForm(): void
     {
-        // TODO: Implement onAfterBuildForm() method.
+        $this->callOnAfterBuildFormClosures();
     }
 }

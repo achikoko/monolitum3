@@ -2,6 +2,7 @@
 
 namespace monolitum\frontend\form;
 
+use Closure;
 use monolitum\frontend\HtmlElementNode;
 use monolitum\i18n\TS;
 use monolitum\model\attr\Attr;
@@ -54,6 +55,13 @@ trait Trait_From_Attr
     protected bool $hasOverriddenEnum = false;
 
     protected ?Enumeration $overriddenEnum;
+
+    /// ////////////////////
+    /// Callables
+    /// ////////////////////
+
+    protected array $onBeforeBuildFormClosures = [];
+    protected array $onAfterBuildFormClosures = [];
 
     public function disabled(bool $disabled=true): void
     {
@@ -226,6 +234,32 @@ trait Trait_From_Attr
     public function getForm(): Form
     {
         return $this->form;
+    }
+
+    public function addOnBeforeBuildForm(Closure $closure): self
+    {
+        $this->onBeforeBuildFormClosures[] = $closure;
+        return $this;
+    }
+
+    public function addOnAfterBuildForm(Closure $closure): self
+    {
+        $this->onAfterBuildFormClosures[] = $closure;
+        return $this;
+    }
+
+    protected function callOnBeforeBuildFormCallables(): void
+    {
+        foreach($this->onBeforeBuildFormClosures as $closure){
+            call_user_func($closure);
+        }
+    }
+
+    protected function callOnAfterBuildFormClosures(): void
+    {
+        foreach($this->onAfterBuildFormClosures as $closure){
+            call_user_func($closure);
+        }
     }
 
 }
