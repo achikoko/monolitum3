@@ -4,7 +4,7 @@ namespace monolitum\database;
 
 use monolitum\model\Model;
 
-class Update extends Insert
+class Update extends AbstractInsertUpdate
 {
     /**
      * @var array<string, mixed>
@@ -28,6 +28,14 @@ class Update extends Insert
     public function getFilter(): array
     {
         return $this->filter;
+    }
+
+    /**
+     * @return int[]
+     */
+    public function execute(): array
+    {
+        return $this->manager->executeUpdate($this);
     }
 
 }
