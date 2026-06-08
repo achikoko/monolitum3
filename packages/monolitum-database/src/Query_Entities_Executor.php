@@ -29,9 +29,9 @@ class Query_Entities_Executor extends Query_Entities
         return $this;
     }
 
-    public function forUpdate(): self
+    public function forUpdate($writable = true): self
     {
-        $this->forUpdate = true;
+        $this->forUpdate = $writable;
         return $this;
     }
 
