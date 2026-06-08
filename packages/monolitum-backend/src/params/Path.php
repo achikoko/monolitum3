@@ -78,6 +78,10 @@ class Path
         Monolitum::getInstance()->push(new Request_SetRedirectPath($this));
     }
 
+    public function extend(string ...$strings): Path {
+        return Path::from(...$this->strings, ...$strings);
+    }
+
 
     public function writePath(bool $encodeUrl = true, string $separator="/"): ?string
     {

@@ -18,31 +18,50 @@ class Attr_File extends AbstractAttr
     const ERROR_BAD_FORMAT = 9;
     const ERROR_MULTIPLE_NOT_SUPPORTED = 10;
     const ERROR_MAX_SIZE = 11;
-
-    private ?int $maxSize = 1000000;
-
-    /**
-     * Max size in bytes
-     * @param int $maxSize
-     * @return $this
-     */
-    public function maxSize(int $maxSize): self
-    {
-        $this->maxSize = $maxSize;
-        return $this;
-    }
+    const ERROR_NOT_VALIDATED = 12;
+    const ERROR_UNKNOWN = 20;
 
     #[\Override]
     public function validate($value): ValidatedValue
     {
         // TODO $value is an array of attributes
-        if(is_array($value)){
+        if($value === null){
+            return new ValidatedValue(true); // Null
+        }else if(is_array($value)){
+            // TODO https://www.php.net/manual/en/features.file-upload.php
+
+            // Undefined | Multiple Files | $_FILES Corruption Attack
+            // If this request falls under any of them, treat it invalid.
+            if (
+                !isset($value['error']) ||
+                is_array($value['error'])
+            ) {
+                return new ValidatedValue(false, false, null, Attr_File::ERROR_UNKNOWN);
+            }
+
+            // Check $_FILES['upfile']['error'] value.
+            switch ($value['error']) {
+                case UPLOAD_ERR_OK:
+                    break;
+                case UPLOAD_ERR_NO_FILE:
+                    return new ValidatedValue(false, false, null, Attr_File::ERROR_NO_FILE);
+                case UPLOAD_ERR_INI_SIZE:
+                    return new ValidatedValue(false, false, null, Attr_File::ERROR_INI_SIZE);
+                case UPLOAD_ERR_FORM_SIZE:
+                    return new ValidatedValue(false, false, null, Attr_File::ERROR_FORM_SIZE);
+                case UPLOAD_ERR_PARTIAL:
+                    return new ValidatedValue(false, false, null, Attr_File::ERROR_PARTIAL);
+                default:
+                    return new ValidatedValue(false, false, null, Attr_File::ERROR_UNKNOWN);
+            }
 
             $name = $value['name'];
             if(is_array($name) && count($name) > 0){
                 // Multiple is not supported
                 return new ValidatedValue(false, false, null, Attr_File::ERROR_MULTIPLE_NOT_SUPPORTED);
             }
+
+            // This type is reported, we cannot trust it
             $type = $value['type'];
             if(is_array($type) && count($type) > 0){
                 // Multiple is not supported
@@ -57,10 +76,6 @@ class Attr_File extends AbstractAttr
             if(is_array($size) && count($size) > 0){
                 // Multiple is not supported
                 return new ValidatedValue(false, false, null, Attr_File::ERROR_MULTIPLE_NOT_SUPPORTED);
-            }
-
-            if ($this->maxSize !== null && $size > $this->maxSize) {
-                return new ValidatedValue(false, false, null, Attr_File::ERROR_MAX_SIZE);
             }
 
             return new ValidatedValue(true, true, new File($name, $type, $size, $temp_name));
