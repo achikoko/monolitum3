@@ -92,10 +92,10 @@ abstract class Entity
         }
     }
 
-    public function getJoinedSingleEntity(int $index = 0): ?Entity
+    public function getJoinedSingleEntity(int $joinIndex = 0): ?Entity
     {
-        if(isset($this->joinedEntities[$index])) {
-            $array = $this->joinedEntities[$index];
+        if(isset($this->joinedEntities[$joinIndex])) {
+            $array = $this->joinedEntities[$joinIndex];
             if(sizeof($array) > 0) {
                 return $array[0];
             }
@@ -103,17 +103,17 @@ abstract class Entity
         return null;
     }
 
-    function limitJoinedEntities(int $index, ?int $low, ?int $many): void
+    function limitJoinedEntities(int $joinIndex, ?int $low, ?int $many): void
     {
-        if(isset($this->joinedEntities[$index])) {
-            $this->joinedEntities[$index] = array_slice($this->joinedEntities[$index], $low ?? 0, $many);
+        if(isset($this->joinedEntities[$joinIndex])) {
+            $this->joinedEntities[$joinIndex] = array_slice($this->joinedEntities[$joinIndex], $low ?? 0, $many);
         }
     }
 
-    public function getJoinedEntities(int $index = 0): array
+    public function getJoinedEntities(int $joinIndex = 0): array
     {
-        if(isset($this->joinedEntities[$index])) {
-            return $this->joinedEntities[$index];
+        if(isset($this->joinedEntities[$joinIndex])) {
+            return $this->joinedEntities[$joinIndex];
         }
         return [];
     }
@@ -303,9 +303,14 @@ abstract class Entity
         $this->manager->_executeDeleteEntity($this);
     }
 
-    public static function instance(bool $forInsert = false, Entity $cloneOf = null): static
+    public static function instance(bool $forInsert = false, ?Entity $cloneOf = null): static
     {
         return EntitiesManager::findSelf()->instance(static::class, $forInsert, $cloneOf);
+    }
+
+    public function isWritable(): bool
+    {
+        return !$this->protectWrite;
     }
 
 }
