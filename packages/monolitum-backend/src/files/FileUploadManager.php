@@ -7,6 +7,7 @@ use DateTime;
 use monolitum\backend\params\Path;
 use monolitum\backend\resources\Request_DownloadFile;
 use monolitum\core\MNode;
+use monolitum\core\panic\DevPanic;
 use monolitum\database\Query;
 use monolitum\model\EntitiesManager;
 use monolitum\model\Entity;
@@ -108,6 +109,9 @@ class FileUploadManager extends MNode
 
     public function removeFileEntity(Entity $entity, bool $asWellFromFileSystem = true): bool
     {
+        if(!$entity->isWritable())
+            throw new DevPanic("To remove an upladed file it must be writable.");
+
         $category = $entity->getString($this->fileUploadDatabaseModel->category);
         $name = $entity->getString($this->fileUploadDatabaseModel->fileName);
 
