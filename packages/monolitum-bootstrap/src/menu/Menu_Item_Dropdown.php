@@ -3,14 +3,12 @@
 namespace monolitum\bootstrap\menu;
 
 use monolitum\bootstrap\BSPage;
-use monolitum\core\Find;
 use monolitum\core\MObject;
 use monolitum\core\Monolitum;
 use monolitum\core\panic\DevPanic;
 use monolitum\frontend\component\A;
 use monolitum\frontend\component\Ul;
 use monolitum\frontend\Renderable_Node;
-use function monolitum\core\m;
 
 class Menu_Item_Dropdown extends Menu_Item implements Menu_Item_Holder
 {
@@ -106,7 +104,7 @@ class Menu_Item_Dropdown extends Menu_Item implements Menu_Item_Holder
 //                }
 
             }
-            $it->setContent($this->text);
+            $it->append($this->text);
 
         }));
 

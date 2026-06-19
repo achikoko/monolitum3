@@ -103,7 +103,7 @@ class MNode implements MObject
         throw new DevPanic("Component " . $this . " was not received by any parent when added.");
     }
 
-    function doBuild(MNode $parent = null): void
+    function doBuild(?MNode $parent = null): void
     {
         if($this->built)
             return;
@@ -209,7 +209,7 @@ class MNode implements MObject
     function onFindIsResolved(Find $find): void
     {
         if (!$find->isFromCache() && $find->wantsToCache){
-            $this->cachedByClassName[$find->class] = $find->getResponded();
+            $this->cachedByClassName[$find->class] = $find->getResponse();
         }
     }
 

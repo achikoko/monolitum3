@@ -6,7 +6,6 @@ use monolitum\backend\params\Link;
 use monolitum\backend\params\Path;
 use monolitum\bootstrap\form\BSFormInputGroup;
 use monolitum\bootstrap\form\BSFormSubmit;
-use monolitum\bootstrap\layout\EBSFlex;
 use monolitum\bootstrap\layout\EBSInlineFlex;
 use monolitum\bootstrap\style\BSDisplay;
 use monolitum\bootstrap\style\BSMargin;
@@ -277,7 +276,7 @@ class Pagination extends HtmlElementNode
                         for ($i = 1; $i <= $this->max_pages; $i++) {
 
                             M(new FormControl_Select_Option(strval($i), function (FormControl_Select_Option $it) use ($i) {
-                                $it->setContent(strval($i));
+                                $it->append(strval($i));
                                 if ($this->page === $i)
                                     $it->setSelected();
                             }));
@@ -288,7 +287,7 @@ class Pagination extends HtmlElementNode
 
                     M(new BSFormSubmit(function (BSFormSubmit $it){
                         $it->color(BSColor::primary());
-                        $it->setContent($this->comboboxButtonText);
+                        $it->append($this->comboboxButtonText);
                     }));
 
                 }));

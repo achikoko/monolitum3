@@ -2,10 +2,7 @@
 
 namespace monolitum\bootstrap\notification;
 
-use monolitum\bootstrap\manager\Notification_Manager;
-use monolitum\core\Active;
 use monolitum\core\Find;
-use monolitum\backend\Manager;
 use monolitum\core\MNode;
 
 class NotificationManager extends MNode

@@ -60,7 +60,7 @@ class JSScript extends Head{
 
             $importmap = new HtmlElement("script");
             $importmap->setAttribute("type", "importmap");
-            $importmap->setContent((new HtmlElementContent('{"imports": {"' . $this->module . '": "' . $resolved . '"}}'))->setRaw());
+            $importmap->setContent(new HtmlElementContent('{"imports": {"' . $this->module . '": "' . $resolved . '"}}', true));
 
             return Rendered::of([$importmap, $link]);
 

@@ -89,7 +89,7 @@ class CryptoManager extends MNode
 //        // Decrypt the data using the private key and store the results in $decrypted
 //        openssl_private_decrypt($encrypted, $decrypted, $privKey);
 
-        return AsymmetricKey::from(
+        return new AsymmetricKey(
             $pubKey,
             $privKey,
             $digestAlg != null || $bits !== null ? $config : null

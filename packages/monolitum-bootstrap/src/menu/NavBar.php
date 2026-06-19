@@ -11,7 +11,6 @@ use monolitum\bootstrap\style\BSVerticalAlign;
 use monolitum\bootstrap\values\BSConstants;
 use monolitum\core\MObject;
 use monolitum\core\panic\DevPanic;
-use monolitum\frontend\Component;
 use monolitum\frontend\component\A;
 use monolitum\frontend\component\Div;
 use monolitum\frontend\component\Img;
@@ -337,7 +336,7 @@ class NavBar extends HtmlElementNode implements Menu_Item_Holder
                             //<span class="navbar-text">
                             $span = new Span();
                             $span->addClass("navbar-text");
-                            $span->setContent($this->rightComponent);
+                            $span->append($this->rightComponent);
                             $this->leftItemsUl->append($span);
 
                         }else{
@@ -368,7 +367,7 @@ class NavBar extends HtmlElementNode implements Menu_Item_Holder
                                         //<span class="navbar-text">
                                         $span = new Span();
                                         $span->addClass("navbar-text");
-                                        $span->setContent($this->rightComponent);
+                                        $span->append($this->rightComponent);
                                         $this->rightItemsUl->append($span);
 
                                     } else {
@@ -385,7 +384,7 @@ class NavBar extends HtmlElementNode implements Menu_Item_Holder
                         //<span class="navbar-text">
                         $span = new Span();
                         $span->addClass("navbar-text");
-                        $span->setContent($this->rightComponent);
+                        $span->append($this->rightComponent);
                         $divCollapse->append($span);
 
                     } else {

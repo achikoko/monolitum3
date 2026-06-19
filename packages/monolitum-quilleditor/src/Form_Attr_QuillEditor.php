@@ -75,7 +75,7 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
 
                 $it->append(new BSFormLabel(function(BSFormLabel $it){
                     $it->setFor($this->getFullFieldName());
-                    $it->setContent($this->getLabel());
+                    $it->append($this->getLabel());
                 }, "form-label"));
 
                 $it->append(new QuillEditor(function (QuillEditor $it) {

@@ -316,6 +316,7 @@ class ParamsManager extends MNode implements Validator
      */
     public function addModel_GET(Model|string $class): void
     {
+        /** @var Model $model */
         $model = Model::pushFindByName($class);
         $this->getModels[$model->getIdOrClass()] = $model;
     }

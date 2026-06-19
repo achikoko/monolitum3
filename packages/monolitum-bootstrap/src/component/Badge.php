@@ -20,7 +20,7 @@ class Badge extends AbstractTextNode
     public static function of(TS|string $content, BSColor $color): static
     {
         return new static(function (Badge $badge) use ($content, $color) {
-            $badge->setContent($content);
+            $badge->append($content);
             $badge->color($color);
         });
     }

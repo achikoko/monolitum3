@@ -111,7 +111,7 @@ class Menu_Item extends Li
             }else{
                 $it->setHref($this->link);
             }
-            $it->setContent($this->text);
+            $it->append($this->text);
 
         }));
 

@@ -3,7 +3,6 @@
 namespace monolitum\backend\params;
 
 use Closure;
-use monolitum\core\Active;
 use monolitum\core\MObject;
 use monolitum\core\panic\DevPanic;
 
