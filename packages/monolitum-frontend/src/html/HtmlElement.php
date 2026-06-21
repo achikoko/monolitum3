@@ -137,25 +137,19 @@ class HtmlElement implements Renderable
     {
         if (is_null($value)) {
             if($this->attributeMap !== null){
-                if(array_key_exists($key, $this->attributeMap)){
+                if(isset($this->attributeMap[$key])){
                     unset($this->attributeMap[$key]);
                 }
-                if (in_array($key, $this->nonSanitizedAttributes) !== false) {
-                    unset($this->nonSanitizedAttributes[$key]);
-                }
+                unset($this->nonSanitizedAttributes[$key]);
             }
         } else {
             if($this->attributeMap === null)
                 $this->attributeMap = [];
             $this->attributeMap[$key] = $value;
             if($sanitize){
-                if (in_array($key, $this->nonSanitizedAttributes) !== false) {
-                    unset($this->nonSanitizedAttributes[$key]);
-                }
+                unset($this->nonSanitizedAttributes[$key]);
             }else{
-                if (!in_array($key, $this->nonSanitizedAttributes)) {
-                    $this->nonSanitizedAttributes[] = $key;
-                }
+                $this->nonSanitizedAttributes[$key] = true;
             }
         }
         return $this;
@@ -318,7 +312,7 @@ class HtmlElement implements Renderable
 
     public function isAttributeNotSanitized($key): bool
     {
-        return in_array($key, $this->nonSanitizedAttributes);
+        return isset($this->nonSanitizedAttributes[$key]);
     }
 
     /**
