@@ -160,10 +160,9 @@ class MNode implements MObject
                 $object->respond($this);
                 return true;
             }else{
-                if(
-                    isset($this->interceptedFinds[$object->class])
-                    || array_key_exists($object->class, $this->interceptedFinds)
-                ){
+                if(array_key_exists($object->class, $this->interceptedFinds)){
+                    // `array_key_exists` because null finds are allowed
+
                     // find in intercepted
                     $reaction = $this->interceptedFinds[$object->class];
                     if(is_callable($reaction)){
@@ -174,10 +173,9 @@ class MNode implements MObject
                     }
                     return true; // not cache
 
-                }else if(
-                    isset($this->cachedByClassName[$object->class])
-                    || array_key_exists($object->class, $this->cachedByClassName)
-                ){
+                }else if(array_key_exists($object->class, $this->cachedByClassName)){
+                    // `array_key_exists` because null finds are allowed
+
                     // find in cache
                     $object->respond($this->cachedByClassName[$object->class], true);
                     return true; // not (re)cache
@@ -185,10 +183,7 @@ class MNode implements MObject
             }
         }else{
             $classOf = get_class($object);
-            if(
-                isset($this->interceptedObjectProcessors[$classOf])
-                || array_key_exists($classOf, $this->interceptedObjectProcessors)
-            ){
+            if(isset($this->interceptedObjectProcessors[$classOf])){
                 // find in intercepted
                 $reaction = $this->interceptedObjectProcessors[$classOf];
                 if(is_callable($reaction)){

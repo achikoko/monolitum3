@@ -12,9 +12,9 @@ abstract class AbstractInstanceOfRouter extends AbstractMappedRouter implements 
         parent::__construct($builder);
     }
 
-    protected function select(string $class): MNode|Closure|null
+    protected function select(?string $class): MNode|Closure|null
     {
-        if($class != null && array_key_exists($class, $this->map)){
+        if($class !== null && isset($this->map[$class])){
             return $this->map[$class];
         }else{
             foreach ($this->map as $item => $value) {

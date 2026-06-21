@@ -68,7 +68,7 @@ class Enumeration implements IteratorAggregate
 
     public function getLabel(mixed $key): string|TS|null
     {
-        if(key_exists($key, $this->enumKeyIndexes)){
+        if(isset($this->enumKeyIndexes[$key])){
             return $this->enumValues[$this->enumKeyIndexes[$key]][self::ENUM_VALUE_TUPLE_LABEL];
         }else if($key instanceof UnitEnum) {
             foreach ($this->enumValues as $enumValue){
@@ -93,7 +93,7 @@ class Enumeration implements IteratorAggregate
 
     public function keyExist(mixed $key): bool
     {
-        if(key_exists($key, $this->enumKeyIndexes)){
+        if(isset($this->enumKeyIndexes[$key])){
             return true;
         }else if($key instanceof UnitEnum) {
             foreach ($this->enumValues as $enumValue){
@@ -145,7 +145,7 @@ class Enumeration implements IteratorAggregate
 
     public function getGroupOfKey(int|string $itemKey): ?EnumGroup
     {
-        if(key_exists($itemKey, $this->enumKeyIndexes)){
+        if(isset($this->enumKeyIndexes[$itemKey])){
             $groupIndex = $this->enumValues[$this->enumKeyIndexes[$itemKey]][self::ENUM_VALUE_TUPLE_GROUP];
             return $groupIndex < 0 ? null : $this->enumGroups[$groupIndex];
         }

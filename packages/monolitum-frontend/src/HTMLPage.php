@@ -89,7 +89,8 @@ class HTMLPage extends MNode {
      */
     public function getConstant(string $key, mixed $defaultValue=null): mixed
     {
-        return key_exists($key, $this->pageConstants) ? $this->pageConstants[$key] : $defaultValue;
+        // A null value is a default value
+        return array_key_exists($key, $this->pageConstants) ? $this->pageConstants[$key] : $defaultValue;
     }
 
     /**

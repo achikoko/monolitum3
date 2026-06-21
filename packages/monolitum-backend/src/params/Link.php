@@ -2,7 +2,6 @@
 
 namespace monolitum\backend\params;
 
-use monolitum\core\Find;
 use monolitum\core\Monolitum;
 
 class Link
@@ -124,7 +123,7 @@ class Link
     public function removeParams(string ...$removeParams): self
     {
         foreach($removeParams as $param){
-            if (key_exists($param, $this->addParams)) {
+            if (isset($this->addParams[$param])) {
                 // Remove from add
                 unset($this->addParams[$param]);
             }else if($this->copyParams === true) {

@@ -19,7 +19,7 @@ class AnonymousModel
     public function attr(string $attrId, Attr $attr): void
     {
         $attr->_setModelId($this, $attrId);
-        if(key_exists($attrId, $this->attrs))
+        if(isset($this->attrs[$attrId]))
             throw new DevPanic("Id $attrId already exists in " . $this->__toString());
         $this->attrs[$attrId] = $attr;
     }
@@ -32,12 +32,12 @@ class AnonymousModel
     public function getAttr(Attr|string $attrId): Attr
     {
         if($attrId instanceof Attr){
-            if(!key_exists($attrId->getId(), $this->attrs))
+            if(!isset($this->attrs[$attrId->getId()]))
                 throw new DevPanic("Attr $attrId of Model $this not found.");
             return $attrId;
         }
 
-        if(!key_exists($attrId, $this->attrs))
+        if(!isset($this->attrs[$attrId]))
             throw new DevPanic("Attr $attrId of Model $this not found.");
 
         return $this->attrs[$attrId];

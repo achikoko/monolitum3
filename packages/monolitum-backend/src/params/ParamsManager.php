@@ -118,7 +118,7 @@ class ParamsManager extends MNode implements Validator
             }
         }else{
             foreach ($paramsSelection as $key){
-                if(key_exists($key, $master)){
+                if(isset($master[$key])){
                     $returnArray[$key] = $master[$key];
                 }
             }

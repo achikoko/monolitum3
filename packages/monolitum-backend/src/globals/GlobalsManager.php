@@ -45,7 +45,7 @@ class GlobalsManager extends MNode
 
         }else{
 
-            if(key_exists($newId->contextIds, $this->uniqueIdByContext)){
+            if(isset($this->uniqueIdByContext[$newId->contextIds])){
                 $id = $this->uniqueIdByContext[$newId->contextIds]++;
             }else{
                 $this->uniqueIdByContext[$newId->contextIds] = 1;

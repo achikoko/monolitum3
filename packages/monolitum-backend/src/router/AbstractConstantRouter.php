@@ -15,14 +15,14 @@ abstract class AbstractConstantRouter extends AbstractMappedRouter{
     {
 
         if($value == null){
-            if(array_key_exists("", $this->map))
+            if(isset($this->map[""]))
                 return $this->map[""];
             else if($this->defaultRoute !== null){
                 return $this->defaultRoute;
             }else{
                 return null;
             }
-        }else if(array_key_exists($value, $this->map)){
+        }else if(isset($this->map[$value])){
             return $this->map[$value];
         }else{
             if($this->defaultRoute !== null){

@@ -81,9 +81,9 @@ class Form_Validator_Entity extends Form_Validator
 
     /**
      * @param Attr|string $attr
-     * @return ?ValidatedValue
+     * @return ValidatedValue
      */
-    function getValidatedValue(Attr|string $attr): ?ValidatedValue
+    function getValidatedValue(Attr|string $attr): ValidatedValue
     {
         // Retrieve model
         $this->model = Model::pushFindByName($this->model);
@@ -91,10 +91,11 @@ class Form_Validator_Entity extends Form_Validator
         // Retrieve attribute
         $attr = $this->model->getAttr($attr);
 
-        if(key_exists($attr->getId(), $this->overwritten_validatedValues)){
+        // `isset` because a validated value cannot be null
+        if(isset($this->overwritten_validatedValues[$attr->getId()])){
             // The attr has been overwritten
             $validatedValue = $this->overwritten_validatedValues[$attr->getId()];
-        }else if(key_exists($attr->getId(), $this->build_validatedValues)){
+        }else if(isset($this->build_validatedValues[$attr->getId()])){
             // The attr has been already validated
             $validatedValue = $this->build_validatedValues[$attr->getId()];
         }else{

@@ -832,7 +832,7 @@ class DatabaseManager extends MNode implements EntityPersister
                 }
             } else if($filter instanceof Query_JoinedModel) {
                 $childModel = $this->entitiesManager->getModel($filter->model);
-                if($joinsWhereHint !== null && array_key_exists($childModel->id, $joinsWhereHint->joinsWhereHintsByModel)){
+                if($joinsWhereHint !== null && isset($joinsWhereHint->joinsWhereHintsByModel[$childModel->id])){
                     $childJoinsWhereHint = $joinsWhereHint->joinsWhereHintsByModel[$childModel->id];
                     $childTable = $childJoinsWhereHint->tableAlias;
                     $childModel = $childJoinsWhereHint->model;
@@ -935,7 +935,7 @@ class DatabaseManager extends MNode implements EntityPersister
         }else if($filter instanceof Query_Different){
             $sql .= $this->appendValue($filter->value, $attr, "<>", $values);
         } else if(is_array($filter)){
-            if($joinsWhereHint !== null && array_key_exists(self::_computeAttrName($attr), $joinsWhereHint->joinsWhereHintsByAttr)){
+            if($joinsWhereHint !== null && isset($joinsWhereHint->joinsWhereHintsByAttr[self::_computeAttrName($attr)])){
                 $childJoinsWhereHint = $joinsWhereHint->joinsWhereHintsByAttr[self::_computeAttrName($attr)];
                 $childModel = $joinsWhereHint->model;
                 $childTable = $joinsWhereHint->tableAlias;
@@ -1042,11 +1042,11 @@ class DatabaseManager extends MNode implements EntityPersister
                 $sql .= $this->execute_generate_joins_headers($childModel, $join, $childJoinsWhereHint, $parentTableCounter);
             }
 
-            if(sizeof($leftAttrs) == 1 && !array_key_exists($leftAttrs[0], $whereHint->joinsWhereHintsByAttr)){
+            if(sizeof($leftAttrs) == 1 && !isset($whereHint->joinsWhereHintsByAttr[$leftAttrs[0]])){
                 $whereHint->joinsWhereHintsByAttr[self::_computeAttrName($leftAttrs[0])] = $childJoinsWhereHint;
             }
 
-            if(!array_key_exists($childModel->id, $whereHint->joinsWhereHintsByModel)){
+            if(!isset($whereHint->joinsWhereHintsByModel[$childModel->id])){
                 $whereHint->joinsWhereHintsByModel[$childModel->id] = $childJoinsWhereHint;
             }
         }

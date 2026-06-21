@@ -24,7 +24,6 @@ use monolitum\i18n\TS;
 use monolitum\model\AnonymousModel;
 use monolitum\model\attr\Attr;
 use monolitum\model\Entity;
-use monolitum\model\Model;
 use monolitum\model\ValidatedValue;
 
 class Form extends HtmlElementNode
@@ -488,29 +487,38 @@ class Form extends HtmlElementNode
      */
     public function getDisplayValue(Attr|string $attr): ValidatedValue
     {
+        $valueInDefaultValues = null;
 
         if($this->validator !== null){
             if($this->isValidating()){
                 if($this->validator->isAttrInValidateList($attr)){
                     $validatedValue = $this->validator->getValidatedValue($attr);
-                    if($validatedValue->isWellFormat())
+                    if($validatedValue->isWellFormat()){
                         return $validatedValue;
+                    }
                 }
             }
 
-            if(key_exists($attr->getId(), $this->defaultValues)){
-                $validatedValue = new ValidatedValue(true, true, $this->defaultValues[$attr->getId()]);
+            // `array_key_exists` because null values are also default values
+            if(array_key_exists($attr->getId(), $this->defaultValues)){
+                $valueInDefaultValues = $validatedValue = new ValidatedValue(true, true, $this->defaultValues[$attr->getId()]);
             }else{
                 $validatedValue = $this->validator->getDefaultValue($attr);
             }
 
-            if($validatedValue->isWellFormat())
+            if($validatedValue->isWellFormat()){
                 return $validatedValue;
+            }
 
+        }else{
+            // `array_key_exists` because null values are also default values
+            if(array_key_exists($attr->getId(), $this->defaultValues)){
+                $valueInDefaultValues = new ValidatedValue(true, true, $this->defaultValues[$attr->getId()]);
+            }
         }
 
-        if(key_exists($attr->getId(), $this->defaultValues)){
-            return new ValidatedValue(true, true, $this->defaultValues[$attr->getId()]);
+        if($valueInDefaultValues !== null){
+            return $valueInDefaultValues;
         }else{
             return new ValidatedValue(false);
         }

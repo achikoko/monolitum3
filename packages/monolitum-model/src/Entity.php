@@ -122,7 +122,7 @@ abstract class Entity
     {
         if($attr instanceof Attr)
             $attr = $attr->getId();
-        return key_exists($attr, $this->values) ? $this->values[$attr] : null;
+        return $this->values[$attr] ?? null;
     }
 
     public function setString(Attr|string $attr, ?string $string): self
@@ -134,7 +134,7 @@ abstract class Entity
     {
         if($attr instanceof Attr)
             $attr = $attr->getId();
-        return key_exists($attr, $this->values) ? $this->values[$attr] : null;
+        return $this->values[$attr] ?? null;
     }
 
     public function setInt(Attr|string $attr, ?int $int): self
@@ -146,7 +146,7 @@ abstract class Entity
     {
         if($attr instanceof Attr)
             $attr = $attr->getId();
-        return key_exists($attr, $this->values) ? $this->values[$attr] : null;
+        return $this->values[$attr] ?? null;
     }
 
     /**
@@ -163,7 +163,7 @@ abstract class Entity
     {
         if($attr instanceof Attr)
             $attr = $attr->getId();
-        return key_exists($attr, $this->values) ? $this->values[$attr] : null;
+        return $this->values[$attr] ?? null;
     }
 
     /**
@@ -187,7 +187,7 @@ abstract class Entity
     {
         if($attr instanceof Attr)
             $attr = $attr->getId();
-        return key_exists($attr, $this->values) ? $this->values[$attr] : null;
+        return $this->values[$attr] ?? null;
     }
 
     /**
@@ -239,7 +239,7 @@ abstract class Entity
     {
         if($attr instanceof Attr)
             $attr = $attr->getId();
-        return key_exists($attr, $this->values) ? $this->values[$attr] : null;
+        return $this->values[$attr] ?? null;
     }
 
     public function setValue(Attr|string $attr, mixed $value): self
@@ -256,9 +256,10 @@ abstract class Entity
 
     public function hasValue(Attr|string $attr): bool
     {
+        // Null values are considered not values
         if($attr instanceof Attr)
-            return key_exists($attr->getId(), $this->values);
-        return key_exists($attr, $this->values);
+            return isset($this->values[$attr->getId()]);
+        return isset($this->values[$attr]);
     }
 
     /**

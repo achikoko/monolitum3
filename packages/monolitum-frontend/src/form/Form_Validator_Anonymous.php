@@ -27,7 +27,7 @@ class Form_Validator_Anonymous extends Form_Validator
      * @param Attr|string $attr
      * @return ?ValidatedValue
      */
-    function getValidatedValue(Attr|string $attr): ?ValidatedValue
+    function getValidatedValue(Attr|string $attr): ValidatedValue
     {
         return new ValidatedValue(false);
     }

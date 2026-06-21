@@ -102,7 +102,7 @@ class CryptoManager extends MNode
         if($data === null)
             return null;
 
-        if(array_key_exists($keyname, $this->symmetricKeys)){
+        if(isset($this->symmetricKeys[$keyname])){
             $key = $this->symmetricKeys[$keyname];
 
             $algorithm = $key->algorithm;
@@ -126,7 +126,7 @@ class CryptoManager extends MNode
                 throw new AuthPanic("Panic: OpenSSL not working!");
             return $prefix . $encrypted;
 
-        }else if(array_key_exists($keyname, $this->asymmetricKeys)){
+        }else if(isset($this->asymmetricKeys[$keyname])){
             // Encrypt with my public key, so later I can decrypt it
             $key = $this->asymmetricKeys[$keyname];
 
@@ -150,7 +150,7 @@ class CryptoManager extends MNode
         if($data === null)
             return null;
 
-        if(array_key_exists($keyname, $this->symmetricKeys)){
+        if(isset($this->symmetricKeys[$keyname])){
             $key = $this->symmetricKeys[$keyname];
 
             $algorithm = $key->algorithm;
@@ -183,7 +183,7 @@ class CryptoManager extends MNode
                 return $decrypt_result;
             }
 
-        }else if(array_key_exists($keyname, $this->asymmetricKeys)){
+        }else if(isset($this->asymmetricKeys[$keyname])){
             // Decrypt with my private key
 
             $key = $this->asymmetricKeys[$keyname];
@@ -217,7 +217,7 @@ class CryptoManager extends MNode
         if($data === null)
             return null;
 
-        if(array_key_exists($keyname, $this->asymmetricKeys)) {
+        if(isset($this->asymmetricKeys[$keyname])) {
 
             $key = $this->asymmetricKeys[$keyname];
 
@@ -251,7 +251,7 @@ class CryptoManager extends MNode
         if($data === null)
             return null;
 
-        if(array_key_exists($keyname, $this->asymmetricKeys)) {
+        if(isset($this->asymmetricKeys[$keyname])) {
 
             $key = $this->asymmetricKeys[$keyname];
 
@@ -289,7 +289,7 @@ class CryptoManager extends MNode
         if($data === null)
             return null;
 
-        if(array_key_exists($keyname, $this->asymmetricKeys)) {
+        if(isset($this->asymmetricKeys[$keyname])) {
 
             $key = $this->asymmetricKeys[$keyname];
 
@@ -322,7 +322,7 @@ class CryptoManager extends MNode
         if($data === null)
             return null;
 
-        if(array_key_exists($keyname, $this->asymmetricKeys)) {
+        if(isset($this->asymmetricKeys[$keyname])) {
 
             $key = $this->asymmetricKeys[$keyname];
 
