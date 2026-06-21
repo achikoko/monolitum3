@@ -15,7 +15,7 @@ class BSPaddingResponsive extends HtmlElementNodeExtension implements BSBuiltInt
         $this->def = $def;
     }
 
-    public static function xs(BSPadding $def = null): static
+    public static function xs(?BSPadding $def = null): static
     {
         return new BSPaddingResponsive($def);
     }

@@ -15,7 +15,7 @@ class BSMarginResponsive extends HtmlElementNodeExtension implements BSBuiltInto
         $this->def = $def;
     }
 
-    public static function xs(BSMargin $def = null): static
+    public static function xs(?BSMargin $def = null): static
     {
         return new BSMarginResponsive($def);
     }

@@ -15,7 +15,7 @@ class BSAlignItemsResponsive extends HtmlElementNodeExtension implements BSBuilt
         $this->def = $def;
     }
 
-    public static function xs(BSAlignItems $def = null): static
+    public static function xs(?BSAlignItems $def = null): static
     {
         return new BSAlignItemsResponsive($def);
     }

@@ -19,7 +19,7 @@ class BSFloatResponsive extends HtmlElementNodeExtension implements BSBuiltIntoI
         $this->def = $def;
     }
 
-    public static function xs(BSFloat $def = null): static
+    public static function xs(?BSFloat $def = null): static
     {
         return new BSFloatResponsive($def);
     }

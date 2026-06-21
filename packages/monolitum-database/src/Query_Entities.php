@@ -46,7 +46,7 @@ class Query_Entities extends Query
      * @param int|null $many
      * @return $this
      */
-    public function limit(int $lowOrMany, int $many = null): self
+    public function limit(int $lowOrMany, ?int $many = null): self
     {
         if($many == null){
             $this->limitLow = 0;
@@ -68,7 +68,7 @@ class Query_Entities extends Query
         return $this->limitMany;
     }
 
-    public function sort(string|Attr $attr, bool $desc = false, bool $promoteToGlobalDesc = null): self
+    public function sort(string|Attr $attr, bool $desc = false, ?bool $promoteToGlobalDesc = null): self
     {
         $this->sortedAttrs[] = new Query_Sort_Tuple($attr, $desc, $promoteToGlobalDesc);
         return $this;

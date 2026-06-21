@@ -5,7 +5,7 @@ namespace monolitum\core\util;
 class StringUtils
 {
 
-    public static function toIdentifier(string $string, string $prependIfStartsInNumber = null): string
+    public static function toIdentifier(string $string, ?string $prependIfStartsInNumber = null): string
     {
         //Lower case everything
         $string = strtolower($string);

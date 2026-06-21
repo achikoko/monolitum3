@@ -15,7 +15,7 @@ class BSTextAlignResponsive extends HtmlElementNodeExtension implements BSBuiltI
         $this->def = $def;
     }
 
-    public static function xs(BSTextAlign $def = null): static
+    public static function xs(?BSTextAlign $def = null): static
     {
         return new BSTextAlignResponsive($def);
     }

@@ -30,7 +30,7 @@ class TS_Moment extends TS
         return Carbon::parse($moment)->locale($locale)->isoFormat($format);
     }
 
-    public function getTranslation(?string $locale, array $params = null): ?string
+    public function getTranslation(?string $locale, ?array $params = null): ?string
     {
         if($locale === null){
             return $this->carbon->isoFormat($this->format);

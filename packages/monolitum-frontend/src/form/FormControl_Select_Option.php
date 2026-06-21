@@ -5,7 +5,6 @@ use Closure;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\HtmlElementNode;
 use monolitum\frontend\LinkHook;
-use monolitum\frontend\LinkHookMode;
 
 class FormControl_Select_Option extends HtmlElementNode
 {
@@ -15,7 +14,7 @@ class FormControl_Select_Option extends HtmlElementNode
      */
     private array|null $linkHooks = null;
 
-    public function __construct(string $value=null, ?Closure $builder = null)
+    public function __construct(?string $value = null, ?Closure $builder = null)
     {
         parent::__construct(new HtmlElement("option"), $builder);
         $option = $this->getElement();

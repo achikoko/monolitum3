@@ -16,7 +16,7 @@ class BSJustifyContentResponsive extends HtmlElementNodeExtension implements BSB
         $this->def = $def;
     }
 
-    public static function xs(BSJustifyContent $def = null): static
+    public static function xs(?BSJustifyContent $def = null): static
     {
         return new BSJustifyContentResponsive($def);
     }

@@ -69,12 +69,12 @@ class Monolitum
 
     public function pushFrom(MObject $object, ?MNode $from): void
     {
+
         if($from === null){
             $node = $this->buildingStack[sizeof($this->buildingStack)-1];
         }else{
             $node = $from;
         }
-
 
         do{
             if($node->doReceive($object)){
@@ -85,6 +85,7 @@ class Monolitum
             }
             $node = $node->getParent();
         }while($node != null);
+
         $object->onNotReceived();
 
     }

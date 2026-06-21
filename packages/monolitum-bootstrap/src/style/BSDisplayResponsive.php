@@ -15,7 +15,7 @@ class BSDisplayResponsive extends HtmlElementNodeExtension implements BSBuiltInt
         $this->def = $def;
     }
 
-    public static function xs(BSDisplay $def = null): static
+    public static function xs(?BSDisplay $def = null): static
     {
         return new BSDisplayResponsive($def);
     }
