@@ -9,7 +9,7 @@ use monolitum\core\panic\DevPanic;
 readonly class Request_SetResourceData implements MObject
 {
 
-    private function __construct(public ?string $dataBase64, public ?Closure $writerFunction)
+    private function __construct(public ?string $dataBase64, public ?Closure $writerFunction, public bool $writeMime, public ?string $mimeType)
     {
 
     }
@@ -19,21 +19,20 @@ readonly class Request_SetResourceData implements MObject
         throw new DevPanic("No redirect manager.");
     }
 
-    /**
-     * @param string $dataBase64
-     * @return Request_SetResourceData
-     */
     public static function fromBase64Data(string $dataBase64): Request_SetResourceData
     {
-        return new Request_SetResourceData($dataBase64, null);
+        return new Request_SetResourceData($dataBase64, null, true, null);
     }
 
-    /**
-     * @param callable $writerFunction
-     * @return Request_SetResourceData
-     */
-    public static function fromWriterFunction(callable $writerFunction): Request_SetResourceData
+
+    public static function fromWriterFunction(callable $writerFunction, bool $writeDefaultMime = true): Request_SetResourceData
     {
-        return new Request_SetResourceData(null, $writerFunction);
+        return new Request_SetResourceData(null, $writerFunction, $writeDefaultMime, null);
     }
+
+    public static function fromWriterFunctionWithMime(callable $writerFunction, string $mimeType): Request_SetResourceData
+    {
+        return new Request_SetResourceData(null, $writerFunction, true, $mimeType);
+    }
+
 }

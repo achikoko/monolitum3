@@ -66,12 +66,16 @@ class RedirectManager extends MNode
 
             $base64Data = $this->resourceData->dataBase64;
             if($base64Data !== null){
-                header('Content-Type: ' . "application/octet-stream");
+                if($this->resourceData->writeMime){
+                    header('Content-Type: ' . $this->resourceData->mimeType ?? 'application/octet-stream');
+                }
                 echo $base64Data;
             }else{
                 $callable = $this->resourceData->writerFunction;
                 if(is_callable($callable)){
-                    header('Content-Type: ' . "application/octet-stream");
+                    if($this->resourceData->writeMime){
+                        header('Content-Type: ' . $this->resourceData->mimeType ?? 'application/octet-stream');
+                    }
                     $callable();
                 }
             }
