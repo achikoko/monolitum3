@@ -21,6 +21,10 @@ class AttrExt_Validate_String extends AttrExt_Validate
 
     private TS|string|null $filterValidateError = null;
 
+    private ?bool $ascii = null;
+
+    private TS|string|null $asciiError = null;
+
     private ?int $maxChars = null;
 
     private TS|string|null $maxCharsError = null;
@@ -52,6 +56,17 @@ class AttrExt_Validate_String extends AttrExt_Validate
         return $this;
     }
 
+    /**
+     * @param int $ascii
+     * @param string|TS|array|null $asciiError
+     * @return $this
+     */
+    public function ascii(bool $ascii = true, string|TS|array|null $asciiError = null): self
+    {
+        $this->ascii = $ascii;
+        $this->asciiError = is_array($asciiError) ? TS::from($asciiError) : $asciiError;
+        return $this;
+    }
 
     /**
      * @param int $maxChars
@@ -165,6 +180,13 @@ class AttrExt_Validate_String extends AttrExt_Validate
                     $errorMessage = $this->enumsError;
                 }
             }
+            if(!$error && $this->ascii){
+                $isAscii = mb_check_encoding($validatedValue->getValue(), 'ASCII');
+                if(!$isAscii){
+                    $error = true;
+                    $errorMessage = $this->asciiError;
+                }
+            }
             if(!$error && $this->maxChars !== null){
                 if(strlen($validatedValue->getValue()) > $this->maxChars) {
                     $error = true;
@@ -243,10 +265,13 @@ class AttrExt_Validate_String extends AttrExt_Validate
         }
 
         if($this->enums !== null){
-            $maxLen = 64; // Set a minimum of 64 when enums, to let space for new values
+            $maxLen = 0;
             foreach ($this->enums as $enumKey => $enumValue){
                 $maxLen = max($maxLen, strlen($enumKey));
             }
+            $maxLen *= 1.4; // Space for new enums
+            $maxLen = max($maxLen, 64);
+            $maxLen = min($maxLen, 1000);
             return $maxLen;
         }
 
@@ -255,7 +280,7 @@ class AttrExt_Validate_String extends AttrExt_Validate
 
     public function computeAsciiness(): bool
     {
-        if($this->enums !== null)
+        if($this->ascii || $this->enums !== null)
             return true;
         return false;
     }
