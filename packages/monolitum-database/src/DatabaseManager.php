@@ -117,6 +117,57 @@ class DatabaseManager extends MNode implements EntityPersister
     }
 
     /**
+     * @param mixed $value
+     * @param Attr $attr
+     * @param string $sql
+     * @param array $values
+     * @return array
+     */
+    public function appendValues(array $queryValues, Attr $attr, array &$values): ?string
+    {
+        $sql = "(";
+        $first = true;
+        foreach ($queryValues as $k => $value) {
+            if (is_string($value)) {
+                if (!($attr instanceof Attr_String))
+                    throw new DevPanic("Illegal string value type");
+                $sql = "?";
+                $values[] = $value;
+            } else if (is_int($value)) {
+                if (!($attr instanceof Attr_Int) && !($attr instanceof Attr_Decimal))
+                    throw new DevPanic("Illegal int value type");
+                $sql = "?";
+                $values[] = $value;
+            } else if (is_bool($value)) {
+                if (!($attr instanceof Attr_Bool))
+                    throw new DevPanic("Illegal bool value type");
+                $sql = "?";
+                $values[] = $value;
+            } else if ($value instanceof Color) {
+                if (!($attr instanceof Attr_Color))
+                    throw new DevPanic("Illegal color value type");
+                $sql = "?";
+                $values[] = $value->getHexValue();
+            } else if ($value instanceof DateTime) {
+                if (!($attr instanceof Attr_Date) && !($attr instanceof Attr_DateTime))
+                    throw new DevPanic("Illegal string value type");
+                $sql = "?";
+                $values[] = $value;
+            } else {
+                $sql = "?";
+                $values[] = $value;
+            }
+            $first = false;
+        }
+
+        if($first)
+            return null;
+
+        $sql .= ")";
+        return $sql;
+    }
+
+    /**
      * @param Query_Entities_Executor $query
      * @param string $sql
      * @param array $values
@@ -618,7 +669,7 @@ class DatabaseManager extends MNode implements EntityPersister
                 $ext != null
                 && ($selectedAttrsIds === true
                     || $idsMandatory && $ext->isPrimaryKey()
-                    || is_array($selectedAttrsIds) && in_array($attr->getId(), $selectedAttrsIds)
+                    || is_array($selectedAttrsIds) && (in_array($attr, $selectedAttrsIds) || in_array($attr->getId(), $selectedAttrsIds))
                 )) {
                 if($appendInitialComma || !empty($string)){
                     $string .= ", ";
@@ -626,6 +677,9 @@ class DatabaseManager extends MNode implements EntityPersister
                 $string .= '`' . $tablePrefix . '`.`' . self::_computeAttrName($attr)
                     . '` AS ' . self::_computeSelectAttrAlias($tablePrefix, $attr);
             }
+        }
+        if(empty($string)){
+            throw new DevPanic("Not selected attributes.");
         }
         return $string;
     }
@@ -789,23 +843,36 @@ class DatabaseManager extends MNode implements EntityPersister
         return $sql;
     }
 
-    public function execute_generate_where_filter(array|Query_Or|null $filter, Model $model, string $tableAlias, ?_JoinsWhereHint $joinsWhereHint, array &$values, bool $forceParenthesis = false): string
+    public function execute_generate_where_filter(array|Query_Or|Query_Not|null $filter, Model $model, string $tableAlias, ?_JoinsWhereHint $joinsWhereHint, array &$values, bool $forceParenthesis = false): string
     {
 
-        $sql = "";
-
         if($filter === null){
-            return $sql;
+            return "";
         }
 
         if(is_array($filter)){
             // parse and
-            $sql .= $this->execute_generate_where_list($filter, $model, $tableAlias, $joinsWhereHint, $values, forceParenthesis: $forceParenthesis);
+            return $this->execute_generate_where_list($filter, $model, $tableAlias, $joinsWhereHint, $values, forceParenthesis: $forceParenthesis);
         }else if($filter instanceof Query_Or){
-            $sql .= $this->execute_generate_where_list($filter->getFilters(), $model, $tableAlias, $joinsWhereHint, $values, "OR", true);
+            return $this->execute_generate_where_list($filter->getFilters(), $model, $tableAlias, $joinsWhereHint, $values, "OR", true);
+        }else if($filter instanceof Query_Not){
+            $queryOrArray = $filter->getFilter();
+            if($queryOrArray instanceof Query_Not){
+                // Really? you dummy
+                return $this->execute_generate_where_filter($queryOrArray->getFilter(), $model, $tableAlias, $joinsWhereHint, $values, $forceParenthesis);
+            }else if($queryOrArray instanceof Query_Or){
+                $sql = $this->execute_generate_where_list($queryOrArray->getFilters(), $model, $tableAlias, $joinsWhereHint, $values, "OR", true);
+                if (!empty($sql)){
+                    return "NOT " . $sql;
+                }
+                return "";
+            } else {
+                // Array AND
+                return $this->execute_generate_where_list($queryOrArray, $model, $tableAlias, $joinsWhereHint, $values, forceParenthesis: $forceParenthesis);
+            }
         }
 
-        return $sql;
+        return "";
     }
 
     public function execute_generate_where_list(array $filters, Model $model, string $tableAlias, ?_JoinsWhereHint $joinsWhereHint, array &$values, string $operation = "AND", bool $forceParenthesis = false): string
@@ -932,17 +999,37 @@ class DatabaseManager extends MNode implements EntityPersister
             $sql .= " LIKE ? ESCAPE '!' ";
             $values[] = $processedString;
 
-        }else if($filter instanceof Query_Different){
+        } else if($filter instanceof Query_Different){
             $sql .= $this->appendValue($filter->value, $attr, "<>", $values);
-        } else if(is_array($filter)){
-            if($joinsWhereHint !== null && isset($joinsWhereHint->joinsWhereHintsByAttr[self::_computeAttrName($attr)])){
-                $childJoinsWhereHint = $joinsWhereHint->joinsWhereHintsByAttr[self::_computeAttrName($attr)];
-                $childModel = $joinsWhereHint->model;
-                $childTable = $joinsWhereHint->tableAlias;
-                $this->execute_generate_where_list($filter, $childModel, $childTable, $childJoinsWhereHint, $values );
+        } else if($filter instanceof Query_Not){
+            $childFilter = $filter->getFilter();
+            if(is_array($childFilter)){
+                // NOT IN
+                $list = $this->appendValues($childFilter, $attr, $values);
+                if($list) {
+                    $sql .= " NOT IN " . $list;
+                } else {
+                    return "TRUE"; // NO EFFECT
+                }
             }else{
-                throw new DevPanic("Joined table not found in query.");
+                // DIFFERENT
+                $sql .= $this->appendValue($childFilter, $attr, "<>", $values);
             }
+        } else if(is_array($filter)){
+            $list = $this->appendValues($filter, $attr, $values);
+            if($list) {
+                $sql .= " IN " . $list;
+            } else {
+                return " FALSE"; // empty IN, no match values
+            }
+//            if($joinsWhereHint !== null && isset($joinsWhereHint->joinsWhereHintsByAttr[self::_computeAttrName($attr)])){
+//                $childJoinsWhereHint = $joinsWhereHint->joinsWhereHintsByAttr[self::_computeAttrName($attr)];
+//                $childModel = $joinsWhereHint->model;
+//                $childTable = $joinsWhereHint->tableAlias;
+//                $sql .= $this->execute_generate_where_list($filter, $childModel, $childTable, $childJoinsWhereHint, $values );
+//            }else{
+//                throw new DevPanic("Joined table not found in query.");
+//            }
         } else {
             $sql .= $this->appendValue($filter, $attr, "=", $values);
         }
