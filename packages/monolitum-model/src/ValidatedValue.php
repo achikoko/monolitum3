@@ -24,17 +24,7 @@ class ValidatedValue
         $this->isWellFormat = $wellFormat;
         $this->value = $value;
         $this->error = is_array($error) ? TS::from($error) : $error;
-//        if($strValue !== null){
-            $this->strValue = $strValue;
-//        }else if($value !== null){
-//            if($value instanceof \DateTime){
-//                $this->strValue = $value->format('Y-m-d H:i:s');
-//            }else{
-//                $this->strValue = strval($value);
-//            }
-//        }else{
-//            $this->strValue = "";
-//        }
+        $this->strValue = $strValue ?? ($value === null ? "null" : null);
     }
 
     /**
