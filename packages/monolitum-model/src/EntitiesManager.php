@@ -53,7 +53,7 @@ class EntitiesManager extends MNode implements EntityPersister
     public function instance(Model|string $entityModel, bool $forInsert = false, ?Entity $cloneOf = null): Entity
     {
         $model = $this->getModel($entityModel);
-        $class = $model->getInstanceableClass();
+        $class = $model->getInstantiableClass();
 
         if($cloneOf !== null){
             if($cloneOf->getModel() !== $model){
