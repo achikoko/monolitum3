@@ -126,7 +126,13 @@ class Enumeration implements IteratorAggregate
             } else if ($itemValue instanceof UnitEnum) {
                 $enumeration->appendValue($itemValue->name, $itemValue->name);
             }else if (is_string($itemValue) || $itemValue instanceof TS) {
-                $enumeration->appendValue($itemKey, $itemValue);
+                if(is_int($itemKey)){
+                    // If key is an int, then it is a normal array (not associative)
+                    // The key is the enumeration string
+                    $enumeration->appendValue($itemValue, $itemValue);
+                }else{
+                    $enumeration->appendValue($itemKey, $itemValue);
+                }
             } else {
                 throw new DevPanic("Enum constant not found");
             }
