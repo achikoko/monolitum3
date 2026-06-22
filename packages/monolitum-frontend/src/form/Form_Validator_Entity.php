@@ -2,7 +2,7 @@
 
 namespace monolitum\frontend\form;
 
-use monolitum\backend\params\Source;
+use monolitum\backend\params\StandardProvider;
 use monolitum\backend\params\Validator;
 use monolitum\model\AnonymousModel;
 use monolitum\model\attr\Attr;
@@ -27,18 +27,18 @@ class Form_Validator_Entity extends Form_Validator
      */
     private ?Entity $currentEntity = null;
 
-    private Source $sourceIfAnonymousModel;
+    private string $sourceIfAnonymousModel;
 
     /**
      * @param Validator $validator
      * @param class-string|AnonymousModel|Model $model
      * @param mixed|null $post
      */
-    public function __construct(Validator $validator, string|AnonymousModel $model, ?Source $sourceIfAnonymousModel = null)
+    public function __construct(Validator $validator, string|AnonymousModel $model, ?string $sourceIfAnonymousModel = null)
     {
         $this->validator = $validator;
         $this->model = $model;
-        $this->sourceIfAnonymousModel = $sourceIfAnonymousModel ?? Source::POST;
+        $this->sourceIfAnonymousModel = $sourceIfAnonymousModel ?? StandardProvider::POST;
     }
 
     /**
@@ -176,12 +176,12 @@ class Form_Validator_Entity extends Form_Validator
      */
     public function validateSubmissionKey(string $prefix): ValidatedValue
     {
-        return $this->validator->validateStringPost_NameStartingWith_ReturnEnding($prefix);
+        return $this->validator->validateKeyStartingWith_ReturnEnding($prefix, StandardProvider::POST);
     }
 
-    public function validateString(string $key, Source $source = Source::POST): ValidatedValue
+    public function validateString(string $key, string $providerKey = StandardProvider::POST): ValidatedValue
     {
-        return $this->validator->validateString($key, $source);
+        return $this->validator->validateString($key, $providerKey);
     }
 
 

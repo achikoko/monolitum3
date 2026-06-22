@@ -130,7 +130,7 @@ class PathManager extends MNode
                 if($copy !== false){
 
                     $activeGetParams = new Request_FindParameters(
-                        Request_FindParameters::CATEGORY_GET,
+                        StandardProvider::GET,
                         is_bool($copy) ? null : $copy,
                         $object->link->getRemoveParams()
                     );

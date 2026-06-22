@@ -3,7 +3,7 @@
 namespace monolitum\frontend\form;
 
 use monolitum\backend\params\ParamsManager;
-use monolitum\backend\params\Source;
+use monolitum\backend\params\StandardProvider;
 use monolitum\core\panic\DevPanic;
 use monolitum\i18n\TS;
 use monolitum\model\attr\Attr;
@@ -94,7 +94,7 @@ abstract class Form_Validator
      * @param string $key
      * @return ValidatedValue
      */
-    abstract function validateString(string $key, Source $source = Source::POST): ValidatedValue;
+    abstract function validateString(string $key, string $providerKey = StandardProvider::POST): ValidatedValue;
 
     /**
      * @param Entity $entity

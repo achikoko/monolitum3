@@ -17,23 +17,49 @@ use monolitum\model\ValidatedValue;
 class ParamsManager extends MNode implements Validator
 {
 
-    //** @var Model[] by name */
-    //private $sessionModels = [];
+    private ?string $defaultProvider = null;
 
-    /** @var Model[] by name */
-    private array $getModels = [];
+    /**
+     * @var array<string, ParamsProvider>
+     */
+    private array $providers = [];
 
-    /** @var Model[] by name */
-    private array $postModels = [];
+    /**
+     * @var array<string, string> model id -> provider
+     */
+    private array $models = [];
 
     public function __construct(?Closure $builder = null)
     {
         parent::__construct($builder);
     }
 
+    public function registerProvider(string $providerKey, ParamsProvider $provider, bool $default = false): void
+    {
+        $this->providers[$providerKey] = $provider;
+        if($default){
+            $this->defaultProvider = $providerKey;
+        }
+    }
+
+    /**
+     * @param class-string|Model $model
+     * @param string $providerKey
+     * @return void
+     */
+    public function addModel(string|Model $model, string $providerKey): void
+    {
+        if(!isset($this->providers[$providerKey])){
+            throw new DevPanic("Provider '$providerKey' is not registered.");
+        }
+        if(is_string($model))
+            $model = Model::pushFindByName($model);
+        $this->models[$model->getIdOrClass()] = $providerKey;
+    }
+
     /**
      * @param Attr $attr
-     * @param $name
+     * @param string $name
      * @param array $globalArray
      * @return ValidatedValue
      */
@@ -74,11 +100,21 @@ class ParamsManager extends MNode implements Validator
             /** @var array<string, string> $returnArray */
             $returnArray = [];
 
-            if(is_string($object->category))
-                $this->fill_params($returnArray, $object->category, $object->paramsSelection, $object->exceptions);
-            else if(is_array($object->category)){
-                foreach ($object->category as $category){
-                    $this->fill_params($returnArray, $category, $object->paramsSelection, $object->exceptions);
+            if(is_string($object->providerOrProviders)) {
+                if (isset($this->providers[$object->providerOrProviders])) {
+                    $provider = $this->providers[$object->providerOrProviders];
+                    if ($provider instanceof ParamsProvider_Strings) {
+                        $provider->retrieveParams($returnArray, $object->paramsSelection, $object->exceptions);
+                    }
+                }
+            } else if(is_array($object->providerOrProviders)){
+                foreach ($object->providerOrProviders as $category){
+                    if(isset($this->providers[$category])){
+                        $provider = $this->providers[$category];
+                        if($provider instanceof ParamsProvider_Strings){
+                            $provider->retrieveParams($returnArray, $object->paramsSelection, $object->exceptions);
+                        }
+                    }
                 }
             }
 
@@ -94,114 +130,68 @@ class ParamsManager extends MNode implements Validator
         return parent::doReceive($object);
     }
 
-    /**
-     * @param array<string, string> $returnArray
-     * @param string $category
-     * @param null|string[] $paramsSelection
-     * @param string[] $exceptions
-     * @return void
-     */
-    private function fill_params(array &$returnArray, string $category, array|null $paramsSelection, array $exceptions): void
+    public function validate(string|AnonymousModel $model, Attr|string $attr, ?string $prefix = null, ?string $providerIfAnonymous=null): ValidatedValue
     {
+        $validatedValue = $this->validateOnlyFormat($model, $attr, $prefix, $providerIfAnonymous);
 
-        $master = match ($category) {
-            Request_FindParameters::CATEGORY_GET => $_GET,
-            Request_FindParameters::CATEGORY_POST => $_POST,
-            default => [],
-        };
-
-        if($paramsSelection === null){
-            foreach ($master as $key => $value){
-                if(!in_array($key, $exceptions)){
-                    $returnArray[$key] = $value;
-                }
-            }
-        }else{
-            foreach ($paramsSelection as $key){
-                if(isset($master[$key])){
-                    $returnArray[$key] = $master[$key];
-                }
-            }
+        if(!$validatedValue->isWellFormat()){
+            return $validatedValue;
         }
 
-    }
-
-    public function validate(string|AnonymousModel|Model $model, Attr|string $attr, ?string $prefix = null, ?Source $sourceIfAnonymous=null): ValidatedValue
-    {
-        /** @var Model $model */
-        if(is_string($model))
+        if(!$model instanceof AnonymousModel) {
             $model = Model::pushFindByName($model);
+        }
+
         $attr = $model->getAttr($attr);
 
-        $validatedValue = $this->validateOnlyFormat($model, $attr, $prefix, $sourceIfAnonymous);
+        /** @var AttrExt_Validate|null $attrExt_Validate */
+        $attrExt_Validate = $attr->findExtension(AttrExt_Validate::class);
 
-//        if(!$validatedValue->isValid()){
-
-            /** @var AttrExt_Validate|null $attrExt_Validate */
-            $attrExt_Validate = $attr->findExtension(AttrExt_Validate::class);
-
-            if($attrExt_Validate !== null){
-                $validatedValue = $attrExt_Validate->validate($validatedValue);
-            }
-
-//        }
+        if($attrExt_Validate !== null){
+            $validatedValue = $attrExt_Validate->validate($validatedValue);
+        }
 
         return $validatedValue;
 
     }
 
-//    public function validateOnlyFormatAnonymous(AnonymousModel $model, Attr|string $attr, ?string $prefix, ?bool $post): ValidatedValue
-//    {
-//
-//        $attr = $model->getAttr($attr);
-//
-//        if($post)
-//            $globalArray = $_POST;
-//        else
-//            $globalArray = $_GET;
-//
-//        /** @var AttrExt_Param|null $attrExt_Param */
-//        $attrExt_Param = $attr->findExtension(AttrExt_Param::class);
-//        if($attrExt_Param != null){
-//            $name = $attrExt_Param->getName();
-//        }else{
-//            $name = $attr->getId();
-//        }
-//        if($prefix !== null)
-//            $name = $prefix . $name;
-//
-//        return $this->validateAttributeFromGlobalArray($attr, $name, $globalArray);
-//    }
-
-    public function validateOnlyFormat(AnonymousModel|string $model, Attr|string $attr, ?string $prefix=null, ?Source $sourceIfAnonymous = null): ValidatedValue
+    public function validateOnlyFormat(AnonymousModel|string $model, Attr|string $attr, ?string $prefix=null, ?string $providerIfAnonymous = null): ValidatedValue
     {
-        /** @var Model $model */
-        if(is_string($model))
-            $model = Model::pushFindByName($model);
-        $attr = $model->getAttr($attr);
 
-        if ($model instanceof Model){
+        if ($model instanceof AnonymousModel){
+            $attr = $model->getAttr($attr);
 
-            if(array_key_exists($model->getIdOrClass(), $this->postModels)){
-//                if($sourceIfAnonymous !== null && $sourceIfAnonymous !== Source::POST)
-//                    throw new DevPanic("Called validateOnlyFormat() with a Model and source restriction: " . $model->getIdOrClass() . ". Models source must be set in advance.");
+            if($model instanceof Model){
+                $providerKey = $this->models[$model->getIdOrClass()] ?? null;
+                if($providerKey === null){
+                    throw new DevPanic("Model {$model->getIdOrClass()} is not registered as params.");
+                }
+            }else{
 
-                $globalArray = $_POST;
-            } else if(array_key_exists($model->getIdOrClass(), $this->getModels)){
-//                if($sourceIfAnonymous !== null && $sourceIfAnonymous !== Source::GET)
-//                    throw new DevPanic("Called validateOnlyFormat() with a Model and source restriction: " . $model->getIdOrClass() . ". Models source must be set in advance.");
+                $providerKey = $providerIfAnonymous;
 
-                $globalArray = $_GET;
-            } else {
-                throw new DevPanic("No declared model as params: " . $model->getIdOrClass() . ".");
+                if($providerKey === null){
+                    $providerKey = $this->defaultProvider;
+                }
+
+                if($providerKey === null){
+                   throw new DevPanic("Default anonymous provider was not resolved.");
+                }
+
             }
 
         }else{
-
-            $sourceIfAnonymous = $sourceIfAnonymous ?? Source::GET;
-            $globalArray = $sourceIfAnonymous->toGlobalArray();
-
+            /** @var Model $model */
+            $model = Model::pushFindByName($model);
+            $providerKey = $this->models[$model->getIdOrClass()] ?? null;
+            if($providerKey === null){
+                throw new DevPanic("Model {$model->getIdOrClass()} is not registered as params.");
+            }
         }
+
+        $provider = $this->providers[$providerKey];
+
+        $attr = $model->getAttr($attr);
 
         /** @var AttrExt_Param|null $attrExt_Param */
         $attrExt_Param = $attr->findExtension(AttrExt_Param::class);
@@ -213,7 +203,20 @@ class ParamsManager extends MNode implements Validator
         if($prefix !== null)
             $name = $prefix . $name;
 
-        return $this->validateAttributeFromGlobalArray($attr, $name, $globalArray);
+        if($model instanceof Model && $provider instanceof ParamsProvider_Models){
+            $result = $provider->retrieveModelAttribute($model, $attr, $name);
+        }else if($provider instanceof ParamsProvider_Strings){
+            $result = $provider->retrieveParam($name);
+        }else{
+            throw new DevPanic();
+        }
+
+        if($result === null){
+            return new ValidatedValue(true, true, null);
+        }else{
+            return $attr->validate($result);
+        }
+
     }
 
     function multiple(array $_files, bool $top = true): array
@@ -241,16 +244,20 @@ class ParamsManager extends MNode implements Validator
         return $files;
     }
 
-    public function validateString(string $name, Source $source = Source::POST): ValidatedValue
+    public function validateString(string $name, string $providerKey): ValidatedValue
     {
 
-        $globalArray = $source->toGlobalArray();
+        $provider = $this->providers[$providerKey];
 
-        $value = array_key_exists($name, $globalArray) ? $globalArray[$name] : null;
+        if($provider instanceof ParamsProvider_Strings){
+            $result = $provider->retrieveParam($name);
+        }else{
+            throw new DevPanic();
+        }
 
-        if(is_string($value) || is_numeric($value)){
-            return new ValidatedValue(true, true, strval($value), null, strval($value));
-        }else if(is_null($value)){
+        if(is_string($result) || is_numeric($result)){
+            return new ValidatedValue(true, true, strval($result), null, strval($result));
+        }else if(is_null($result)){
             return new ValidatedValue(true, true, null, null, "null");
         }
 
@@ -258,28 +265,22 @@ class ParamsManager extends MNode implements Validator
 
     }
 
-    public function validateStringPost_NameStartingWith_ReturnEnding(string $prefix): ValidatedValue
+    public function validateKeyStartingWith_ReturnEnding(string $prefix, string $providerKey): ValidatedValue
     {
 
-        $globalArray = $_POST;
-        $prefixLength = strlen($prefix);
+        $provider = $this->providers[$providerKey];
 
-        foreach ($globalArray as $name => $value){
-
-            // php <8 starts_with
-            if(strncmp($name, $prefix, $prefixLength) === 0){
-                $actionLength = strlen($name) - $prefixLength;
-                if($actionLength === 0)
-                    return new ValidatedValue(true, true, null, null, "null");
-
-                $action = substr( $name, $prefixLength, strlen($name) - $prefixLength);
-
-                return new ValidatedValue(true, true, strval($action), null, strval($action));
-            }
-
+        if($provider instanceof ParamsProvider_SupportsKeySeeking){
+            $result = $provider->validateKeyStartingWith_ReturnEnding($prefix);
+        }else{
+            throw new DevPanic();
         }
 
-        return new ValidatedValue(false);
+        if($result !== null){
+            return new ValidatedValue(true, true, strval($result), null, strval($result));
+        }else{
+            return new ValidatedValue(true, true, null, null, "null");
+        }
 
     }
 
@@ -295,40 +296,19 @@ class ParamsManager extends MNode implements Validator
         return $varManager->validate($model, $attr);
     }
 
+    public static function pushModel(Model|string $class, string $providerKey): void
+    {
+        ParamsManager::findSelf()->addModel($class, $providerKey);
+    }
+
     public static function pushModelToGET(Model|string $class): void
     {
-        /** @var ParamsManager $manager */
-        $manager = Find::pushAndGet(ParamsManager::class);
-        $manager->addModel_GET($class);
-
+        ParamsManager::findSelf()->addModel($class, StandardProvider::GET);
     }
 
     public static function pushModelToPOST(Model|string $class): void
     {
-        /** @var ParamsManager $manager */
-        $manager = Find::pushAndGet(ParamsManager::class);
-        $manager->addModel_POST($class);
-
+        ParamsManager::findSelf()->addModel($class, StandardProvider::POST);
     }
-
-    /**
-     * @param string|Model $class
-     */
-    public function addModel_GET(Model|string $class): void
-    {
-        /** @var Model $model */
-        $model = Model::pushFindByName($class);
-        $this->getModels[$model->getIdOrClass()] = $model;
-    }
-
-    /**
-     * @param string|Model $class
-     */
-    public function addModel_POST(Model|string $class): void
-    {
-        $model = Model::pushFindByName($class);
-        $this->postModels[$model->getIdOrClass()] = $model;
-    }
-
 
 }

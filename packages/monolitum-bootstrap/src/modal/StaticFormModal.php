@@ -5,7 +5,7 @@ namespace monolitum\bootstrap\modal;
 use Closure;
 use monolitum\backend\globals\Request_NewId;
 use monolitum\backend\params\ParamsManager;
-use monolitum\backend\params\Source;
+use monolitum\backend\params\StandardProvider;
 use monolitum\core\Find;
 use monolitum\frontend\form\Form;
 use monolitum\frontend\form\Form_Validator;
@@ -130,7 +130,7 @@ class StaticFormModal extends Form implements HasModalId
         return new StaticFormModal(new Form_Validator_Entity(
             $manager_params,
             $model,
-            Source::POST
+            StandardProvider::POST
         ), null, $builder);
     }
 
@@ -144,7 +144,7 @@ class StaticFormModal extends Form implements HasModalId
         return new StaticFormModal((new Form_Validator_Entity(
             $manager_params,
             $model,
-            Source::POST
+            StandardProvider::POST
         ))->setCurrentEntity($entity), null, $builder);
     }
 
@@ -158,7 +158,7 @@ class StaticFormModal extends Form implements HasModalId
         return new StaticFormModal(new Form_Validator_Entity(
             $manager_params,
             $model,
-            Source::POST
+            StandardProvider::POST
         ), $formId, $builder);
     }
 

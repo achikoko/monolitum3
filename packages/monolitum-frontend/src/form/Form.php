@@ -8,7 +8,7 @@ use monolitum\backend\params\AttrExt_Param;
 use monolitum\backend\params\Link;
 use monolitum\backend\params\ParamsManager;
 use monolitum\backend\params\Path;
-use monolitum\backend\params\Source;
+use monolitum\backend\params\StandardProvider;
 use monolitum\backend\resources\HrefResolver;
 use monolitum\backend\resources\Request_HrefResolver;
 use monolitum\core\Find;
@@ -199,7 +199,7 @@ class Form extends HtmlElementNode
     public function getExtraFieldValidatedValue(string $extraFieldName): ValidatedValue
     {
         $finalFieldName = $this->buildExtraFieldName($extraFieldName);
-        return $this->validator->validateString($finalFieldName, $this->methodGET ? Source::GET : Source::POST);
+        return $this->validator->validateString($finalFieldName, $this->methodGET ? StandardProvider::GET : StandardProvider::POST);
     }
 
     /**
@@ -658,7 +658,7 @@ class Form extends HtmlElementNode
 
         $validatedValueKey = $this->getSubmissionKey();
 
-        if($validatedValueKey !== null && $validatedValueKey->isValid()) {
+        if($validatedValueKey !== null && !$validatedValueKey->isNull()) {
             $this->build_isValidating = true;
             if($parentForm !== null){
                 // Validate CSRF token from parent form
@@ -888,7 +888,7 @@ class Form extends HtmlElementNode
         return new Form(new Form_Validator_Entity(
             $manager_params,
             $model,
-            Source::POST
+            StandardProvider::POST
         ), null, $builder);
     }
 
@@ -902,7 +902,7 @@ class Form extends HtmlElementNode
         return new Form((new Form_Validator_Entity(
             $manager_params,
             $model,
-            Source::POST
+            StandardProvider::POST
         ))->setCurrentEntity($entity), null, $builder);
     }
 
@@ -916,7 +916,7 @@ class Form extends HtmlElementNode
         return new Form(new Form_Validator_Entity(
             $manager_params,
             $model,
-            Source::POST
+            StandardProvider::POST
         ), $formId, $builder);
     }
 
