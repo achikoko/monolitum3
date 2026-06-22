@@ -27,7 +27,7 @@ class AttrExt_Validate_Int extends AttrExt_Validate
      * @param string|TS|null $minError
      * @return $this
      */
-    public function min(int $int, string|TS $minError = null): self
+    public function min(int $int, string|TS|null $minError = null): self
     {
         $this->min = $int;
         $this->minError = $minError;
@@ -39,7 +39,7 @@ class AttrExt_Validate_Int extends AttrExt_Validate
      * @param string|TS|null $maxError
      * @return $this
      */
-    public function max(int $int, string|TS $maxError = null): self
+    public function max(int $int, string|TS|null $maxError = null): self
     {
         $this->max = $int;
         $this->maxError = $maxError;

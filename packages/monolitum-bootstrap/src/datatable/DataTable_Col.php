@@ -70,7 +70,7 @@ class DataTable_Col implements MObject
         throw new DevPanic();
     }
 
-    public static function of(string|TS $name, Attr|string $attr = null): static
+    public static function of(string|TS $name, Attr|string|null $attr = null): static
     {
         $datatableCol = new DataTable_Col($name);
         if($attr !== null){

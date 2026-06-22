@@ -4,7 +4,6 @@ namespace monolitum\bootstrap\datatable;
 
 use Closure;
 use monolitum\backend\params\Link;
-use monolitum\backend\params\ParamsManager;
 use monolitum\backend\params\Path;
 use monolitum\backend\resources\HrefResolver;
 use monolitum\backend\resources\Request_HrefResolver;
@@ -89,7 +88,7 @@ class DataTable extends HtmlElementNode
         $this->onConfigureRow = $onConfigureRow;
     }
 
-    public function setSortableParams(Model|string $class, Attr|string $sort, Attr|string $desc=null): void
+    public function setSortableParams(Model|string $class, Attr|string $sort, Attr|string|null $desc=null): void
     {
 //        $this->sortable_model = $class;
 //        $this->sortable_attr_sort = $sort;

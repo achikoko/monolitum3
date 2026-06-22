@@ -93,7 +93,7 @@ trait Trait_From_Attr
      * @param string|HtmlElementNode|TS|null $string
      * @return $this
      */
-    public function setOverrideInvalid(HtmlElementNode|string|TS $string=null): void
+    public function setOverrideInvalid(HtmlElementNode|string|TS|null $string=null): void
     {
         $this->userSetInvalid = true;
         $this->overwrittenInvalidText = $string;
