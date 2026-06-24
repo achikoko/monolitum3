@@ -342,12 +342,13 @@ class Query_Result implements MClosableIterator, Iterator
                 $entity?->setInt($attr, $val);
                 return $val;
             }else if($attr instanceof Attr_Bool){
-                if(is_int($rowValue))
+                if(is_int($rowValue)) {
                     $rowValue = $rowValue != 0;
-                else if($rowValue === "true")
+                }else if($rowValue === "true") {
                     $rowValue = true;
-                else if($rowValue === "false")
+                }else if($rowValue === "false") {
                     $rowValue = false;
+                }
                 $entity?->setBool($attr, $rowValue);
                 return $rowValue;
             }else if($attr instanceof Attr_Date || $attr instanceof Attr_DateTime){

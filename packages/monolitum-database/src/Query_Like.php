@@ -16,7 +16,7 @@ class Query_Like
     private array $params;
 
     /**
-     * @param string $string
+     * @param string $string format string with '?' to be substituted by params
      * @param array $params
      */
     public function __construct(string $string, string ...$params)

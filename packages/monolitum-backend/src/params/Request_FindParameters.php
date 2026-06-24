@@ -44,6 +44,6 @@ class Request_FindParameters implements MObject
 
     function onNotReceived()
     {
-        throw new DevPanic("No Params manager.");
+        throw new DevPanic("No ParamsManager received the Request.");
     }
 }

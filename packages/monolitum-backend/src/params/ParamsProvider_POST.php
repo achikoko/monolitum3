@@ -14,7 +14,7 @@ class ParamsProvider_POST extends ParamsProvider_FromGlobalArray
         parent::__construct($_POST);
     }
 
-    function retrieveModelAttribute(Model $model, Attr $attr, ?string $name = null): ?string
+    public function retrieveModelAttribute(Model $model, Attr $attr, ?string $name = null): ?string
     {
         if ($name === null){
             $name = $attr->getId();

@@ -3,6 +3,8 @@
 namespace monolitum\backend\params;
 
 use monolitum\model\attr\Attr;
+use monolitum\model\EntitiesManager;
+use monolitum\model\Entity;
 use monolitum\model\Model;
 
 class ParamsProvider_FromGlobalArray implements ParamsProvider_Strings, ParamsProvider_Models, ParamsProvider_SupportsKeySeeking
@@ -38,7 +40,7 @@ class ParamsProvider_FromGlobalArray implements ParamsProvider_Strings, ParamsPr
         }
     }
 
-    function retrieveModelAttribute(Model $model, Attr $attr, ?string $name = null): ?string
+    public function retrieveModelAttribute(Model $model, Attr $attr, ?string $name = null): ?string
     {
         if ($name === null){
             $name = $attr->getId();
@@ -51,6 +53,15 @@ class ParamsProvider_FromGlobalArray implements ParamsProvider_Strings, ParamsPr
         }
     }
 
+    public function retrieveModel(Model $model, bool $writable = false): ?Entity
+    {
+        $entity = EntitiesManager::findSelf()->instance($model);
+        foreach ($model->getAttrs() as $attr){
+            $entity->setValue($attr, $this->retrieveModelAttribute($model, $attr));
+        }
+        return $entity;
+    }
+
     public function validateKeyStartingWith_ReturnEnding(string $prefix): ?string
     {
         $prefixLength = strlen($prefix);
@@ -60,11 +71,10 @@ class ParamsProvider_FromGlobalArray implements ParamsProvider_Strings, ParamsPr
             if(strncmp($name, $prefix, $prefixLength) === 0){
                 $actionLength = strlen($name) - $prefixLength;
                 if($actionLength === 0)
-                    return null;
+                    return ""; // Have to distinct "" than null
 
-                $action = substr( $name, $prefixLength, strlen($name) - $prefixLength);
+                return substr( $name, $prefixLength, $actionLength);
 
-                return $action;
             }
 
         }

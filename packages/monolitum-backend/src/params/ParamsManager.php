@@ -121,7 +121,23 @@ class ParamsManager extends MNode implements Validator
             $object->setFoundParams($returnArray);
 
             return true;
-        }else if($object instanceof Request_Parameter_ValidatedValue){
+        } else if($object instanceof Request_FindEntity){
+            /** @var Model $model */
+            $model = Model::pushFindByName($object->model);
+            $providerKey = $this->models[$model->getIdOrClass()] ?? null;
+            if($providerKey === null){
+                throw new DevPanic("Model {$model->getIdOrClass()} is not registered as params.");
+            }
+            $provider = $this->providers[$providerKey];
+
+            if($model instanceof Model && $provider instanceof ParamsProvider_Models){
+                $object->setFoundEntity($provider->retrieveModel($model, $object->writable));
+            }else {
+                throw new DevPanic();
+            }
+
+            return true;
+        } else if($object instanceof Request_Parameter_ValidatedValue){
             $validatedValue = $this->validate($object->model, $object->attr);
             $object->setValidatedValue($validatedValue);
             return true;
