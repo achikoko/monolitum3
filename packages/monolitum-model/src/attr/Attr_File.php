@@ -44,7 +44,7 @@ class Attr_File extends AbstractAttr
                 case UPLOAD_ERR_OK:
                     break;
                 case UPLOAD_ERR_NO_FILE:
-                    return new ValidatedValue(false, false, null, Attr_File::ERROR_NO_FILE);
+                    return new ValidatedValue(true); // No file means null
                 case UPLOAD_ERR_INI_SIZE:
                     return new ValidatedValue(false, false, null, Attr_File::ERROR_INI_SIZE);
                 case UPLOAD_ERR_FORM_SIZE:

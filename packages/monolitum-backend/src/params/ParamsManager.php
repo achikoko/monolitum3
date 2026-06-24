@@ -220,17 +220,11 @@ class ParamsManager extends MNode implements Validator
             $name = $prefix . $name;
 
         if($model instanceof Model && $provider instanceof ParamsProvider_Models){
-            $result = $provider->retrieveModelAttribute($model, $attr, $name);
+            return $provider->retrieveModelAttribute($model, $attr, $name);
         }else if($provider instanceof ParamsProvider_Strings){
-            $result = $provider->retrieveParam($name);
+            return $attr->validate($provider->retrieveParam($name));
         }else{
             throw new DevPanic();
-        }
-
-        if($result === null){
-            return new ValidatedValue(true, true, null);
-        }else{
-            return $attr->validate($result);
         }
 
     }

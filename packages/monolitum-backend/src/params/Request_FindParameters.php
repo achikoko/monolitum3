@@ -4,6 +4,7 @@ namespace monolitum\backend\params;
 
 use monolitum\core\MObject;
 use monolitum\core\panic\DevPanic;
+use function monolitum\core\m;
 
 class Request_FindParameters implements MObject
 {
@@ -46,4 +47,12 @@ class Request_FindParameters implements MObject
     {
         throw new DevPanic("No ParamsManager received the Request.");
     }
+
+    public static function push(array|string $providerOrProviders, ?array $paramsSelection, ?array $exceptions): array
+    {
+        $r = new Request_FindParameters($providerOrProviders, $paramsSelection, $exceptions);
+        M($r);
+        return $r->getFoundParams();
+    }
+
 }

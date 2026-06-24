@@ -107,7 +107,7 @@ class FileUploadManager extends MNode
         ));
     }
 
-    public function removeFileEntity(Entity $entity, bool $asWellFromFileSystem = true): bool
+    public function removeFileEntity(Entity $entity, bool $asWellFromFileSystem = true, bool $permaDelete = false): bool
     {
         if(!$entity->isWritable())
             throw new DevPanic("To remove an upladed file it must be writable.");
@@ -123,18 +123,17 @@ class FileUploadManager extends MNode
             return false;
         }
 
-        if($this->fileUploadDatabaseModel->deleteTimestamp !== null){
-            $entity->setDateTime($this->fileUploadDatabaseModel->deleteTimestamp, new DateTime());
-            $entity->update();
-        }else{
-            $entity->delete();
-        }
-
-        if($asWellFromFileSystem) {
+        if($permaDelete || $asWellFromFileSystem) {
             if (!unlink($fullPath)) {
-                $entity->insert();
                 return false;
             }
+        }
+
+        if (!$permaDelete && $this->fileUploadDatabaseModel->deleteTimestamp !== null) {
+            $entity->setDateTime($this->fileUploadDatabaseModel->deleteTimestamp, new DateTime());
+            $entity->update();
+        } else {
+            $entity->delete();
         }
 
         return true;

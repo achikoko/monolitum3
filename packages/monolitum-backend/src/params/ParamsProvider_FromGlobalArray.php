@@ -6,6 +6,7 @@ use monolitum\model\attr\Attr;
 use monolitum\model\EntitiesManager;
 use monolitum\model\Entity;
 use monolitum\model\Model;
+use monolitum\model\ValidatedValue;
 
 class ParamsProvider_FromGlobalArray implements ParamsProvider_Strings, ParamsProvider_Models, ParamsProvider_SupportsKeySeeking
 {
@@ -40,16 +41,16 @@ class ParamsProvider_FromGlobalArray implements ParamsProvider_Strings, ParamsPr
         }
     }
 
-    public function retrieveModelAttribute(Model $model, Attr $attr, ?string $name = null): ?string
+    public function retrieveModelAttribute(Model $model, Attr $attr, ?string $name = null): ValidatedValue
     {
         if ($name === null){
             $name = $attr->getId();
         }
 
         if (array_key_exists($name, $this->globalArray)) {
-            return $this->globalArray[$name];
+            return $attr->validate($this->globalArray[$name]);
         } else {
-            return null;
+            return new ValidatedValue(true);
         }
     }
 
@@ -57,7 +58,10 @@ class ParamsProvider_FromGlobalArray implements ParamsProvider_Strings, ParamsPr
     {
         $entity = EntitiesManager::findSelf()->instance($model);
         foreach ($model->getAttrs() as $attr){
-            $entity->setValue($attr, $this->retrieveModelAttribute($model, $attr));
+            $validatedValue = $this->retrieveModelAttribute($model, $attr);
+            if($validatedValue->isValid()){
+                $entity->setValue($attr, $validatedValue);
+            }
         }
         return $entity;
     }

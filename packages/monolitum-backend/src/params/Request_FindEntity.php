@@ -6,6 +6,7 @@ use monolitum\core\MObject;
 use monolitum\core\panic\DevPanic;
 use monolitum\model\Entity;
 use monolitum\model\Model;
+use function monolitum\core\m;
 
 class Request_FindEntity implements MObject
 {
@@ -44,5 +45,12 @@ class Request_FindEntity implements MObject
     function onNotReceived()
     {
         throw new DevPanic("No ParamsManager received the Request.");
+    }
+
+    public static function push(string|Model $model, bool $writable = false): ?Entity
+    {
+        $r = new Request_FindEntity($model, $writable);
+        M($r);
+        return $r->getFoundEntity();
     }
 }

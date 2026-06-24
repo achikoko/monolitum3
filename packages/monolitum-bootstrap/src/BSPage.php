@@ -32,15 +32,15 @@ class BSPage extends HTMLPage{
 
     }
 
-    public function includeBootstrapDatetimeIfNot(): void
-    {
-        $this->includeJQueryIfNot();
-        if(!$this->getConstant("bootstrap-datetime-js-css")){
-            CSSLink::of(Path::fromRelativeToClass(BSPage::class,"res", "bs5-datetime.min.css"))->pushSelf();
-            JSScript::of(Path::fromRelativeToClass(BSPage::class,"res", "bs5-datetime.min.js"))->pushSelf();
-            $this->setConstant("bootstrap-datetime-js-css");
-        }
-    }
+//    public function includeBootstrapDatetimeIfNot(): void
+//    {
+//        $this->includeJQueryIfNot();
+//        if(!$this->getConstant("bootstrap-datetime-js-css")){
+//            CSSLink::of(Path::fromRelativeToClass(BSPage::class,"res", "bs5-datetime.min.css"))->pushSelf();
+//            JSScript::of(Path::fromRelativeToClass(BSPage::class,"res", "bs5-datetime.min.js"))->pushSelf();
+//            $this->setConstant("bootstrap-datetime-js-css");
+//        }
+//    }
 
     public function includeBootstrapSelect2IfNot(): void
     {

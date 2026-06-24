@@ -11,6 +11,7 @@ use monolitum\model\attr\Attr;
 use monolitum\model\EntitiesManager;
 use monolitum\model\Entity;
 use monolitum\model\Model;
+use monolitum\model\ValidatedValue;
 
 class ParamsProvider_DatabaseGlobals implements ParamsProvider_Strings, ParamsProvider_Models
 {
@@ -102,7 +103,7 @@ class ParamsProvider_DatabaseGlobals implements ParamsProvider_Strings, ParamsPr
         }
     }
 
-    function retrieveModelAttribute(Model $model, Attr $attr, ?string $name = null): ?string
+    function retrieveModelAttribute(Model $model, Attr $attr, ?string $name = null): ValidatedValue
     {
         $this->assureModel();
 
@@ -116,7 +117,7 @@ class ParamsProvider_DatabaseGlobals implements ParamsProvider_Strings, ParamsPr
 
         $entity = Query::newQuery($this->model)->select($this->value->getId())->filter([$this->key->getId() => $name])->execute()->firstAndClose();
 
-        return $entity?->getString($this->value);
+        return $entity ? $attr->validate($entity->getString($this->value)) : new ValidatedValue();
     }
 
     public function retrieveModel(Model $model, bool $writable = false): ?Entity
