@@ -111,7 +111,7 @@ class ParamsProvider_DatabaseGlobals implements ParamsProvider_Strings, ParamsPr
         }
 
         if($this->prefixModelUnionString && $model->id) {
-            $name = $model . $this->prefixModelUnionString . $name;
+            $name = $model->id . $this->prefixModelUnionString . $name;
         }
 
         $entity = Query::newQuery($this->model)->select($this->value->getId())->filter([$this->key->getId() => $name])->execute()->firstAndClose();
