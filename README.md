@@ -10,25 +10,23 @@ Everything that is a [node](packages/monolitum-core/src/MNode.php) is appended t
 When `Monolitum::execute(...)` is called with a node as a parameter, two phases are being executed:
 
 - Phase one: **building**.
-  In this phase, each node does the heavy work. Managers connect to database, validate users and fields, routers decide which node (or webpage) is appended as a child.
+  In this phase, each node does the heavy work. Managers connect to database, validate users and fields, routers decide which node (or webpage) is appended as a child and UI is decided.
   Things can fail and nodes can be rebuilt to create a page according to each situation.
 
 - Phase two: **executing**.
-  In this phase, the built tree is called again from the root node to be executed. Typically, in this phase the page is rendered.
-  It cannot fail, as once the rendering has begun, php doesn't let you to reset it (for example to send other headers).
+  In this phase, the already built tree is called again from the root node to be "executed". Typically, in this phase the page is rendered.
+  It cannot fail, as once the rendering has begun, PHP doesn't let you reset it (for example to send other headers).
    
-There is also a concept of *building stack* and *pushing* [objects](packages/monolitum-core/src/MObject.php) on the stack. 
-In regular conditions, the object is given to the building parents in order, until one of them accepts it and does something. 
-For example, to find a manager that is a node up in the tree. Or setting a redirection url to a manager before the page renderer 
-which will set the redirect header (at execution phase) and will avoid executing the other renderer.
+There is also the concept of *building stack* and *pushing* [objects](packages/monolitum-core/src/MObject.php) on the stack. 
+In regular conditions, the object is given to the building parents in order, until one of them accepts it and does something with it. 
+For example, we can try to find a service node (manager) that is located up in the node tree, or we can use the stack to set a redirection url which will be catched by another manager whose purpose is to hold the url and set it to the redirect header at execution phase.
 
 ## Documentation
 
 https://www.reddit.com/r/ProgrammerHumor/comments/1dtf9rq
 
 ## To try it...
-1. Find a way to import this project into yours (note that it is not in _packagist.org_, sorry). My way is to have both projects as siblings in a folder, and
-   reference monolitum from the main `composer.json` in the array of "repositories" of type "path".
+1. Find out a way to import this project into yours (note that it is not in _packagist.org_, I'm sorry). The way I use is to have both projects (Monolitum and the application) as siblings in a folder, and reference Monolitum from the main `composer.json` inside the array of "repositories" of type "path".
 2. Create an `index.php` which calls `Monolitum::execute(...)`. You can try this snippet as a very basic hello world.
 ```php
 
@@ -54,8 +52,8 @@ Monolitum::execute(
 
 ```
 
-I would like to create a _twitter bootstrap_ example, but there is a little bit of setup using _managers_ to be able to retrieve the `.js` and `.css` files.
-Exactly, in monolitum you can manage the whole application and resources avoiding the "public" folder, and starting always from the `index.php`.
+I would like to create an example that uses _twitter bootstrap_ for styling, but there is a little bit of setup complexity and have to using _managers_ to be able to retrieve the `.js` and `.css` files.
+Exactly, in Monolitum you can manage the whole application and resources from the `index.php`, avoiding any "public" folder.
  
 ## External licences
 
@@ -87,16 +85,32 @@ https://github.com/apalfrey/select2-bootstrap-5-theme
 
 ### FontAwesome
 
-Code of Font Awesome (Icons: CC BY 4.0) is used. Licence is in this repo:
+Font Awesome is used. Licence (Free Icons: CC BY 4.0) is in this repo:
 
 https://github.com/FortAwesome/Font-Awesome
 
-### QuillEditor
+### Quill (frontend and backend)
 
 Code of quilljs is copied into this repository.
 License (BSD-3-Clause) is in this repo:
 
 https://github.com/quilljs/quill
+
+Depends on Nadar's quill-delta-parser. License (MIT) is in this repo:
+
+https://github.com/nadar/quill-delta-parser
+
+### Carbon
+
+Package "monolitum-i18n" depends on Carbon for translating dates. License (MIT) is in this repo:
+
+https://github.com/CarbonPHP/carbon
+
+### PHPMailer
+
+Package "monolitum-mailer" depends on PHPMailer. Liscense (LGPL) is in this repo:
+
+https://github.com/phpmailer/phpmailer
 
 ### Naucon/HtmlBuilder
 
