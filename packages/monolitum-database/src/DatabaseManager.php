@@ -390,7 +390,8 @@ class DatabaseManager extends MNode implements EntityPersister
 
     private function executeUpdate_Insert(Insert $query, Model $model, array &$values): string
     {
-        $sql = "INSERT INTO " . $this->prefix . $model->id . "(";
+        $sql = $query->getUpsert() ? "REPLACE" : "INSERT INTO";
+        $sql .= " " . $this->prefix . $model->id . "(";
 
         $placeholders = [];
         $count = 0;
