@@ -39,6 +39,8 @@ use monolitum\model\attr\Attr_String;
 use monolitum\model\AttrExt_Validate;
 use monolitum\model\AttrExt_Validate_Int;
 use monolitum\model\AttrExt_Validate_String;
+use monolitum\model\EntitiesManager;
+use monolitum\model\Model;
 use function monolitum\core\m;
 
 class BSFormAttr extends AbstractHtmlElementNodeFormAttr
@@ -68,6 +70,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
      */
     private array $inputFieldExtensions = [];
     private mixed $formControl = null;
+
+    private ?Attr $attrRenderAs = null;
 
     public function __construct(Attr|string $attrId, ?Closure $builder = null)
     {
@@ -103,6 +107,31 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
     {
         $this->customFormControl = $customFormControl;
         return $this;
+    }
+
+    /**
+     * @param string|Attr $attrRenderAs
+     * @param class-string|Model|null $model
+     */
+    public function setAttrRenderAs(string|Attr $attrRenderAs, string|Model|null $model): void
+    {
+        if(!($attrRenderAs instanceof Attr)){
+            if($model !== null){
+                $attrRenderAs = EntitiesManager::findSelf()->getModel($model)->getAttr($attrRenderAs);
+            }else{
+                throw new DevPanic("Expected an Attr instance, not a string.");
+            }
+        }
+
+        $this->attrRenderAs = $attrRenderAs;
+    }
+
+    /**
+     * @return Attr|null
+     */
+    public function getAttrRenderAs(): ?Attr
+    {
+        return $this->attrRenderAs !== null ? $this->attrRenderAs : $this->getAttr();
     }
 
     public function prependInputGroup(string|TS|BSFormSubmit|null $inputGroupBefore): self
@@ -184,7 +213,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
     {
         $this->callOnBeforeBuildFormCallables();
 
-        $attr = $this->getAttr();
+        $attr = $this->getAttrRenderAs();
 
         // TODO disable ENTER key using https://stackoverflow.com/questions/895171/prevent-users-from-submitting-a-form-by-hitting-enter
 
@@ -278,7 +307,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
             }
         }
 
-        $attr = $this->getAttr();
+        $attr = $this->getAttrRenderAs();
         $formExt = $this->getFormExt();
         $validateExt = $this->getValidateExt();
 
