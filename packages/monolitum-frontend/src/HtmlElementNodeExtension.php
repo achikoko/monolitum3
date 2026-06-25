@@ -44,7 +44,7 @@ class HtmlElementNodeExtension extends MNode implements ExplicitAcceptChildNode
      * @param string|null $class
      * @return $this
      */
-    public function setClass(string $alias, string $class = null): self
+    public function setClass(string $alias, ?string $class = null): self
     {
         $this->elementComponent->setClass($alias, $class);
         return $this;

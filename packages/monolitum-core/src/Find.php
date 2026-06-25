@@ -64,7 +64,7 @@ class Find implements MObject
      * Pushes a Find and retrieves the result.
      * @noinspection PhpMixedReturnTypeCanBeReducedInspection
      */
-    static function pushAndGet(string $class, bool $cache = true, $dontThrowIfNotReceived = false, MNode $from = null): mixed
+    static function pushAndGet(string $class, bool $cache = true, $dontThrowIfNotReceived = false, ?MNode $from = null): mixed
     {
         $find = self::of($class, $cache, $dontThrowIfNotReceived);
         Monolitum::getInstance()->pushFrom($find, $from);
@@ -75,7 +75,7 @@ class Find implements MObject
      * Pushes a Find and retrieves the result.
      * @noinspection PhpMixedReturnTypeCanBeReducedInspection
      */
-    static function pushAndGetFrom(string $class, MNode $from = null, bool $cache = true, $dontThrowIfNotReceived = false): mixed
+    static function pushAndGetFrom(string $class, ?MNode $from = null, bool $cache = true, $dontThrowIfNotReceived = false): mixed
     {
         $find = self::of($class, $cache, $dontThrowIfNotReceived);
         Monolitum::getInstance()->pushFrom($find, $from);

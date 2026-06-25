@@ -7,7 +7,7 @@ use monolitum\frontend\HtmlElementNode;
 class BSFormLabel extends HtmlElementNode
 {
 
-    public function __construct(callable $builder = null, private readonly string $class = "form-label")
+    public function __construct(?callable $builder = null, private readonly string $class = "form-label")
     {
         parent::__construct(new HtmlElement("label"), $builder);
         $this->getElement()->addClass($this->class);

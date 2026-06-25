@@ -286,7 +286,7 @@ class HtmlElement implements Renderable
      * @param string|null $content        html element content
      * @return      HtmlElement
      */
-    public function addContent(string $content = null): self
+    public function addContent(?string $content = null): self
     {
         if (!is_null($content)) {
             $htmlElementObject = new HtmlElementContent($content);
@@ -326,8 +326,7 @@ class HtmlElement implements Renderable
 
     function renderTo(HtmlElement $element): void
     {
-        if($element instanceof HtmlElement)
-            $element->addChildElement($this);
+        $element->addChildElement($this);
     }
 
     function onNotReceived()

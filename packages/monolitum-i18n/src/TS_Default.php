@@ -16,7 +16,7 @@ class TS_Default extends TS
 
     private array $stringsByLanguage = [];
 
-    public function getTranslation(?string $locale, array $params = null): ?string
+    public function getTranslation(?string $locale, ?array $params = null): ?string
     {
         if($locale === null){
             if($this->defaultString !== null){

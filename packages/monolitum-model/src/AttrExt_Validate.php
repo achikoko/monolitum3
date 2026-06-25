@@ -56,7 +56,7 @@ class AttrExt_Validate extends AttrExt
      * @param bool $substituteNotValid
      * @return $this
      */
-    public function replaceIf(bool $substituteNotValid, bool $substituteNullValues, mixed $value, string $strValue = null): self
+    public function replaceIf(bool $substituteNotValid, bool $substituteNullValues, mixed $value, ?string $strValue = null): self
     {
         $this->isDefaultSet = true;
         $this->def = $value;

@@ -6,6 +6,7 @@ use Exception;
 use monolitum\core\panic\BreakExecution;
 use monolitum\core\panic\DevPanic;
 use monolitum\core\panic\Panic;
+use SplStack;
 
 class Monolitum
 {
@@ -22,30 +23,35 @@ class Monolitum
     private bool $running = false;
 
     /**
-     * @var array<MNode>
+     * @var SplStack<MNode>
      */
-    private array $buildingStack = array();
+    private SplStack $buildingStack;
+
+    public function __construct()
+    {
+        $this->buildingStack = new SplStack();
+    }
 
     public function notifyStartBuilding(MNode $node): void
     {
-        $this->buildingStack[] = $node;
+        $this->buildingStack->push($node);
     }
 
     public function notifyEndBuilding(MNode $node): void
     {
-        $popped = array_pop($this->buildingStack);
+        $popped = $this->buildingStack->pop();//array_pop($this->buildingStack);
         assert($popped === $node, "Popped wrong node.");
     }
 
     public function notifyStartExecuting(MNode $node): void
     {
-        $this->buildingStack[] = $node;
+        $this->buildingStack->push($node);
     }
 
     public function notifyEndExecuting(MNode $node): void
     {
-        $poped = array_pop($this->buildingStack);
-        assert($poped === $node, "Popped wrong node.");
+        $popped = $this->buildingStack->pop();//array_pop($this->buildingStack);
+        assert($popped === $node, "Popped wrong node.");
     }
 
     public function run(MNode $node): void
@@ -57,6 +63,8 @@ class Monolitum
         try {
             $node->doBuild();
             $node->doExecute();
+        } catch (BreakExecution $ignored){
+            // The execution is broken because someone has decided.
         } finally {
             $this->running = false;
         }
@@ -71,7 +79,7 @@ class Monolitum
     {
 
         if($from === null){
-            $node = $this->buildingStack[sizeof($this->buildingStack)-1];
+            $node = $this->buildingStack->top();//[sizeof($this->buildingStack)-1];
         }else{
             $node = $from;
         }
@@ -102,22 +110,13 @@ class Monolitum
 
     public function getCurrentBuildingNode(): MNode
     {
-        return $this->buildingStack[sizeof($this->buildingStack) - 1];
+        return $this->buildingStack->top();//[sizeof($this->buildingStack) - 1];
     }
 
     public static function execute(MNode $node): void
     {
-
-        $monolitum = self::getInstance();
-
-        try{
-            $monolitum->run($node);
-        }catch (BreakExecution $ignored){
-
-        }
-
+        self::getInstance() ->run($node);
         // TODO: check for panics
-
     }
 
 }

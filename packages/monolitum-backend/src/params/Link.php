@@ -204,7 +204,7 @@ class Link
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getHistoryBehavior(): ?string
     {
@@ -215,7 +215,7 @@ class Link
      * @param Path|null $path
      * @return Link
      */
-    public static function from(Path $path = null): Link
+    public static function from(?Path $path = null): Link
     {
         return new Link($path);
     }

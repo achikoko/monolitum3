@@ -120,7 +120,7 @@ class AttrExt_Validate_String extends AttrExt_Validate
      * @param string|TS|null $validatorFunctionError
      * @return $this
      */
-    public function postStringValidate(Closure $validatorFunction, string|TS $validatorFunctionError = null): self
+    public function postStringValidate(Closure $validatorFunction, string|TS|null $validatorFunctionError = null): self
     {
         $this->postStringValidatorFunction = $validatorFunction;
         $this->postStringValidatorFunctionError = $validatorFunctionError;

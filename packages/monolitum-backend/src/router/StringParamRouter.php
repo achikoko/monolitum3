@@ -19,7 +19,7 @@ class StringParamRouter extends AbstractConstantRouter {
      * @param ValidatedValueGetter $param
      * @param callable|null $builder
      */
-    function __construct(callable $builder = null){
+    function __construct(?callable $builder = null){
         parent::__construct($builder);
     }
 

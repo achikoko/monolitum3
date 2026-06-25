@@ -43,16 +43,16 @@ class ResourceProviderManager extends MNode
     /**
      * @param string[] $extensions
      */
-    public function addAllowedExtensions(array $extensions, AllowedExtension $allowedExtension = null): void
+    public function addAllowedExtensions(array $extensions, ?AllowedExtension $allowedExtension = null): void
     {
         foreach ($extensions as $extension){
             $this->allowedExtensions[$extension] = $allowedExtension !== null ? $allowedExtension : new AllowedExtension();
         }
     }
 
-    public function addAllowedExtension(string $extension, AllowedExtension $allowedExtension): void
+    public function addAllowedExtension(string $extension, ?AllowedExtension $allowedExtension = null): void
     {
-        $this->allowedExtensions[$extension] = $allowedExtension;
+        $this->allowedExtensions[$extension] = $allowedExtension !== null ? $allowedExtension : new AllowedExtension();
     }
 
     protected function onAfterBuild(): void

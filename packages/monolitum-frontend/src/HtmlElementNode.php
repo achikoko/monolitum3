@@ -7,7 +7,6 @@ use monolitum\frontend\css\Style;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\html\HtmlElementContent;
 use monolitum\i18n\TS;
-use monolitum\i18n\TSLang;
 
 class HtmlElementNode extends Renderable_Node
 {
@@ -38,7 +37,7 @@ class HtmlElementNode extends Renderable_Node
     /**
      * set attribute to html element
      */
-    public function setAttribute(string $key, string $value = null, bool $filter = true): self
+    public function setAttribute(string $key, ?string $value = null, bool $filter = true): self
     {
         $this->element->setAttribute($key, $value, $filter);
         return $this;
@@ -78,7 +77,7 @@ class HtmlElementNode extends Renderable_Node
      * @param string|null $class
      * @return $this
      */
-    public function setClass(string $key, string $class = null): self
+    public function setClass(string $key, ?string $class = null): self
     {
         if($this->classKeys !== null){
             if(array_key_exists($key, $this->classKeys)){
