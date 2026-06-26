@@ -44,14 +44,20 @@ class Attr_Decimal extends AbstractAttr
             // This is the CANONICAL form of a Decimal
             return new ValidatedValue(true, true, intval($value), null, $this->stringValue($value));
         } else if(is_string($value)){
-            // If it is a string, we assume it is a FLOAT so have to multiply (forms submit the value as this)
-            try{
-                $floatValue = floatval($value);
-                $intValue = intval($floatValue * pow(10, $this->decimals));
-                return new ValidatedValue(true, true, $intValue, null, $this->stringValue($intValue));
-            }catch (Exception $e){
-                return new ValidatedValue(false);
+            if(empty($value)){
+                return new ValidatedValue(true, true);
+            }else {
+                // If it is a string, we assume it is a FLOAT so have to multiply (forms submit the value as this)
+                try {
+                    $floatValue = floatval($value);
+                    $intValue = intval($floatValue * pow(10, $this->decimals));
+                    return new ValidatedValue(true, true, $intValue, null, $this->stringValue($intValue));
+                } catch (Exception $e) {
+                    return new ValidatedValue(false);
+                }
             }
+        } else if(is_null($value)){
+            return new ValidatedValue(true, true);
         }
         return new ValidatedValue(false);
     }

@@ -50,7 +50,7 @@ class ParamsProvider_FromGlobalArray implements ParamsProvider_Strings, ParamsPr
         if (array_key_exists($name, $this->globalArray)) {
             return $attr->validate($this->globalArray[$name]);
         } else {
-            return new ValidatedValue(true);
+            return $attr->validate(null);
         }
     }
 

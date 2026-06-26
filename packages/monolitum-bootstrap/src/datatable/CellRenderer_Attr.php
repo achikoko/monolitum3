@@ -71,7 +71,7 @@ class CellRenderer_Attr implements CellRenderer
                 return Text::of(strval($this->processValue($entity, $entity->getInt($attr) / pow(10, $attr->getDecimals()))));
             }else if($attr instanceof Attr_Date || $attr instanceof Attr_DateTime){
                 $val = $this->processValue($entity, $entity->getDate($attr));
-                return Text::of($val !== null ? TS::fromFormat($val, $this->format) : "");
+                return Text::of($val !== null ? TS::fromFormat($val, $this->format ?? "LL") : "");
             }else if($attr instanceof Attr_Bool){
                 $ch = new FormControl_CheckBox();
                 $ch->setDisabled();

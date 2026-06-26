@@ -15,6 +15,9 @@ class Attr_Date extends AbstractAttr
     #[\Override]
     public function validate(mixed $value): ValidatedValue
     {
+        if($value == null){ // Simple null matches empty strings and 0
+            return new ValidatedValue(true, true);
+        }
         if(is_string($value)){
             if(strlen($value) > 0){
 
@@ -29,8 +32,6 @@ class Attr_Date extends AbstractAttr
             }else{
                 return new ValidatedValue(true, true, null, null, "");
             }
-        }else if(is_null($value)){
-            return new ValidatedValue(true, true, null, null, "");
         }
 
         return new ValidatedValue(false);

@@ -9,6 +9,9 @@ class Attr_Bool extends AbstractAttr
     #[\Override]
     public function validate($value): ValidatedValue
     {
+        if($value == null){ // Simple null matches empty strings and 0
+            return new ValidatedValue(true, true, false);
+        }
         if(is_string($value)){
             if($value == "true"){
                 return new ValidatedValue(true, true,true, null, $value);
@@ -23,8 +26,6 @@ class Attr_Bool extends AbstractAttr
             }else {
                 return new ValidatedValue(true, true,true, null, "true");
             }
-        }else if(is_null($value)){
-            return new ValidatedValue(true, true,false, null, "false");
         }
         return new ValidatedValue(false);
     }

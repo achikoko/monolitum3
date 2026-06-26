@@ -10,6 +10,9 @@ class Attr_Color extends AbstractAttr
     #[\Override]
     public function validate(mixed $value): ValidatedValue
     {
+        if($value == null){ // Simple null matches empty strings and 0
+            return new ValidatedValue(true, true);
+        }
         if(is_string($value)){
             $parsed = Color::fromHex($value);
             if($parsed !== null){
@@ -20,8 +23,6 @@ class Attr_Color extends AbstractAttr
                 $hex = str_pad(dechex(intval($value)), 8, '0', STR_PAD_LEFT);
                 return new ValidatedValue(true, true, Color::fromHex($hex), null, $value);
             }
-        }else if(is_null($value)){
-            return new ValidatedValue(true, true, null, null, "null");
         }
         return new ValidatedValue(false);
     }

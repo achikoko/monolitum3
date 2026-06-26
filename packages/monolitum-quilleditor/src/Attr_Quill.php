@@ -44,6 +44,9 @@ class Attr_Quill extends AbstractAttr implements DatabaseableAttr
 
     public function validate(mixed $value): ValidatedValue
     {
+        if($value == null){
+            return new ValidatedValue(true, true);
+        }
         if(is_string($value)){
 
             $trimmedValue = trim($value);
