@@ -71,6 +71,12 @@ Code of Twitter Bootstrap is used. Licence (MIT) is in this repo:
 
 https://github.com/twbs/bootstrap
 
+### Datepickr
+
+Datepickr is used. Licence (MIT) is in this repo:
+
+https://github.com/flatpickr/flatpickr
+
 ### Select2
 
 Code of Select2 is used. Licence (MIT) is in this repo:

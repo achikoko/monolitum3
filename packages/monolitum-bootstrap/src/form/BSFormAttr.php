@@ -3,6 +3,7 @@
 namespace monolitum\bootstrap\form;
 
 use Closure;
+use monolitum\bootstrap\datetime\BSFormControl_Datetime;
 use monolitum\bootstrap\select\BSFormControl_Select;
 use monolitum\bootstrap\style\BSColSpanResponsive;
 use monolitum\core\panic\DevPanic;
@@ -10,11 +11,10 @@ use monolitum\frontend\component\Div;
 use monolitum\frontend\component\Span;
 use monolitum\frontend\form\AbstractHtmlElementNodeFormAttr;
 use monolitum\frontend\form\AttrExt_Form;
+use monolitum\frontend\form\AttrExt_Form_DateTime;
 use monolitum\frontend\form\AttrExt_Form_String;
 use monolitum\frontend\form\FormControl;
 use monolitum\frontend\form\FormControl_CheckBox;
-use monolitum\frontend\form\FormControl_Date;
-use monolitum\frontend\form\FormControl_DateTime;
 use monolitum\frontend\form\FormControl_File;
 use monolitum\frontend\form\FormControl_Number;
 use monolitum\frontend\form\FormControl_Password;
@@ -436,9 +436,15 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
             } else if ($attr instanceof Attr_Date) {
 
-                $formControl = new FormControl_Date(function (FormControl_Date $it) {
+                $formControl = new BSFormControl_Datetime(function (BSFormControl_Datetime $it) use ($formExt) {
                     $it->setId($this->getFullFieldName());
                     $it->setName($this->getFullFieldName());
+                    $it->setOnlyDate();
+
+                    if ($formExt instanceof AttrExt_Form_DateTime && $formExt->getIsLongAway()){
+                        $it->setShowYearsFirst();
+                    }
+
                     if ($this->hasValue()) {
                         $datetime = $this->getValue();
                         if ($datetime !== null)
@@ -455,9 +461,14 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
             } else if ($attr instanceof Attr_DateTime) {
 
-                $formControl = new FormControl_DateTime(function (FormControl_DateTime $it) {
+                $formControl = new BSFormControl_Datetime(function (BSFormControl_Datetime $it) use ($formExt) {
                     $it->setId($this->getFullFieldName());
                     $it->setName($this->getFullFieldName());
+
+                    if ($formExt instanceof AttrExt_Form_DateTime && $formExt->getIsLongAway()){
+                        $it->setShowYearsFirst();
+                    }
+
                     if ($this->hasValue()) {
                         $datetime = $this->getValue();
                         if ($datetime !== null)

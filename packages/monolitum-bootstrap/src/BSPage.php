@@ -32,15 +32,20 @@ class BSPage extends HTMLPage{
 
     }
 
-//    public function includeBootstrapDatetimeIfNot(): void
-//    {
-//        $this->includeJQueryIfNot();
-//        if(!$this->getConstant("bootstrap-datetime-js-css")){
-//            CSSLink::of(Path::fromRelativeToClass(BSPage::class,"res", "bs5-datetime.min.css"))->pushSelf();
-//            JSScript::of(Path::fromRelativeToClass(BSPage::class,"res", "bs5-datetime.min.js"))->pushSelf();
-//            $this->setConstant("bootstrap-datetime-js-css");
-//        }
-//    }
+    public function includeFlatpickrIfNot(?string $locale = null): void
+    {
+        $this->includePopperIfNot();
+        if(!$this->getConstant("flatpickr-js-css")){
+            CSSLink::of(Path::fromRelativeToClass(BSPage::class,"datetime", "res", "flatpickr.min.css"))->pushSelf();
+            JSScript::of(Path::fromRelativeToClass(BSPage::class,"datetime", "res", "flatpickr.js"))->pushSelf();
+            JSScript::of(Path::fromRelativeToClass(BSPage::class,"datetime", "res", "flatpickr-face.js"))->pushSelf();
+            $this->setConstant("flatpickr-js-css");
+        }
+        if($locale !== null && !$this->getConstant("flatpickr-js-css-" . $locale)){
+            JSScript::of(Path::fromRelativeToClass(BSPage::class,"datetime", "res", "l10n", "$locale.js"))->pushSelf();
+            $this->setConstant("flatpickr-js-css-" . $locale);
+        }
+    }
 
     public function includeBootstrapSelect2IfNot(): void
     {

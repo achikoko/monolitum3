@@ -270,6 +270,20 @@ class HtmlElement implements Renderable
         return $this;
     }
 
+    /**
+     * set raw element content, replace all child elements
+     *
+     * @param string|null $content html element content
+     * @return      HtmlElement
+     */
+    public function setRawContent(?string $content): self
+    {
+        if (!is_null($content)) {
+            $this->childElementCollection = [new HtmlElementContent($content, true)];
+        }
+        return $this;
+    }
+
     public function getContentAsString(){
         if(count($this->childElementCollection) !== 1)
             return null;
