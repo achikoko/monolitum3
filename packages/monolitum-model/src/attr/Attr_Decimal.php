@@ -71,7 +71,11 @@ class Attr_Decimal extends AbstractAttr
             $zeros = pow(10, $this->decimals);
             $integerPart = intval($value / $zeros);
             $floatingPart = $value - ($integerPart * $zeros);
-            return $integerPart . "." . $floatingPart;
+            if($floatingPart == 0){
+                return $integerPart;
+            }else{
+                return $integerPart . "." . $floatingPart;
+            }
         } else if(is_string($value)){
             return strval($value);
         }

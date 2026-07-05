@@ -426,7 +426,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                         $it->convertToHidden();
 
                     if ($this->hasValue()) {
-                        $it->setValue($this->getValue() / pow(10, $decimals));
+                        $it->setValue($attr->stringValue($this->getValue()));
                     }
 
                     if ($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
