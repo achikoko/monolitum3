@@ -20,7 +20,7 @@ class AnonymousModel
     {
         $attr->_setModelId($this, $attrId);
         if(isset($this->attrs[$attrId]))
-            throw new DevPanic("Id $attrId already exists in " . $this->__toString());
+            throw new ModelPanic("Id $attrId already exists in " . $this->__toString());
         $this->attrs[$attrId] = $attr;
     }
 
@@ -33,12 +33,12 @@ class AnonymousModel
     {
         if($attrId instanceof Attr){
             if(!isset($this->attrs[$attrId->getId()]))
-                throw new DevPanic("Attr $attrId of Model $this not found.");
+                throw new ModelPanic("Attr $attrId of Model $this not found.");
             return $attrId;
         }
 
         if(!isset($this->attrs[$attrId]))
-            throw new DevPanic("Attr $attrId of Model $this not found.");
+            throw new ModelPanic("Attr $attrId of Model $this not found.");
 
         return $this->attrs[$attrId];
     }
