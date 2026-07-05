@@ -8,7 +8,7 @@ use monolitum\frontend\HtmlElementNode;
 class FormControl_Select_OptionGroup extends HtmlElementNode
 {
 
-    public function __construct(string $label=null, ?Closure $builder = null,)
+    public function __construct(?string $label=null, ?Closure $builder = null,)
     {
         parent::__construct(new HtmlElement("optgroup"), $builder);
         $option = $this->getElement();
