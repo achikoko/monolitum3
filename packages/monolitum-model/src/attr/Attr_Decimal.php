@@ -86,5 +86,14 @@ class Attr_Decimal extends AbstractAttr
         return new Attr_Decimal($decimals);
     }
 
+    public function floatValue(mixed $value): ?float
+    {
+        $v = $this->stringValue($value);
+        if(!empty($v)){
+            return floatval($v);
+        }
+        return null;
+    }
+
 }
 
