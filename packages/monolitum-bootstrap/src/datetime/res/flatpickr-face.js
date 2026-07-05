@@ -47,6 +47,7 @@ window.monolitum_flatpickr = function (
             }).format(date);
         },
         parseDate: (str) => parseInput(str, !is_only_date_bool),    // needed for defaultDate strings
+        disableMobile: "true",
     });
 
 }
