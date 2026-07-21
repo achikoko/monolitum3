@@ -23,17 +23,9 @@ class ParamsProvider_POST extends ParamsProvider_FromGlobalArray
 
         // Handling files here
         if ($attr instanceof Attr_File) {
-
             return isset($_FILES[$name]) ? $attr->validate($_FILES[$name]) : new ValidatedValue(true);
         } else {
-
-            // Null values are values
-            if (array_key_exists($name, $this->globalArray)) {
-                return $attr->validate($this->globalArray[$name]);
-            } else {
-                return new ValidatedValue(true);
-            }
-
+            return parent::retrieveModelAttribute($model, $attr, $name);
         }
     }
 

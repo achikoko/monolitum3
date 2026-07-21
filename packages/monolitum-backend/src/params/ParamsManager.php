@@ -150,11 +150,7 @@ class ParamsManager extends MNode implements Validator
     {
         $validatedValue = $this->validateOnlyFormat($model, $attr, $prefix, $providerIfAnonymous);
 
-        if(!$validatedValue->isWellFormat()){
-            return $validatedValue;
-        }
-
-        if(!$model instanceof AnonymousModel) {
+        if(!($model instanceof AnonymousModel)) {
             $model = Model::pushFindByName($model);
         }
 

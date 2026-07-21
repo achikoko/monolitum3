@@ -7,12 +7,14 @@ use monolitum\i18n\TS;
 class PostValidatorContext
 {
 
+    public readonly mixed $value;
+
     private bool $resultValid = true;
     private TS|string|null $resultError = null;
 
-    public function __construct(public mixed $value)
+    public function __construct(public readonly ValidatedValue $validatedValue)
     {
-
+        $this->value = $validatedValue->getValue();
     }
 
     public function invalidate(TS|string|array|null $errorMessage): void

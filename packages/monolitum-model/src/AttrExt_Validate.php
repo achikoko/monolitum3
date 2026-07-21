@@ -99,7 +99,7 @@ class AttrExt_Validate extends AttrExt
         }
 
         if($validatedValue->isValid() && $this->postValidatorFunction !== null){
-            $context = new PostValidatorContext($validatedValue->getValue());
+            $context = new PostValidatorContext($validatedValue);
             call_user_func($this->postValidatorFunction, $context);
             if(!$context->getResultValid()){
                 $validatedValue = new ValidatedValue(

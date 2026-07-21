@@ -167,8 +167,6 @@ class AttrExt_Validate_String extends AttrExt_Validate
         if(!$validatedValue->isValid())
             return $validatedValue;
 
-
-
         $error = false;
         $errorMessage = null;
 
