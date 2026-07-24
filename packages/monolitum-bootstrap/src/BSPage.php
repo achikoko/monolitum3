@@ -24,6 +24,7 @@ class BSPage extends HTMLPage{
         $this->includePopperIfNot();
 //        $this->includeBootstrapDatetimeIfNot();
 
+        CSSLink::of(Path::fromRelativeToClass(BSPage::class,"res","bootstrap-negative-margins.css"))->pushSelf();
         CSSLink::of(Path::fromRelativeToClass(BSPage::class,"res","bootstrap-reboot.css"))->pushSelf();
         CSSLink::of(Path::fromRelativeToClass(BSPage::class,"res","bootstrap.css"))->pushSelf();
         CSSLink::of(Path::fromRelativeToClass(BSPage::class,"res","sorting-table.css"))->pushSelf();
