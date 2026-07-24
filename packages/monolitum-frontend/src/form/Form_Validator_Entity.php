@@ -195,7 +195,7 @@ class Form_Validator_Entity extends Form_Validator
         $this->model = Model::pushFindByName($this->model);
 
         foreach($this->model->getAttrs() as $attr){
-            if(!$this->isValidatable($attr))
+            if(!$this->isValidatable($attr) || !isset($this->build_validatedValues[$attr->getId()]))
                 continue;
             $validatedValue = $this->build_validatedValues[$attr->getId()];
             if($validatedValue !== null && $validatedValue->isValid())
