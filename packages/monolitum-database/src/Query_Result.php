@@ -351,9 +351,13 @@ class Query_Result implements MClosableIterator, Iterator
                 }
                 $entity?->setBool($attr, $rowValue);
                 return $rowValue;
-            }else if($attr instanceof Attr_Date || $attr instanceof Attr_DateTime){
+            }else if($attr instanceof Attr_Date){
                 $val = date_create($rowValue);
                 $entity?->setDate($attr, $val);
+                return $val;
+            }else if($attr instanceof Attr_DateTime){
+                $val = date_create($rowValue);
+                $entity?->setDateTime($attr, $val);
                 return $val;
             }else if($attr instanceof DatabaseableAttr){
                 $val = $attr->parseValue($rowValue);
