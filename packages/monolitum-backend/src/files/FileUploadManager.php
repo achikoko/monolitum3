@@ -6,6 +6,7 @@ use Closure;
 use DateTime;
 use monolitum\backend\params\Path;
 use monolitum\backend\resources\Request_DownloadFile;
+use monolitum\backend\resources\StdoutFileWriter;
 use monolitum\core\MNode;
 use monolitum\core\panic\DevPanic;
 use monolitum\database\Query;
@@ -101,9 +102,10 @@ class FileUploadManager extends MNode
         M(new Request_DownloadFile(
             $this->basepath->extend(
                 $entity->getString($this->fileUploadDatabaseModel->category),
-                $entity->getString($this->fileUploadDatabaseModel->name)
+                $entity->getString($this->fileUploadDatabaseModel->fileName)
             ),
-            $entity->getString($this->fileUploadDatabaseModel->type)
+            $entity->getString($this->fileUploadDatabaseModel->type),
+            new StdoutFileWriter()
         ));
     }
 

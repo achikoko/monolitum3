@@ -15,12 +15,12 @@ class Request_DownloadFile implements MObject
     /**
      * @param Path $filePath the file path to be downloaded (it should be relative to index.php)
      * @param string|null $mimeType
-     * @param StdoutFileWriter|null $fileWriter
+     * @param StdoutFileWriter $fileWriter
      */
     public function __construct(
         public readonly Path $filePath,
         public readonly ?string $mimeType,
-        public readonly ?StdoutFileWriter $fileWriter = null
+        public readonly StdoutFileWriter $fileWriter
     ){
     }
 
