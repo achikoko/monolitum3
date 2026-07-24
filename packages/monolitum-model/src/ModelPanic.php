@@ -10,11 +10,11 @@ class ModelPanic extends DevPanic
 {
 
     function __construct(
-        ?string                     $message = null,
-        public readonly ?MNode     $node = null,
+        ?string    $message = null,
+        ?MNode     $node = null,
         ?Exception $exception = null
     ){
-        parent::__construct($message, exception: $exception);
+        parent::__construct($message, $node, $exception);
     }
 
 }

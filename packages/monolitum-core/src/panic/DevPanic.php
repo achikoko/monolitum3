@@ -11,9 +11,9 @@ use monolitum\core\MNode;
 class DevPanic extends Panic{
 
     function __construct(
-        ?string                     $message = null,
-        public readonly ?MNode     $node = null,
-        ?Exception $exception = null
+        ?string                 $message = null,
+        public readonly ?MNode  $node = null,
+        ?Exception              $exception = null
     ){
         parent::__construct($message, exception: $exception);
     }

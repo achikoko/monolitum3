@@ -12,7 +12,7 @@ class WK extends TS
 
     }
 
-    public function getTranslation(?string $locale, array $params = null): ?string
+    public function getTranslation(?string $locale, ?array $params = null): ?string
     {
         if(is_string($this->source)){
             $p = new WikiMarkParser();
