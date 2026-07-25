@@ -333,8 +333,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
-                        $it->setDisabled(true);
+                    if ($this->isDisabled())
+                        $it->setDisabled();
 
                 });
 
@@ -356,7 +356,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                         if ($this->hidden === true)
                             $it->convertToHidden();
 
-                        if ($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
+                        if ($this->isDisabled())
                             $it->setDisabled();
 
                         // TODO ask form for default value
@@ -384,8 +384,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                         if ($this->hidden === true)
                             $it->convertToHidden();
 
-                        if ($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
-                            $it->setDisabled(true);
+                        if ($this->isDisabled())
+                            $it->setDisabled();
 
                     });
 
@@ -408,8 +408,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
-                        $it->setDisabled(true);
+                    if ($this->isDisabled())
+                        $it->setDisabled();
 
                 });
 
@@ -429,8 +429,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                         $it->setValue($attr->stringValue($this->getValue()));
                     }
 
-                    if ($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
-                        $it->setDisabled(true);
+                    if ($this->isDisabled())
+                        $it->setDisabled();
 
                 });
 
@@ -454,8 +454,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
-                        $it->setDisabled(true);
+                    if ($this->isDisabled())
+                        $it->setDisabled();
 
                 });
 
@@ -478,8 +478,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
-                        $it->setDisabled(true);
+                    if ($this->isDisabled())
+                        $it->setDisabled();
 
                 });
 
@@ -492,8 +492,8 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
-                        $it->setDisabled(true);
+                    if ($this->isDisabled())
+                        $it->setDisabled();
 
                 });
 
@@ -567,7 +567,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                 $selected = $this->getValue();
             $it->setValue($selected);
 
-            if ($this->disabled !== null ? $this->disabled : $this->form->isDisabled())
+            if ($this->isDisabled())
                 $it->setDisabled();
 
             if ($this->hidden === true)

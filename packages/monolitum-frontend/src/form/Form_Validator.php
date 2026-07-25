@@ -71,14 +71,16 @@ abstract class Form_Validator
 
     /**
      * Read the value from the external source, validate it and return it.
+     * It returns `null` if the attr is explicitly marked to not be validated.
      * @param Attr|string $attr
-     * @return ValidatedValue
+     * @return ?ValidatedValue
      */
-    abstract function getValidatedValue(Attr|string $attr): ValidatedValue;
+    abstract function getValidatedValue(Attr|string $attr): ?ValidatedValue;
 
     /**
      * Ignore any validation and return the default value.
-     * It will fetch the current editing entity or, if not, if the dev set any default value to the ext
+     * It will fetch the current editing entity or, if not, if the dev set any default value to the ext.
+     * In opposition as `getValidatedValue()`, it never returns null because values are gotten from server side, not from client side, so they are safe.
      * @param Attr|string $attr
      * @return ValidatedValue
      */
@@ -147,24 +149,18 @@ abstract class Form_Validator
 
     /**
      * @param string|Attr $attrId
-     * @return bool
+     * @return ?bool
      */
-    public function isValid(Attr|string $attrId): bool
+    public function isValid(Attr|string $attrId): ?bool
     {
         $attr = $this->getAttr($attrId);
 
         if($this->isValidatable($attr)){
-
             $validatedValue = $this->getValidatedValue($attr);
-
-            if($validatedValue !== null && $validatedValue->isValid()){
-                return true;
-            }
-
+            return $validatedValue->isValid();
         }
 
-        return false;
-
+        return null; // The value is not validatable
     }
 
     /**

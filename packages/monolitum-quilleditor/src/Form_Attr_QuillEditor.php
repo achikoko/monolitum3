@@ -90,7 +90,7 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
                     if($this->getPlaceholder() != null)
                         $it->setPlaceholder($this->getPlaceholder());
 
-                    if($this->disabled !== null ? $this->disabled : $this->getForm()->isDisabled())
+                    if($this->isDisabled())
                         $it->setDisabled();
 
                 }));

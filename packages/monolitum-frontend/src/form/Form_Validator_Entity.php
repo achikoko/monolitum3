@@ -51,6 +51,7 @@ class Form_Validator_Entity extends Form_Validator
         return $this;
     }
 
+    #[\Override]
     public function _validateAll(): void
     {
         parent::_validateAll();
@@ -79,17 +80,17 @@ class Form_Validator_Entity extends Form_Validator
 
     }
 
-    /**
-     * @param Attr|string $attr
-     * @return ValidatedValue
-     */
-    function getValidatedValue(Attr|string $attr): ValidatedValue
+    #[\Override]
+    function getValidatedValue(Attr|string $attr): ?ValidatedValue
     {
         // Retrieve model
         $this->model = Model::pushFindByName($this->model);
 
         // Retrieve attribute
         $attr = $this->model->getAttr($attr);
+
+        if(!$this->isValidatable($attr))
+            return null;
 
         // `isset` because a validated value cannot be null
         if(isset($this->overwritten_validatedValues[$attr->getId()])){
@@ -140,10 +141,7 @@ class Form_Validator_Entity extends Form_Validator
         return $validatedValue;
     }
 
-    /**
-     * @param Attr|string $attr
-     * @return ValidatedValue
-     */
+    #[\Override]
     public function getDefaultValue(Attr|string $attr): ValidatedValue
     {
 
@@ -170,26 +168,19 @@ class Form_Validator_Entity extends Form_Validator
 
     }
 
-    /**
-     * @param string $prefix
-     * @return ValidatedValue|null
-     */
+    #[\Override]
     public function validateSubmissionKey(string $prefix): ValidatedValue
     {
         return $this->validator->validateKeyStartingWith_ReturnEnding($prefix, StandardProvider::POST);
     }
 
+    #[\Override]
     public function validateString(string $key, string $providerKey = StandardProvider::POST): ValidatedValue
     {
         return $this->validator->validateString($key, $providerKey);
     }
 
-
-
-    /**
-     * @param Entity $entity
-     * @return void
-     */
+    #[\Override]
     public function writeValidValuesOn(Entity $entity): void
     {
         $this->model = Model::pushFindByName($this->model);
@@ -204,10 +195,7 @@ class Form_Validator_Entity extends Form_Validator
 
     }
 
-    /**
-     * @param Attr|string $attrId
-     * @return Attr
-     */
+    #[\Override]
     public function getAttr(Attr|string $attrId): Attr
     {
         $this->model = Model::pushFindByName($this->model);

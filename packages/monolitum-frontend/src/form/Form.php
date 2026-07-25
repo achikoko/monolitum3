@@ -28,12 +28,11 @@ use monolitum\model\ValidatedValue;
 
 class Form extends HtmlElementNode
 {
-    use Trait_Form_Validate_Attrs;
 
     private const SUFFIX_CSRF_TOKEN = "csrf_token";
     public const GLOBALS_CONTEXT_ID = "form";
 
-    private ?Form_Validator $validator;
+    private Form_Validator $validator;
 
     /**
      * @var array<HtmlElementNodeExtension>
@@ -64,9 +63,9 @@ class Form extends HtmlElementNode
 
     /**
      * Every form field is disabled if this flag is enabled
-     * @var bool
+     * @var ?DisablePolicy
      */
-    private bool $disabled = false;
+    private ?DisablePolicy $disablePolicy = null;
 
     private ValidationDisplayType $validationDisplay = ValidationDisplayType::ALL;
 
@@ -161,14 +160,14 @@ class Form extends HtmlElementNode
      */
     private ?bool $csrfTokenIsValid = null;
 
-    public function __construct(?Form_Validator $validator, ?string $formId, ?Closure $builder = null)
+    public function __construct(Form_Validator $validator, ?string $formId, ?Closure $builder = null)
     {
         parent::__construct(new HtmlElement("form"), $builder);
         $this->validator = $validator;
         if($formId !== null){
             $this->setId($formId);
         }
-        $this->validator?->_setForm($this);
+        $this->validator->_setForm($this);
 
     }
 
@@ -233,13 +232,7 @@ class Form extends HtmlElementNode
      */
     public function validate_all_except(string ...$attrsIds): void
     {
-
-        if($this->validator !== null){
-            $this->validator->validate_all_except(...$attrsIds);
-        }else{
-            throw new DevPanic("Setting attributes to validate is not supported without validator.");
-        }
-
+        $this->validator->validate_all_except(...$attrsIds);
     }
 
     /**
@@ -247,13 +240,7 @@ class Form extends HtmlElementNode
      */
     public function validate_only(?string ...$attrsIds): void
     {
-
-        if($this->validator !== null){
-            $this->validator->validate_only(...$attrsIds);
-        }else{
-            throw new DevPanic("Setting attributes to validate is not supported without validator.");
-        }
-
+        $this->validator->validate_only(...$attrsIds);
     }
 
     /**
@@ -262,11 +249,7 @@ class Form extends HtmlElementNode
      */
     public function invalidate(string $attr, string|TS|array $errorString): void
     {
-        if($this->validator !== null){
-            $this->validator->invalidate($attr, $errorString);
-        }else{
-            throw new DevPanic("Invalidating attributes is not supported without validator.");
-        }
+        $this->validator->invalidate($attr, $errorString);
     }
 
     /**
@@ -275,14 +258,10 @@ class Form extends HtmlElementNode
      */
     public function setCurrentEntity(?Entity $currentEntity): void
     {
-        if($this->validator !== null){
-            if($this->validator instanceof Form_Validator_Entity){
-                $this->validator->setCurrentEntity($currentEntity);
-            }else{
-                throw new DevPanic("Form_Validator_Entity required to set current entity.");
-            }
+        if($this->validator instanceof Form_Validator_Entity){
+            $this->validator->setCurrentEntity($currentEntity);
         }else{
-            throw new DevPanic("Setting attributes to validate is not supported without validator.");
+            throw new DevPanic("Form_Validator_Entity required to set current entity.");
         }
     }
 
@@ -318,19 +297,23 @@ class Form extends HtmlElementNode
     }
 
     /**
-     * @return bool
+     * @return ?DisablePolicy
      */
-    public function isDisabled(): bool
+    public function getDisablePolicy(): ?DisablePolicy
     {
-        return $this->disabled;
+        return $this->disablePolicy;
     }
 
     /**
-     * @param bool $disabled
+     * @param bool $disablePolicy
      */
-    public function setDisabled(bool $disabled = true): void
+    public function setDisabled(bool|DisablePolicy|null $disablePolicy = true): void
     {
-        $this->disabled = $disabled;
+        if(is_bool($disablePolicy)){
+            $this->disablePolicy = $disablePolicy ? DisablePolicy::DISABLE_ALL : null;
+        }else {
+            $this->disablePolicy = $disablePolicy;
+        }
     }
 
     /**
@@ -356,9 +339,7 @@ class Form extends HtmlElementNode
      */
     function _getAttr(Attr|string $attrId): Attr|string
     {
-        if($this->validator !== null)
-            return $this->validator->getAttr($attrId);
-        return $attrId;
+        return $this->validator->getAttr($attrId);
     }
 
     /**
@@ -468,11 +449,7 @@ class Form extends HtmlElementNode
         if(!$this->build_isValidating)
             return null;
 
-        if($this->validator === null){
-            return new ValidatedValue(false);
-        }else{
-            return $this->validator->getValidatedValue($attr);
-        }
+        return $this->validator->getValidatedValue($attr);
 
     }
 
@@ -489,32 +466,24 @@ class Form extends HtmlElementNode
     {
         $valueInDefaultValues = null;
 
-        if($this->validator !== null){
-            if($this->isValidating()){
-                if($this->validator->isAttrInValidateList($attr)){
-                    $validatedValue = $this->validator->getValidatedValue($attr);
-                    if($validatedValue->isWellFormat()){
-                        return $validatedValue;
-                    }
+        if($this->isValidating()){
+            if($this->validator->isAttrInValidateList($attr)){
+                $validatedValue = $this->validator->getValidatedValue($attr);
+                if($validatedValue->isWellFormat()){
+                    return $validatedValue;
                 }
             }
+        }
 
-            // `array_key_exists` because null values are also default values
-            if(array_key_exists($attr->getId(), $this->defaultValues)){
-                $valueInDefaultValues = $validatedValue = new ValidatedValue(true, true, $this->defaultValues[$attr->getId()]);
-            }else{
-                $validatedValue = $this->validator->getDefaultValue($attr);
-            }
-
-            if($validatedValue->isWellFormat()){
-                return $validatedValue;
-            }
-
+        // `array_key_exists` because null values are also default values
+        if(array_key_exists($attr->getId(), $this->defaultValues)){
+            $valueInDefaultValues = $validatedValue = new ValidatedValue(true, true, $this->defaultValues[$attr->getId()]);
         }else{
-            // `array_key_exists` because null values are also default values
-            if(array_key_exists($attr->getId(), $this->defaultValues)){
-                $valueInDefaultValues = new ValidatedValue(true, true, $this->defaultValues[$attr->getId()]);
-            }
+            $validatedValue = $this->validator->getDefaultValue($attr);
+        }
+
+        if($validatedValue->isWellFormat()){
+            return $validatedValue;
         }
 
         if($valueInDefaultValues !== null){
@@ -526,9 +495,9 @@ class Form extends HtmlElementNode
     }
 
     /**
-     * @return Form_Validator|null
+     * @return Form_Validator
      */
-    public function getValidator(): ?Form_Validator
+    public function getValidator(): Form_Validator
     {
         return $this->validator;
     }
@@ -606,13 +575,7 @@ class Form extends HtmlElementNode
      */
     public function writeValidValuesOn(Entity $entity): void
     {
-
-        if($this->validator !== null){
-            $this->validator->writeValidValuesOn($entity);
-        }else{
-            throw new DevPanic("Writing values to an entity is not supported without validator");
-        }
-
+        $this->validator->writeValidValuesOn($entity);
     }
 
     /**
@@ -620,13 +583,9 @@ class Form extends HtmlElementNode
      */
     public function isAllValid(): bool
     {
-        if($this->validator !== null){
-            if($this->csrfTokenIsValid !== null && !$this->csrfTokenIsValid)
-                return false; // CSRF token was invalid
-            return $this->validator->isAllValid();
-        }else{
-            throw new DevPanic("Asking if all is valid is not supported without a validator defined.");
-        }
+        if($this->csrfTokenIsValid !== null && !$this->csrfTokenIsValid)
+            return false; // CSRF token was invalid
+        return $this->validator->isAllValid();
     }
 
     /**
@@ -873,8 +832,6 @@ class Form extends HtmlElementNode
 
     public static function fromValidator(Form_Validator $validator, ?Closure $builder): Form
     {
-        /** @var ParamsManager $manager_params */
-        $manager_params = Find::pushAndGet(ParamsManager::class);
         return new Form($validator, null, $builder);
     }
 
@@ -949,7 +906,7 @@ class Form extends HtmlElementNode
      */
     public function getSubmissionKey(): ?ValidatedValue
     {
-        if($this->getFormId() !== null && $this->validator !== null){
+        if($this->getFormId() !== null){
             // Single underscore means internal
             return $this->validator->validateSubmissionKey($this->getFormId() . "_submit__");
         }

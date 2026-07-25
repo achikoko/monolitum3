@@ -168,19 +168,42 @@ trait Trait_From_Attr
      */
     protected function isValid(): ?bool
     {
+        $validatedValue = $this->form->getValidatedValue($this->attr);
+        if($validatedValue === null)
+            return null;
         $validationDisplay = $this->getValidationDisplay();
         if($validationDisplay === null)
             $validationDisplay = $this->form->getValidationDisplay();
         if($validationDisplay === ValidationDisplayType::NOT_AT_ALL)
-            return null;
-        $validatedValue = $this->form->getValidatedValue($this->attr);
-        if($validatedValue === null)
             return null;
         $isValid = $validatedValue->isValid() && !$this->userSetInvalid;
         if($validationDisplay === ValidationDisplayType::ONLY_ERRORS){
             return !$isValid ? false : null;
         }
         return $isValid;
+    }
+
+    /**
+     * Returns if the control is disabled.
+     * @return bool
+     */
+    protected function isDisabled(): bool
+    {
+        if($this->disabled !== null){
+            return $this->disabled;
+        }
+        $formDisablePolicy = $this->form->getDisablePolicy();
+        if($formDisablePolicy !== null){
+            switch($formDisablePolicy){
+                case DisablePolicy::DISABLE_ALL: return true;
+                case DisablePolicy::DISABLE_ONLY_NOT_VALIDATED: {
+                    if(!$this->form->getValidator()->isValidatable($this->attr)){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
