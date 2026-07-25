@@ -63,6 +63,10 @@ class BSButton extends AbstractTextNode
         return parent::doAcceptChild($object);
     }
 
+    /**
+     * @param Closure $onAction (BSButton) -> void
+     * @return $this
+     */
     public function setOnAction(Closure $onAction): self
     {
         $this->onAction = $onAction;
@@ -137,8 +141,7 @@ class BSButton extends AbstractTextNode
 
                     $it->setOnValidated(function (Form $it){
                         if($it->isAllValid()) { // If csrf token is not valid, function is called but this if is not executed
-                            $onAction = $this->onAction;
-                            $onAction($this); // $this as BSButton
+                            call_user_func($this->onAction, $this);// $this as BSButton
                         }
                     });
 
