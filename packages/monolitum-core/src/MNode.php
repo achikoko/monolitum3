@@ -93,9 +93,10 @@ class MNode implements MObject
         return $this;
     }
 
-    public function receive(MObject $object): void
+    public function receive(MObject $object): self
     {
         Monolitum::getInstance()->pushFrom($object, $this);
+        return $this;
     }
 
     function onNotReceived()
