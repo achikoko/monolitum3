@@ -77,7 +77,7 @@ class Attr_Decimal extends AbstractAttr
                 return $integerPart . "." . $floatingPart;
             }
         } else if(is_string($value)){
-            return strval($value);
+            return $value;
         }
         return "";
     }

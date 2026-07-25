@@ -4,9 +4,9 @@ namespace monolitum\model;
 use monolitum\core\panic\DevPanic;
 use monolitum\i18n\TS;
 use monolitum\model\attr\Attr;
-use monolitum\model\attr\Attr_Int;
+use monolitum\model\attr\Attr_Decimal;
 
-class AttrExt_Validate_Int extends AttrExt_Validate
+class AttrExt_Validate_Decimal extends AttrExt_Validate
 {
 
     private ?int $min = null;
@@ -22,8 +22,8 @@ class AttrExt_Validate_Int extends AttrExt_Validate
     #[\Override]
     protected function onSetAttr(Attr $attr): void
     {
-        if(!($attr instanceof Attr_Int))
-            throw new DevPanic("Expected a Attr_Int to AttrExt_Validate_Int, got " . get_class($attr));
+        if(!($attr instanceof Attr_Decimal))
+            throw new DevPanic("Expected a Attr_Decimal to AttrExt_Validate_Decimal, got " . get_class($attr));
         parent::onSetAttr($attr);
     }
 
@@ -89,6 +89,11 @@ class AttrExt_Validate_Int extends AttrExt_Validate
             /** @var int $val */
             $val = $validatedValue->getValue();
 
+            /** @var Attr_Decimal $attr */
+            $attr = $this->getAttr();
+
+            $val = $attr->floatValue($val);
+
             if($this->min !== null && $val < $this->min){
                 if($this->adjustMinMaxIfInvalid){
                     return new ValidatedValue(true, true, $this->min, null, strval($this->min));
@@ -115,9 +120,9 @@ class AttrExt_Validate_Int extends AttrExt_Validate
 
     }
 
-    public static function from(): AttrExt_Validate_Int
+    public static function from(): AttrExt_Validate_Decimal
     {
-        return new AttrExt_Validate_Int();
+        return new AttrExt_Validate_Decimal();
     }
 
 }

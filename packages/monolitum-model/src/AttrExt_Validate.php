@@ -23,10 +23,6 @@ class AttrExt_Validate extends AttrExt
      */
     private ?Closure $postValidatorFunction = null;
 
-//    private $isDefaultSet = false;
-//    private $def = null;
-//    private $substituteNotValid = false;
-
     /**
      * The given function will be executed after validating nullability. And substituting values if it had a change.
      * @param Closure $validatorFunction Signature: (PostValidatorContext) -> void
