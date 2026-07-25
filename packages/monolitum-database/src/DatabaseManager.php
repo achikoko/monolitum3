@@ -7,6 +7,7 @@ use DateTimeInterface;
 use monolitum\core\Find;
 use monolitum\core\MNode;
 use monolitum\core\panic\DevPanic;
+use monolitum\core\panic\Panic;
 use monolitum\model\attr\Attr;
 use monolitum\model\attr\Attr_Bool;
 use monolitum\model\attr\Attr_Color;
@@ -185,6 +186,24 @@ class DatabaseManager extends MNode implements EntityPersister
             $values[] = $high;
         }
         return $sql;
+    }
+
+    public function transactionStart(): void
+    {
+        if(!$this->pdo->beginTransaction())
+            throw new Panic("Transaction not started.");
+    }
+
+    public function transactionCommit(): void
+    {
+        if(!$this->pdo->commit())
+            throw new Panic("Transaction not committed.");
+    }
+
+    public function transactionRollback(): void
+    {
+        if(!$this->pdo->rollBack())
+            throw new Panic("Transaction not rolled back.");
     }
 
     protected function onBuild(): void
