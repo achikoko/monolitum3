@@ -4,10 +4,7 @@ namespace monolitum\frontend\css;
 class CSSSize implements SizeAutoProperty
 {
 
-    /**
-     * @var numeric
-     */
-    private string|int|float $number;
+    private string|int|float|null $number;
 
     /**
      * @var CSSUnit
@@ -18,7 +15,7 @@ class CSSSize implements SizeAutoProperty
      * @param float|int|string $number
      * @param CSSUnit $unit
      */
-    public function __construct(float|int|string $number, CSSUnit $unit)
+    public function __construct(float|int|string|null $number, CSSUnit $unit)
     {
         $this->number = $number;
         $this->unit = $unit;
@@ -34,8 +31,18 @@ class CSSSize implements SizeAutoProperty
         return new CSSSize($number, CSSUnit::pct());
     }
 
+    public static function auto(): CSSSize
+    {
+        return new CSSSize(null, CSSUnit::auto());
+    }
+
     function write(): string
     {
-        return $this->number . $this->unit->write();
+        if($this->number !== null){
+            return $this->number . $this->unit->write();
+        }else{
+            return $this->unit->write();
+        }
+
     }
 }

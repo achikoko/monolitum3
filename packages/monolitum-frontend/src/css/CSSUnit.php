@@ -11,18 +11,19 @@ class CSSUnit
         $this->value = $value;
     }
 
-    /**
-     * @return CSSUnit
-     */
-    public static function px(){
+    public static function px(): CSSUnit
+    {
         return new CSSUnit("px");
     }
 
-    /**
-     * @return CSSUnit
-     */
-    public static function pct(){
+    public static function pct(): CSSUnit
+    {
         return new CSSUnit("%");
+    }
+
+    public static function auto(): CSSUnit
+    {
+        return new CSSUnit("auto");
     }
 
 
