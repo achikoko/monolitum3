@@ -4,7 +4,7 @@ namespace monolitum\backend\params;
 
 use monolitum\core\MNode;
 use monolitum\core\MObject;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\Model;
 
 class HistoryPushParamsManager extends MNode

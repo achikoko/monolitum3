@@ -1,8 +1,7 @@
 <?php
-namespace monolitum\model\attr;
+namespace monolitum\model;
 
 use DateTime;
-use monolitum\model\ValidatedValue;
 use UnitEnum;
 
 class Attr_String extends AbstractAttr

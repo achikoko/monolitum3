@@ -7,7 +7,7 @@ use monolitum\database\Query;
 use monolitum\database\Query_Like;
 use monolitum\database\Query_Not;
 use monolitum\database\Query_Or;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\EntitiesManager;
 use monolitum\model\Entity;
 use monolitum\model\Model;

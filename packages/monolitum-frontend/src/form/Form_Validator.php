@@ -6,7 +6,7 @@ use monolitum\backend\params\ParamsManager;
 use monolitum\backend\params\StandardProvider;
 use monolitum\core\panic\DevPanic;
 use monolitum\i18n\TS;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\AttrExt_Validate;
 use monolitum\model\Entity;
 use monolitum\model\Model;

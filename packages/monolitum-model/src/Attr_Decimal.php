@@ -1,8 +1,7 @@
 <?php
-namespace monolitum\model\attr;
+namespace monolitum\model;
 
 use Exception;
-use monolitum\model\ValidatedValue;
 
 class Attr_Decimal extends AbstractAttr
 {

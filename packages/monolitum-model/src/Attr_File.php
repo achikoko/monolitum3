@@ -1,7 +1,6 @@
 <?php
-namespace monolitum\model\attr;
+namespace monolitum\model;
 
-use monolitum\model\ValidatedValue;
 use monolitum\model\values\File;
 
 class Attr_File extends AbstractAttr

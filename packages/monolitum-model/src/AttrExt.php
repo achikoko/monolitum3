@@ -2,8 +2,6 @@
 
 namespace monolitum\model;
 
-use monolitum\model\attr\Attr;
-
 abstract class AttrExt
 {
 
@@ -15,7 +13,7 @@ abstract class AttrExt
      * @param Attr $attr
      * @return void
      */
-    protected function onSetAttr(Attr $attr): void
+    function _onSetAttr(Attr $attr): void
     {
         $this->attr = $attr;
     }

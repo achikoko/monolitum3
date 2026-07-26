@@ -22,7 +22,7 @@ use monolitum\frontend\HtmlElementNodeExtension;
 use monolitum\frontend\Renderable;
 use monolitum\i18n\TS;
 use monolitum\model\AnonymousModel;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\Entity;
 use monolitum\model\ValidatedValue;
 

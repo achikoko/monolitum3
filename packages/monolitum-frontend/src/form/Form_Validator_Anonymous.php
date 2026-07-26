@@ -5,7 +5,7 @@ namespace monolitum\frontend\form;
 use monolitum\backend\params\StandardProvider;
 use monolitum\backend\params\Validator;
 use monolitum\core\panic\DevPanic;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\ValidatedValue;
 
 class Form_Validator_Anonymous extends Form_Validator

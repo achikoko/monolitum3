@@ -4,8 +4,6 @@ namespace monolitum\model;
 use Closure;
 use monolitum\core\panic\DevPanic;
 use monolitum\i18n\TS;
-use monolitum\model\attr\Attr;
-use monolitum\model\attr\Attr_String;
 use monolitum\model\enum\Enumeration;
 
 // For the future me: https://stackoverflow.com/questions/4147646/determine-if-utf-8-text-is-all-ascii
@@ -48,11 +46,11 @@ class AttrExt_Validate_String extends AttrExt_Validate
     private bool $nullifyEmpty = false;
 
     #[\Override]
-    protected function onSetAttr(Attr $attr): void
+    function _onSetAttr(Attr $attr): void
     {
         if(!($attr instanceof Attr_String))
             throw new DevPanic("Expected a Attr_String to AttrExt_Validate_String, got " . get_class($attr));
-        parent::onSetAttr($attr);
+        parent::_onSetAttr($attr);
     }
 
     public function trim(): self

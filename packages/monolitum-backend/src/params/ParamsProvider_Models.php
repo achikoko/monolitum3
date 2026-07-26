@@ -2,7 +2,7 @@
 
 namespace monolitum\backend\params;
 
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\Entity;
 use monolitum\model\Model;
 use monolitum\model\ValidatedValue;

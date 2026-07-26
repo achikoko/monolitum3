@@ -3,7 +3,7 @@
 namespace monolitum\quilleditor;
 
 use monolitum\database\DatabaseableAttr;
-use monolitum\model\attr\AbstractAttr;
+use monolitum\model\AbstractAttr;
 use monolitum\model\ValidatedValue;
 use nadar\quill\Lexer;
 

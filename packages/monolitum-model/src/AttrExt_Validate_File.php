@@ -2,8 +2,6 @@
 namespace monolitum\model;
 
 use monolitum\core\panic\DevPanic;
-use monolitum\model\attr\Attr;
-use monolitum\model\attr\Attr_File;
 use monolitum\model\values\File;
 
 class AttrExt_Validate_File extends AttrExt_Validate
@@ -34,11 +32,11 @@ class AttrExt_Validate_File extends AttrExt_Validate
     }
 
     #[\Override]
-    protected function onSetAttr(Attr $attr): void
+    function _onSetAttr(Attr $attr): void
     {
         if(!($attr instanceof Attr_File))
             throw new DevPanic("Expected a Attr_File to AttrExt_Validate_File, got " . get_class($attr));
-        parent::onSetAttr($attr);
+        parent::_onSetAttr($attr);
     }
 
     #[\Override]

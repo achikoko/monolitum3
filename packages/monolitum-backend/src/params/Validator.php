@@ -3,7 +3,7 @@
 namespace monolitum\backend\params;
 
 use monolitum\model\AnonymousModel;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\ValidatedValue;
 
 interface Validator

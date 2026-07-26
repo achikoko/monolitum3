@@ -1,8 +1,5 @@
 <?php
-namespace monolitum\model\attr;
-
-use monolitum\model\AnonymousModel;
-use monolitum\model\AttrExt;
+namespace monolitum\model;
 
 abstract class AbstractAttr implements Attr
 {
@@ -19,6 +16,7 @@ abstract class AbstractAttr implements Attr
     public function ext(AttrExt $extension): self
     {
         $this->extensions[] = $extension;
+        $extension->_onSetAttr($this);
         return $this;
     }
 

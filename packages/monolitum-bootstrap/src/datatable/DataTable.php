@@ -16,7 +16,7 @@ use monolitum\frontend\HtmlElementNode;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Renderable_Node;
 use monolitum\frontend\Rendered;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\Model;
 
 /**

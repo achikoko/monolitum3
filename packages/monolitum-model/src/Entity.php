@@ -6,8 +6,6 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use monolitum\core\panic\DevPanic;
 use monolitum\core\panic\UserPanic;
-use monolitum\model\attr\Attr;
-use monolitum\model\attr\Attr_Decimal;
 
 abstract class Entity
 {

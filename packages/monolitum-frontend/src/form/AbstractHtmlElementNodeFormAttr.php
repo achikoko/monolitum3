@@ -7,7 +7,7 @@ use monolitum\core\Find;
 use monolitum\core\panic\DevPanic;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\HtmlElementNode;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\AttrExt_Validate;
 
 abstract class AbstractHtmlElementNodeFormAttr extends HtmlElementNode implements I_Form_Attr

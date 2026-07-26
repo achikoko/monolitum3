@@ -2,7 +2,7 @@
 
 namespace monolitum\backend\params;
 
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\Model;
 
 class ParamsProvider_DatabaseGlobals_Model

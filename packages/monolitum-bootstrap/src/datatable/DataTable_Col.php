@@ -7,7 +7,7 @@ use monolitum\core\MObject;
 use monolitum\core\Monolitum;
 use monolitum\core\panic\DevPanic;
 use monolitum\i18n\TS;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 
 class DataTable_Col implements MObject
 {

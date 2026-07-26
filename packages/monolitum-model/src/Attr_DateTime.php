@@ -1,11 +1,10 @@
 <?php
-namespace monolitum\model\attr;
+namespace monolitum\model;
 
 use DateTimeImmutable;
 use DateTimeInterface;
-use monolitum\model\ValidatedValue;
 
-class Attr_Date extends AbstractAttr
+class Attr_DateTime extends AbstractAttr
 {
 
     /**
@@ -25,9 +24,6 @@ class Attr_Date extends AbstractAttr
                 if($date === false)
                     return new ValidatedValue(false);
 
-                // Force to be a date, not a datetime
-                $date = date_time_set($date, 0, 0);
-
                 return new ValidatedValue(true, true, DateTimeImmutable::createFromMutable($date), null, $value);
             }else{
                 return new ValidatedValue(true, true, null, null, "");
@@ -41,7 +37,7 @@ class Attr_Date extends AbstractAttr
     public function stringValue(mixed $value): string
     {
         if($value instanceof DateTimeInterface){
-            return $value->format('Y-m-d');
+            return $value->format('Y-m-d H:i:s');
         }
         return "";
     }

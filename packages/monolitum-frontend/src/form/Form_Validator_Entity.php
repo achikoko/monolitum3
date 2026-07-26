@@ -5,7 +5,7 @@ namespace monolitum\frontend\form;
 use monolitum\backend\params\StandardProvider;
 use monolitum\backend\params\Validator;
 use monolitum\model\AnonymousModel;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\Entity;
 use monolitum\model\Model;
 use monolitum\model\ValidatedValue;

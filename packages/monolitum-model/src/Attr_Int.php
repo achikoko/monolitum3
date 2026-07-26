@@ -1,7 +1,5 @@
 <?php
-namespace monolitum\model\attr;
-
-use monolitum\model\ValidatedValue;
+namespace monolitum\model;
 
 class Attr_Int extends AbstractAttr
 {

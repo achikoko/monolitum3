@@ -2,8 +2,8 @@
 
 namespace monolitum\backend\params;
 
-use monolitum\model\attr\Attr;
-use monolitum\model\attr\Attr_File;
+use monolitum\model\Attr;
+use monolitum\model\Attr_File;
 use monolitum\model\Model;
 use monolitum\model\ValidatedValue;
 

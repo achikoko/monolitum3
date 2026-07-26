@@ -6,7 +6,7 @@ use Closure;
 use monolitum\core\Find;
 use monolitum\core\panic\DevPanic;
 use monolitum\frontend\Renderable_Node;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\AttrExt_Validate;
 
 abstract class AbstractRenderableNodeFormAttr extends Renderable_Node implements I_Form_Attr

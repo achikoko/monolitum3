@@ -2,7 +2,7 @@
 
 namespace monolitum\frontend\form;
 
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 
 trait Trait_Form_Validate_Attrs
 {

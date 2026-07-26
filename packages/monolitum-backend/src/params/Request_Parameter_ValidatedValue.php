@@ -3,7 +3,7 @@
 namespace monolitum\backend\params;
 
 use monolitum\core\Monolitum;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\Model;
 use monolitum\model\ValidatedValue;
 

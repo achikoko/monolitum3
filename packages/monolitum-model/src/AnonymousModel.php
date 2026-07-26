@@ -2,7 +2,6 @@
 namespace monolitum\model;
 
 use monolitum\core\panic\DevPanic;
-use monolitum\model\attr\Attr;
 
 class AnonymousModel
 {

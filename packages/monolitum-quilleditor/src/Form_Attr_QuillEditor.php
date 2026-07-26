@@ -9,7 +9,7 @@ use monolitum\frontend\component\Div;
 use monolitum\frontend\form\AbstractRenderableNodeFormAttr;
 use monolitum\frontend\form\FormControl_Hidden;
 use monolitum\frontend\HtmlElementNodeExtension;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use function monolitum\core\m;
 
 class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr

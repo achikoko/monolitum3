@@ -2,7 +2,7 @@
 
 namespace monolitum\database;
 
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 
 readonly class Query_Sort_Tuple
 {

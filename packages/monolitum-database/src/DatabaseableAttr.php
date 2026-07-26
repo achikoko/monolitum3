@@ -2,7 +2,7 @@
 
 namespace monolitum\database;
 
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 
 /**
  * Interface to mark an attribute as storable into a database

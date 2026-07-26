@@ -5,7 +5,7 @@ namespace monolitum\frontend\form;
 use Closure;
 use monolitum\frontend\HtmlElementNode;
 use monolitum\i18n\TS;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\AttrExt_Validate;
 use monolitum\model\enum\Enumeration;
 
@@ -60,8 +60,10 @@ trait Trait_From_Attr
     /// Callables
     /// ////////////////////
 
-    protected array $onBeforeBuildFormClosures = [];
-    protected array $onAfterBuildFormClosures = [];
+    protected array $onCheckFormClosures = [];
+    protected array $onBeforeValidateFormClosures = [];
+    protected array $onAfterValidateFormClosures = [];
+    protected array $onNotValidateFormClosures = [];
 
     public function disabled(bool $disabled=true): void
     {
@@ -231,7 +233,7 @@ trait Trait_From_Attr
      */
     public function hasValue(): bool
     {
-        return $this->hasOverriddenValue ? true : $this->form->getDisplayValue($this->attr)->isWellFormat();
+        return $this->hasOverriddenValue || $this->form->getDisplayValue($this->attr)->isWellFormat();
     }
 
     public function getValue(): mixed
@@ -259,29 +261,55 @@ trait Trait_From_Attr
         return $this->form;
     }
 
-    public function addOnBeforeBuildForm(Closure $closure): self
+    public function addOnCheckForm(Closure $closure): self
     {
-        $this->onBeforeBuildFormClosures[] = $closure;
+        $this->onCheckFormClosures[] = $closure;
         return $this;
     }
 
-    public function addOnAfterBuildForm(Closure $closure): self
+    public function addOnBeforeValidateForm(Closure $closure): self
     {
-        $this->onAfterBuildFormClosures[] = $closure;
+        $this->onBeforeValidateFormClosures[] = $closure;
         return $this;
     }
 
-    protected function callOnBeforeBuildFormCallables(): void
+    public function addOnAfterValidateForm(Closure $closure): self
     {
-        foreach($this->onBeforeBuildFormClosures as $closure){
-            call_user_func($closure);
+        $this->onAfterValidateFormClosures[] = $closure;
+        return $this;
+    }
+
+    public function addOnNotValidateForm(Closure $closure): self
+    {
+        $this->onNotValidateFormClosures[] = $closure;
+        return $this;
+    }
+
+    protected function callOnCheckFormClosures(): void
+    {
+        foreach($this->onCheckFormClosures as $closure){
+            call_user_func($closure, $this);
         }
     }
 
-    protected function callOnAfterBuildFormClosures(): void
+    protected function callOnBeforeValidateFormClosures(): void
     {
-        foreach($this->onAfterBuildFormClosures as $closure){
-            call_user_func($closure);
+        foreach($this->onBeforeValidateFormClosures as $closure){
+            call_user_func($closure, $this);
+        }
+    }
+
+    protected function callOnAfterValidateFormClosures(): void
+    {
+        foreach($this->onAfterValidateFormClosures as $closure){
+            call_user_func($closure, $this);
+        }
+    }
+
+    protected function callOnNotValidateFormClosures(): void
+    {
+        foreach($this->onNotValidateFormClosures as $closure){
+            call_user_func($closure, $this);
         }
     }
 

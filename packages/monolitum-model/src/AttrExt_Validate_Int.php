@@ -3,8 +3,6 @@ namespace monolitum\model;
 
 use monolitum\core\panic\DevPanic;
 use monolitum\i18n\TS;
-use monolitum\model\attr\Attr;
-use monolitum\model\attr\Attr_Int;
 
 class AttrExt_Validate_Int extends AttrExt_Validate
 {
@@ -20,11 +18,11 @@ class AttrExt_Validate_Int extends AttrExt_Validate
     private bool $adjustMinMaxIfInvalid = false;
 
     #[\Override]
-    protected function onSetAttr(Attr $attr): void
+    function _onSetAttr(Attr $attr): void
     {
         if(!($attr instanceof Attr_Int))
             throw new DevPanic("Expected a Attr_Int to AttrExt_Validate_Int, got " . get_class($attr));
-        parent::onSetAttr($attr);
+        parent::_onSetAttr($attr);
     }
 
     public function adjustMinMaxIfInvalid($adjustMinMaxIfInvalid = true): self

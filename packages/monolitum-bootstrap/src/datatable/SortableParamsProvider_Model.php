@@ -4,7 +4,7 @@ namespace monolitum\bootstrap\datatable;
 
 use monolitum\backend\params\Link;
 use monolitum\backend\params\ParamsManager;
-use monolitum\model\attr\Attr;
+use monolitum\model\Attr;
 use monolitum\model\Model;
 
 class SortableParamsProvider_Model implements SortableParamsProvider

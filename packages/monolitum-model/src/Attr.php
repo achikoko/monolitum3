@@ -1,9 +1,5 @@
 <?php
-namespace monolitum\model\attr;
-
-use monolitum\model\AnonymousModel;
-use monolitum\model\AttrExt;
-use monolitum\model\ValidatedValue;
+namespace monolitum\model;
 
 interface Attr
 {

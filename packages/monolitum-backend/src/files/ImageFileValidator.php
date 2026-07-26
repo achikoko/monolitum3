@@ -3,7 +3,7 @@
 namespace monolitum\backend\files;
 
 use finfo;
-use monolitum\model\attr\Attr_File;
+use monolitum\model\Attr_File;
 use monolitum\model\FileTypeValidator;
 use monolitum\model\ValidatedValue;
 use monolitum\model\values\File;
