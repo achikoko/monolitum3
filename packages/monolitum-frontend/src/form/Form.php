@@ -152,6 +152,8 @@ class Form extends HtmlElementNode
      */
     private bool $build_isValidating = false;
 
+    private bool $build_disableValidateValues = false;
+
     private bool $build_overrideSubmitLinks = false;
 
     /**
@@ -438,6 +440,9 @@ class Form extends HtmlElementNode
         if(!$this->build_isValidating)
             return null;
 
+        if ($this->build_disableValidateValues)
+            throw new DevPanic("Forbidden to call getValidatedValue() before validating.");
+
         return $this->validator->getValidatedValue($attr);
 
     }
@@ -453,6 +458,9 @@ class Form extends HtmlElementNode
      */
     public function getDisplayValue(Attr|string $attr): ValidatedValue
     {
+        if ($this->build_disableValidateValues)
+            throw new DevPanic("Forbidden to call getValidatedValue() before validating.");
+
         $valueInDefaultValues = null;
 
         if($this->isValidating()){
@@ -587,39 +595,47 @@ class Form extends HtmlElementNode
 
     protected function onAfterBuild(): void
     {
-        // Generate an ID to identify the submission of this form if not exist
 
-        if($this->getFormId() === null)
-            $this->setId(Request_NewId::pushAndGet(self::GLOBALS_CONTEXT_ID));
+        $this->build_disableValidateValues = true;
+        try {
 
-        // Find root form before all
-        // If there are nested forms, they will find me and the real root form
+            // Generate an ID to identify the submission of this form if not exist
 
-        /** @var Form $parentForm */
-        $parentForm = Find::pushAndGetFrom(Form::class, $this->getParent(), true, true);
-        if($parentForm !== null){
-            $this->rootForm = $parentForm->rootForm;
-            if($this->rootForm == null)
-                $this->rootForm = $parentForm;
-            $this->rootForm->_registerNestedForm($this);
-        }
+            if ($this->getFormId() === null)
+                $this->setId(Request_NewId::pushAndGet(self::GLOBALS_CONTEXT_ID));
 
-        $validatedValueKey = $this->getSubmissionKey();
+            // Find root form before all
+            // If there are nested forms, they will find me and the real root form
 
-        if($validatedValueKey !== null && !$validatedValueKey->isNull()) {
-            $this->build_isValidating = true;
-            if($parentForm !== null){
-                // Validate CSRF token from parent form
-                $parentForm->validateCSRFToken();
-                $this->csrfTokenIsValid = $parentForm->csrfTokenIsValid;
-            }else{
-                // Validate my csrf token
-                $this->validateCSRFToken();
+            /** @var Form $parentForm */
+            $parentForm = Find::pushAndGetFrom(Form::class, $this->getParent(), true, true);
+            if ($parentForm !== null) {
+                $this->rootForm = $parentForm->rootForm;
+                if ($this->rootForm == null)
+                    $this->rootForm = $parentForm;
+                $this->rootForm->_registerNestedForm($this);
             }
-        }
 
-        foreach ($this->formAttrs as $value){
-            $value->onCheckForm();
+            $validatedValueKey = $this->getSubmissionKey();
+
+            if ($validatedValueKey !== null && !$validatedValueKey->isNull()) {
+                $this->build_isValidating = true;
+                if ($parentForm !== null) {
+                    // Validate CSRF token from parent form
+                    $parentForm->validateCSRFToken();
+                    $this->csrfTokenIsValid = $parentForm->csrfTokenIsValid;
+                } else {
+                    // Validate my csrf token
+                    $this->validateCSRFToken();
+                }
+            }
+
+            foreach ($this->formAttrs as $value) {
+                $value->onCheckForm();
+            }
+
+        } finally {
+            $this->build_disableValidateValues = false;
         }
 
         if($this->isValidating() && !$this->notValidate){

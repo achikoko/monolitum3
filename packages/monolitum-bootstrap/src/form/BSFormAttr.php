@@ -341,53 +341,28 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
             }else{
                 $this->formControl = $this->customFormControl;
             }
-        }
-
-        $attr = $this->getAttrRenderAs();
-        $formExt = $this->getFormExt();
-        $validateExt = $this->getValidateExt();
-
-        $this->formControl = null;
-
-        $finalLanguage = TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage); // TODO Active get finalLanguage
-
-        if($this->hasOverriddenEnum)
-        {
-            // If there is an enum, create a select
-            $this->formControl = $this->createSelectFormControl($finalLanguage, $formExt, $validateExt);
-
+            $this->formControlActualRenderable = $this->formControl;
         }else {
 
-            if ($attr instanceof Attr_Bool) {
+            $attr = $this->getAttrRenderAs();
+            $formExt = $this->getFormExt();
+            $validateExt = $this->getValidateExt();
 
-                $this->formControl = new FormControl_CheckBox(function (FormControl_CheckBox $it) {
-                    $it->setId($this->getFullFieldName());
-                    $it->setName($this->getFullFieldName());
-                    if ($this->hidden === true)
-                        $it->convertToHidden();
+            $this->formControl = null;
 
-                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+            $finalLanguage = TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage); // TODO Active get finalLanguage
 
-                        if ($it->hasValue())
-                            $formControl->setValue($this->getValue());
+            if ($this->hasOverriddenEnum) {
+                // If there is an enum, create a select
+                $this->formControl = $this->createSelectFormControl($finalLanguage, $formExt, $validateExt);
 
-                        if ($it->isDisabled())
-                            $formControl->setDisabled();
-                    };
-                });
+            } else {
 
-            } else if ($attr instanceof Attr_String) {
+                if ($attr instanceof Attr_Bool) {
 
-                if ($validateExt instanceof AttrExt_Validate_String && $validateExt->hasEnum()) {
-
-                    $this->formControl = $this->createSelectFormControl($finalLanguage, $formExt, $validateExt);
-
-                } else if ($formExt instanceof AttrExt_Form_String && $formExt->isPassword()) {
-
-                    $this->formControl = new FormControl_Password(function (FormControl_Password $it) {
+                    $this->formControl = new FormControl_CheckBox(function (FormControl_CheckBox $it) {
                         $it->setId($this->getFullFieldName());
                         $it->setName($this->getFullFieldName());
-                        $it->autocomplete(false);
                         if ($this->hidden === true)
                             $it->convertToHidden();
 
@@ -401,23 +376,76 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                         };
                     });
 
-                } else {
+                } else if ($attr instanceof Attr_String) {
 
-                    $this->formControl = new FormControl_Text(function (FormControl_Text $it) use ($formExt, $finalLanguage) {
+                    if ($validateExt instanceof AttrExt_Validate_String && $validateExt->hasEnum()) {
+
+                        $this->formControl = $this->createSelectFormControl($finalLanguage, $formExt, $validateExt);
+
+                    } else if ($formExt instanceof AttrExt_Form_String && $formExt->isPassword()) {
+
+                        $this->formControl = new FormControl_Password(function (FormControl_Password $it) {
+                            $it->setId($this->getFullFieldName());
+                            $it->setName($this->getFullFieldName());
+                            $it->autocomplete(false);
+                            if ($this->hidden === true)
+                                $it->convertToHidden();
+
+                            $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+
+                                if ($it->hasValue())
+                                    $formControl->setValue($this->getValue());
+
+                                if ($it->isDisabled())
+                                    $formControl->setDisabled();
+                            };
+                        });
+
+                    } else {
+
+                        $this->formControl = new FormControl_Text(function (FormControl_Text $it) use ($formExt, $finalLanguage) {
+                            $it->setId($this->getFullFieldName());
+                            $it->setName($this->getFullFieldName());
+                            $it->autocomplete(false);
+
+                            if ($formExt instanceof AttrExt_Form_String) {
+                                $inputType = $formExt->getInputType();
+                                if ($inputType !== null)
+                                    $it->setInputType($inputType);
+                            }
+                            if ($this->getPlaceholder() != null)
+                                $it->setPlaceholder(TS::unwrap($this->getPlaceholder(), $finalLanguage));
+
+                            if ($this->hidden === true)
+                                $it->convertToHidden();
+
+                            $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+
+                                if ($it->hasValue())
+                                    $formControl->setValue($this->getValue());
+
+                                if ($it->isDisabled())
+                                    $formControl->setDisabled();
+                            };
+
+                        });
+
+                    }
+
+                } else if ($attr instanceof Attr_Int) {
+
+                    $this->formControl = new FormControl_Number(function (FormControl_Number $it) use ($validateExt) {
                         $it->setId($this->getFullFieldName());
                         $it->setName($this->getFullFieldName());
-                        $it->autocomplete(false);
 
-                        if ($formExt instanceof AttrExt_Form_String) {
-                            $inputType = $formExt->getInputType();
-                            if ($inputType !== null)
-                                $it->setInputType($inputType);
+                        if ($validateExt instanceof AttrExt_Validate_Int) {
+                            $it->min($validateExt->getMin());
+                            $it->max($validateExt->getMax());
                         }
-                        if ($this->getPlaceholder() != null)
-                            $it->setPlaceholder(TS::unwrap($this->getPlaceholder(), $finalLanguage));
 
                         if ($this->hidden === true)
                             $it->convertToHidden();
+
 
                         $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
 
@@ -426,167 +454,140 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
                             if ($it->isDisabled())
                                 $formControl->setDisabled();
+                        };
+                    });
+
+                } else if ($attr instanceof Attr_Decimal) {
+
+                    $this->formControl = new FormControl_Number(function (FormControl_Number $it) use ($attr) {
+                        $it->setId($this->getFullFieldName());
+                        $it->setName($this->getFullFieldName());
+                        $decimals = $attr->getDecimals();
+
+                        $it->step(1 / pow(10, $decimals));
+
+                        if ($this->hidden === true)
+                            $it->convertToHidden();
+
+                        $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) use ($attr) {
+
+                            if ($it->hasValue())
+                                $formControl->setValue($attr->stringValue($this->getValue()));
+
+                            if ($it->isDisabled())
+                                $formControl->setDisabled();
+                        };
+
+                    });
+
+                } else if ($attr instanceof Attr_Date) {
+
+                    $this->formControl = new BSFormControl_Datetime(function (BSFormControl_Datetime $it) use ($formExt) {
+                        $it->setId($this->getFullFieldName());
+                        $it->setName($this->getFullFieldName());
+                        $it->setOnlyDate();
+
+                        if ($formExt instanceof AttrExt_Form_DateTime && $formExt->getIsLongAway()) {
+                            $it->setShowYearsFirst();
+                        }
+
+                        if ($this->hidden === true)
+                            $it->convertToHidden();
+
+                        $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+
+                            if ($it->hasValue()) {
+                                $datetime = $it->getValue();
+                                if ($datetime !== null)
+                                    $formControl->setValue(date_format($datetime, "Y-m-d"));
+                            }
+
+                            if ($it->isDisabled())
+                                $formControl->setDisabled();
+                        };
+
+                    });
+
+                } else if ($attr instanceof Attr_DateTime) {
+
+                    $this->formControl = new BSFormControl_Datetime(function (BSFormControl_Datetime $it) use ($formExt) {
+                        $it->setId($this->getFullFieldName());
+                        $it->setName($this->getFullFieldName());
+
+                        if ($formExt instanceof AttrExt_Form_DateTime && $formExt->getIsLongAway()) {
+                            $it->setShowYearsFirst();
+                        }
+
+                        if ($this->hidden === true)
+                            $it->convertToHidden();
+
+                        $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+
+                            if ($it->hasValue()) {
+                                $datetime = $it->getValue();
+                                if ($datetime !== null)
+                                    $formControl->setValue(date_format($datetime, "Y-m-d H:i:s"));
+                            }
+
+                            if ($it->isDisabled())
+                                $formControl->setDisabled();
+                        };
+
+                    });
+
+                } else if ($attr instanceof Attr_File) {
+
+                    $this->formControl = new FormControl_File(function (FormControl_File $it) {
+                        $it->setId($this->getFullFieldName());
+                        $it->setName($this->getFullFieldName());
+
+                        if ($this->hidden === true)
+                            $it->convertToHidden();
+
+                        $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+
+                            if ($it->isDisabled())
+                                $formControl->setDisabled();
+
                         };
 
                     });
 
                 }
-
-            } else if ($attr instanceof Attr_Int) {
-
-                $this->formControl = new FormControl_Number(function (FormControl_Number $it) use ($validateExt) {
-                    $it->setId($this->getFullFieldName());
-                    $it->setName($this->getFullFieldName());
-
-                    if ($validateExt instanceof AttrExt_Validate_Int) {
-                        $it->min($validateExt->getMin());
-                        $it->max($validateExt->getMax());
-                    }
-
-                    if ($this->hidden === true)
-                        $it->convertToHidden();
-
-
-                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
-
-                        if ($it->hasValue())
-                            $formControl->setValue($this->getValue());
-
-                        if ($it->isDisabled())
-                            $formControl->setDisabled();
-                    };
-                });
-
-            } else if ($attr instanceof Attr_Decimal) {
-
-                $this->formControl = new FormControl_Number(function (FormControl_Number $it) use ($attr) {
-                    $it->setId($this->getFullFieldName());
-                    $it->setName($this->getFullFieldName());
-                    $decimals = $attr->getDecimals();
-
-                    $it->step(1 / pow(10, $decimals));
-
-                    if ($this->hidden === true)
-                        $it->convertToHidden();
-
-                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) use ($attr) {
-
-                        if ($it->hasValue())
-                            $formControl->setValue($attr->stringValue($this->getValue()));
-
-                        if ($it->isDisabled())
-                            $formControl->setDisabled();
-                    };
-
-                });
-
-            } else if ($attr instanceof Attr_Date) {
-
-                $this->formControl = new BSFormControl_Datetime(function (BSFormControl_Datetime $it) use ($formExt) {
-                    $it->setId($this->getFullFieldName());
-                    $it->setName($this->getFullFieldName());
-                    $it->setOnlyDate();
-
-                    if ($formExt instanceof AttrExt_Form_DateTime && $formExt->getIsLongAway()){
-                        $it->setShowYearsFirst();
-                    }
-
-                    if ($this->hidden === true)
-                        $it->convertToHidden();
-
-                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
-
-                        if ($it->hasValue()) {
-                            $datetime = $it->getValue();
-                            if ($datetime !== null)
-                                $formControl->setValue(date_format($datetime, "Y-m-d"));
-                        }
-
-                        if ($it->isDisabled())
-                            $formControl->setDisabled();
-                    };
-
-                });
-
-            } else if ($attr instanceof Attr_DateTime) {
-
-                $this->formControl = new BSFormControl_Datetime(function (BSFormControl_Datetime $it) use ($formExt) {
-                    $it->setId($this->getFullFieldName());
-                    $it->setName($this->getFullFieldName());
-
-                    if ($formExt instanceof AttrExt_Form_DateTime && $formExt->getIsLongAway()){
-                        $it->setShowYearsFirst();
-                    }
-
-                    if ($this->hidden === true)
-                        $it->convertToHidden();
-
-                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
-
-                        if ($it->hasValue()) {
-                            $datetime = $it->getValue();
-                            if ($datetime !== null)
-                                $formControl->setValue(date_format($datetime, "Y-m-d H:i:s"));
-                        }
-
-                        if ($it->isDisabled())
-                            $formControl->setDisabled();
-                    };
-
-                });
-
-            } else if ($attr instanceof Attr_File) {
-
-                $this->formControl = new FormControl_File(function (FormControl_File $it) {
-                    $it->setId($this->getFullFieldName());
-                    $it->setName($this->getFullFieldName());
-
-                    if ($this->hidden === true)
-                        $it->convertToHidden();
-
-                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
-
-                        if ($it->isDisabled())
-                            $formControl->setDisabled();
-
-                    };
-
-                });
-
             }
-        }
 
-        if(count($this->inputGroupBefore) > 0 || count($this->inputGroupAfter) > 0){
-            $this->formControlActualRenderable = new Div(function (Div $it) {
-                $it->addClass("input-group");
+            if (count($this->inputGroupBefore) > 0 || count($this->inputGroupAfter) > 0) {
+                $this->formControlActualRenderable = new Div(function (Div $it) {
+                    $it->addClass("input-group");
 
-                foreach ($this->inputGroupBefore as $input){
-                    if(is_string($input) || $input instanceof TS){
-                        $it->append(new Span(function (Span $it) use ($input){
-                            $it->addClass("input-group-text");
+                    foreach ($this->inputGroupBefore as $input) {
+                        if (is_string($input) || $input instanceof TS) {
+                            $it->append(new Span(function (Span $it) use ($input) {
+                                $it->addClass("input-group-text");
+                                $it->append($input);
+                            }));
+                        } else {
                             $it->append($input);
-                        }));
-                    }else{
-                        $it->append($input);
+                        }
                     }
-                }
 
-                $it->append($this->formControl);
+                    $it->append($this->formControl);
 
-                foreach ($this->inputGroupAfter as $input){
-                    if(is_string($input) || $input instanceof TS){
-                        $it->append(new Span(function (Span $it) use ($input){
-                            $it->addClass("input-group-text");
+                    foreach ($this->inputGroupAfter as $input) {
+                        if (is_string($input) || $input instanceof TS) {
+                            $it->append(new Span(function (Span $it) use ($input) {
+                                $it->addClass("input-group-text");
+                                $it->append($input);
+                            }));
+                        } else {
                             $it->append($input);
-                        }));
-                    }else{
-                        $it->append($input);
+                        }
                     }
-                }
 
-            });
-        }else{
-            $this->formControlActualRenderable = $this->formControl;
+                });
+            } else {
+                $this->formControlActualRenderable = $this->formControl;
+            }
         }
 
         foreach ($this->formControlExtensions as $formControlExtension){
@@ -617,14 +618,6 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
             $it->setId($this->getFullFieldName());
             $it->setName($this->getFullFieldName());
 
-            $selected = null;
-            if ($this->hasValue())
-                $selected = $this->getValue();
-            $it->setValue($selected);
-
-            if ($this->isDisabled())
-                $it->setDisabled();
-
             if ($this->hidden === true)
                 $it->convertToHidden();
 
@@ -641,12 +634,12 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
                 M(new FormControl_Select_Option(
                     "",
-                    function (FormControl_Select_Option $it) use ($finalLanguage, $selected, $nullLabel) {
+                    function (FormControl_Select_Option $it) use ($finalLanguage, $nullLabel) {
 
                         $it->append($nullLabel !== null ? TS::render($nullLabel, $finalLanguage) : "");
 
-                        if ($selected === null)
-                            $it->setSelected();
+//                        if ($selected === null)
+//                            $it->setSelected();
 
                     }));
 
@@ -658,7 +651,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                 // Look at the registration form, field nif_type
                 M(new FormControl_Select_Option(
                     "",
-                    function (FormControl_Select_Option $it) use ($selected) {
+                    function (FormControl_Select_Option $it) {
                         $it->append("");
                     })
                 );
@@ -691,10 +684,10 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                             $currentGroupElement = null;
                         }
 
-                        M(new FormControl_Select_Option($itemKey, function (FormControl_Select_Option $it) use ($content, $itemKey, $selected) {
+                        M(new FormControl_Select_Option($itemKey, function (FormControl_Select_Option $it) use ($content, $itemKey) {
                             $it->append($content);
-                            if ($itemKey == $selected)
-                                $it->setSelected();
+//                            if ($itemKey == $selected)
+//                                $it->setSelected();
                         }));
 
                     }else{
@@ -709,10 +702,10 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                             $currentGroup = $itemGroup;
                         }
 
-                        $currentGroupElement->receive(new FormControl_Select_Option($itemKey, function (FormControl_Select_Option $it) use ($content, $itemKey, $selected) {
+                        $currentGroupElement->receive(new FormControl_Select_Option($itemKey, function (FormControl_Select_Option $it) use ($content, $itemKey) {
                             $it->append($content);
-                            if ($itemKey == $selected)
-                                $it->setSelected();
+//                            if ($itemKey == $selected)
+//                                $it->setSelected();
                         }));
                     }
 
@@ -721,6 +714,38 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                 if($currentGroupElement !== null){
                     M($currentGroupElement);
                 }
+
+                $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+                    // TODO create a Map with keys and elements, to search in O(1)
+
+                    $selected = null;
+                    if ($this->hasValue())
+                        $selected = $this->getValue();
+                    $formControl->setValue($selected);
+
+                    if ($this->isDisabled())
+                        $formControl->setDisabled();
+
+                    foreach ($formControl->getChildren() as $child) {
+                        if ($child instanceof FormControl_Select_Option) {
+                            $value = $child->getValue();
+                            if (empty($value) && $selected == null || $value == $selected)
+                                $child->setSelected();
+
+                        }else if($child instanceof FormControl_Select_OptionGroup){
+
+                            foreach ($child->getChildren() as $child2) {
+                                if ($child2 instanceof FormControl_Select_Option) {
+                                    $value = $child2->getValue();
+                                    if (empty($value) && $selected == null || $value == $selected)
+                                        $child2->setSelected();
+                                }
+                            }
+
+                        }
+                    }
+
+                };
 
             }
 

@@ -63,8 +63,8 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
             $this->component = new FormControl_Hidden(function (FormControl_Hidden $it){
                 $it->setId($this->getFullFieldName());
                 $it->setName($this->getFullFieldName());
-                if($this->hasValue())
-                    $it->setValue($this->getValue());
+//                if($this->hasValue())
+//                    $it->setValue($this->getValue());
             });
         }else{
 
@@ -86,14 +86,14 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
                     if($this->initialHeight !== null){
                         $it->setInitialHeight($this->initialHeight);
                     }
-                    if($this->hasValue())
-                        $it->setValue($this->getValue());
+//                    if($this->hasValue())
+//                        $it->setValue($this->getValue());
 
                     if($this->getPlaceholder() != null)
                         $it->setPlaceholder($this->getPlaceholder());
 
-                    if($this->isDisabled())
-                        $it->setDisabled();
+//                    if($this->isDisabled())
+//                        $it->setDisabled();
 
                 }));
 

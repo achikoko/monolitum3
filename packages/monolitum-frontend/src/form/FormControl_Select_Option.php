@@ -35,6 +35,11 @@ class FormControl_Select_Option extends HtmlElementNode
         $option->setAttribute("value", $value);
     }
 
+    public function getValue(): ?string
+    {
+        return $this->getElement()->getAttribute("value");
+    }
+
     /**
      * @param bool $value
      */
