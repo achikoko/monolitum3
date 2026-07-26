@@ -34,4 +34,24 @@ abstract class AbstractRenderableNodeFormAttr extends Renderable_Node implements
         parent::onBuild();
     }
 
+    public function onCheckForm(): void
+    {
+        $this->callOnCheckFormClosures();
+    }
+
+    public function onBeforeValidateForm(): void
+    {
+        $this->callOnBeforeValidateFormClosures();
+    }
+
+    public function onAfterValidateForm(): void
+    {
+        $this->callOnAfterValidateFormClosures();
+    }
+
+    public function onNotValidateForm(): void
+    {
+        $this->callOnNotValidateFormClosures();
+    }
+
 }

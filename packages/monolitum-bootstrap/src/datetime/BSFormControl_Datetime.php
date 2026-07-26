@@ -20,6 +20,7 @@ class BSFormControl_Datetime extends FormControl
 
     private bool $onlyDate = false;
     private bool $showYearsFirst = false;
+    private string $simpleLocale;
 
     public function __construct(?Closure $builder = null)
     {
@@ -59,13 +60,14 @@ class BSFormControl_Datetime extends FormControl
 
         /** @var string $locale */
         $locale = TSLang::pushAndGetLang();
-        $simpleLocale = substr($locale, 0, strpos($locale, "_"));
+        $this->simpleLocale = substr($locale, 0, strpos($locale, "_"));
 
-        $page->includeFlatpickrIfNot($simpleLocale);
+        $page->includeFlatpickrIfNot($this->simpleLocale);
 
         parent::onBuild();
 
         $this->setAttribute("placeholder", $this->onlyDate ? "----/--/--" : "----/--/-- --:--");
+
 
         // SOLUTION, two fields, one hidden, update the hidden every time the other updates
         $this->append((new JSInlineScript())->addScript(
@@ -75,77 +77,39 @@ class BSFormControl_Datetime extends FormControl
         '{$this->getId()}',
         " . ($this->onlyDate ? "true" : "false"). ",
         " . ($this->showYearsFirst ? "true" : "false"). ",
-        " . ($this->value !== null ? "'{$this->value}'" : "null") . ",
         '" . (str_replace("_", "-", $locale ?? "")) . "',
-        '" . $simpleLocale . "'
+        '" . $this->simpleLocale . "'
     );" .
-//    const pickedDate = " . ($this->value ? "new tempusDominus.DateTime(new Date(\"{$this->value}\"))" : "null") . ";
-//    const picker = new tempusDominus.TempusDominus(document.getElementById('{$this->getId()}'), {"
-//        . ($this->value ? "defaultDate: pickedDate," : "")
-//        . ($this->onlyDate ? "display: {
-//            viewMode: 'calendar',
-//            components: {
-//              clock: false,
-//              hours: false,
-//              minutes: false,
-//              seconds: false,
-//              useTwentyfourHour: undefined
-//            },
-//          },
-//          localization: {
-//            dayViewHeaderFormat: { month: 'long', year: 'numeric' },
-//                startOfTheWeek: 1,
-//            locale: '" . (str_replace("_", "-", TSLang::pushAndGetLang() ?? "")) . "',
-//            format: 'L'
-//          }," : "display: {
-////            viewMode: 'calendar',
-////            components: {
-////              clock: false,
-////              hours: false,
-////              minutes: false,
-////              seconds: false,
-////              useTwentyfourHour: undefined
-////            },
-//          },
-//          localization: {
-//            dayViewHeaderFormat: { month: 'long', year: 'numeric' },
-//            startOfTheWeek: 1,
-//            locale: '" . (str_replace("_", "-", TSLang::pushAndGetLang() ?? "")) . "',
-//            format: 'LLLL'
-//          },")
-//    . "});
-//    // 2. Overwrite the format function (handles how dates display in the input)
-//    picker.dates.formatInput = function(date) {
-//        if (!date) return '';
-//        // Format manually or use a library like dayjs/moment
-//        let options = {
-////          weekday: 'long',
-//          year: 'numeric',
-//          month: 'long',
-//          day: 'numeric',
-//        };
-//        return new Intl.DateTimeFormat(\"" . (str_replace("_", "-", TSLang::pushAndGetLang() ?? "")) . "\", options).format(date);
-//    };
-//
-//    // FORCE THE PICKER TO DISPLAY VALUE VIA YOUR NEW FUNCTION
-////    console.log(pickedDate);
-//    picker.dates.setValue(pickedDate);
-//    picker.dates.setValue(pickedDate);
-////    console.log(picker.dates.lastPickedDate + 'ola');
-////    picker.dates.setValue(picker.dates.lastPickedDate);
 "})();
 "
         ));
+//        " . ($this->value !== null ? "'{$this->value}'" : "null") . ",
 
     }
 
     public function render(): Renderable|array|null
     {
+        if($this->value !== null)
+            $this->setAttribute("value", $this->value);
+
         // No childs are rendered if it is hidden
         if($this->getElement()->getAttribute("type") !== "hidden"){
             Renderable_Node::renderRenderedTo($this->renderChildren(), $this->getElement());
         }
-        return Rendered::of($this->getElement());
+//        $link = new HtmlElement("script");
+//        $link->setContent(new HtmlElementContent("
+//(function(){
+//    monolitum_flatpickr(
+//        '{$this->getId()}',
+//        " . ($this->onlyDate ? "true" : "false"). ",
+//        " . ($this->showYearsFirst ? "true" : "false"). ",
+//        " . ($this->value !== null ? "'{$this->value}'" : "null") . ",
+//        '" . (str_replace("_", "-", $locale ?? "")) . "',
+//        '" . $this->simpleLocale . "'
+//    );" .
+//"})();
+//", true));
+        return Rendered::of([$this->getElement()]);
     }
 
 }

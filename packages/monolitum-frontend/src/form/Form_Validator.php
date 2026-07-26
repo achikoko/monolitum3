@@ -138,17 +138,6 @@ abstract class Form_Validator
 
     /**
      * @param string|Attr $attrId
-     * @return bool
-     */
-    public function isAttrInValidateList(Attr|string $attrId): bool
-    {
-        $attr = $this->getAttr($attrId);
-        $inArray = in_array($attr->getId(), $this->validate_attrs);
-        return $this->validate_attrs_all ^ $inArray;
-    }
-
-    /**
-     * @param string|Attr $attrId
      * @return ?bool
      */
     public function isValid(Attr|string $attrId): ?bool

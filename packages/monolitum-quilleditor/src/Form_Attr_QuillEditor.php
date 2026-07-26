@@ -21,6 +21,8 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
     private array $extensions = [];
 
     private ?int $initialHeight = null;
+    private QuillEditor $editor;
+    private Div|FormControl_Hidden $component;
 
     public function __construct(Attr|string $attrId, ?Closure $builder = null)
     {
@@ -53,12 +55,12 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
         return $quillValue;
     }
 
-    public function onBeforeBuildForm(): void
+    public function onCheckForm(): void
     {
-        $this->callOnBeforeBuildFormCallables();
+        parent::onCheckForm();
 
         if($this->hidden){
-            $component = new FormControl_Hidden(function (FormControl_Hidden $it){
+            $this->component = new FormControl_Hidden(function (FormControl_Hidden $it){
                 $it->setId($this->getFullFieldName());
                 $it->setName($this->getFullFieldName());
                 if($this->hasValue())
@@ -66,7 +68,7 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
             });
         }else{
 
-            $component = new Div(function (Div $it){
+            $this->component = new Div(function (Div $it){
                 $it->addClass("form-group");
 
                 foreach ($this->extensions as $extension) {
@@ -78,7 +80,7 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
                     $it->append($this->getLabel());
                 }, "form-label"));
 
-                $it->append(new QuillEditor(function (QuillEditor $it) {
+                $it->append($this->editor = new QuillEditor(function (QuillEditor $it) {
                     $it->setId($this->getFullFieldName());
                     $it->setName($this->getFullFieldName());
                     if($this->initialHeight !== null){
@@ -99,12 +101,46 @@ class Form_Attr_QuillEditor extends AbstractRenderableNodeFormAttr
 
         }
 
-        $this->append($component);
+        $this->append($this->component);
 
     }
 
-    public function onAfterBuildForm(): void
+    public function onBeforeValidateForm(): void
     {
-        $this->callOnAfterBuildFormClosures();
+        parent::onBeforeValidateForm();
+
+        if($this->component instanceof FormControl_Hidden){
+            if($this->hasValue())
+                $this->component->setValue($this->getValue());
+        }else{
+
+            if($this->hasValue())
+                $this->editor->setValue($this->getValue());
+
+            if($this->isDisabled())
+                $this->editor->setDisabled();
+
+        }
+
     }
+
+    public function onNotValidateForm(): void
+    {
+        parent::onNotValidateForm();
+
+        if($this->component instanceof FormControl_Hidden){
+            if($this->hasValue())
+                $this->component->setValue($this->getValue());
+        }else{
+
+            if($this->hasValue())
+                $this->editor->setValue($this->getValue());
+
+            if($this->isDisabled())
+                $this->editor->setDisabled();
+
+        }
+
+    }
+
 }

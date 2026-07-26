@@ -60,7 +60,17 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
     private ?BSColSpanResponsive $isRow = null;
 
+    /**
+     * If Closure: (BSFormAttr) -> FormControl
+     * @var FormControl|Closure|null
+     */
     private FormControl|Closure|null $customFormControl = null;
+
+    /**
+     * If Closure: (BSFormAttr, FormControl) -> void
+     * @var Closure|null
+     */
+    private ?Closure $formControlUpdater = null;
 
     private array $inputGroupBefore = [];
     private array $inputGroupAfter = [];
@@ -68,8 +78,9 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
     /**
      * @var array<HtmlElementNodeExtension>
      */
-    private array $inputFieldExtensions = [];
-    private mixed $formControl = null;
+    private array $formControlExtensions = [];
+    private FormControl|null $formControl = null;
+    private Renderable_Node|null $formControlActualRenderable = null;
 
     private ?Attr $attrRenderAs = null;
 
@@ -99,13 +110,17 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
     }
 
     /**
-     * If Closure (BSFormAttr) -> FormControl
-     * @param FormControl|Closure $customFormControl
+     * Sets a custom from control to this BSFormAttr. Additionally, a Closure that assigns default values after the form has been validated.
+     * @param FormControl|Closure $customFormControl If Closure (BSFormAttr) -> FormControl
+     * @param Closure|null $formControlUpdater (BSFormAttr, FormControl) -> void
      * @return $this
      */
-    public function setCustomFormControl(FormControl|Closure $customFormControl): self
-    {
+    public function setCustomFormControl(
+        FormControl|Closure $customFormControl,
+        ?Closure $formControlUpdater = null
+    ): self {
         $this->customFormControl = $customFormControl;
+        $this->formControlUpdater = $formControlUpdater;
         return $this;
     }
 
@@ -160,72 +175,25 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
         return $this;
     }
 
-    public function onAfterBuildForm(): void
+    public function onCheckForm(): void
     {
-        $this->callOnAfterBuildFormClosures();
-
-        if($this->hidden !== true){
-
-            $invalidFeedback = null;
-            if($this->isValid() === false){
-                if($this->getInvalidText() !== null){
-                    $invalidText = TS::renderAuto($this->getInvalidText(), $this->overwrittenLanguage);
-                    $invalidFeedback = new Div(function (Div $it) use ($invalidText) {
-                        $it->addClass("invalid-feedback");
-                        $it->append($invalidText);
-                    });
-                }
-                if($this->formControl instanceof FormControl){
-                    $this->formControl->addClass("is-invalid");
-                }
-            }else if($this->isValid() === true){
-                if($this->formControl instanceof FormControl){
-                    $this->formControl->addClass("is-valid");
-                }
-            }
-
-            $formText = null;
-            if($this->formText !== null){
-                if($this->formText instanceof HtmlElementNode){
-                    $formText = $this->formText;
-                    $formText->addClass("form-text");
-                }else{
-                    $formText = new Div(function (Div $it){
-                        $it->addClass("form-text");
-                        $it->append($this->formText);
-                    });
-                }
-
-            }
-
-            if($invalidFeedback){
-                $this->formWrapper->append($invalidFeedback);
-            }
-
-            if($formText){
-                $this->formWrapper->append($formText);
-            }
-
-        }
-    }
-
-    public function onBeforeBuildForm(): void
-    {
-        $this->callOnBeforeBuildFormCallables();
+        parent::onCheckForm();
 
         $attr = $this->getAttrRenderAs();
 
         // TODO disable ENTER key using https://stackoverflow.com/questions/895171/prevent-users-from-submitting-a-form-by-hitting-enter
 
         if($this->hidden === true){
-            $this->formWrapper->append($this->formControl = $this->createFormControl());
+            $this->createFormControl();
+            $this->formWrapper->append($this->formControlActualRenderable);
         }else{
 
             if($attr instanceof Attr_Bool){
 
                 $this->formWrapper->addClass("form-check");
 
-                $this->formWrapper->append($this->formControl = $this->createFormControl());
+                $this->createFormControl();
+                $this->formWrapper->append($this->formControlActualRenderable);
 
                 if($this->getLabel() !== null){
                     $label = TS::render($this->getLabel(), TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage));
@@ -258,16 +226,16 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                     $this->formWrapper->addClass("row");
                 }
 
-                $this->formControl = $this->createFormControl();
+                $this->createFormControl();
 
                 if($formLabel == null){
-                    $this->formWrapper->append($this->formControl);
+                    $this->formWrapper->append($this->formControlActualRenderable);
                 }else if($this->isRow != null){
                     $this->isRow->buildInto($formLabel, true);
 
                     $formControlWrapper = new Div();
 
-                    $formControlWrapper->append($this->formControl);
+                    $formControlWrapper->append($this->formControlActualRenderable);
                     $this->isRow->buildInto($formControlWrapper);
 
                     if($this->labelRendersAfterControl){
@@ -281,11 +249,11 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                 }else{
 
                     if($this->labelRendersAfterControl){
-                        $this->formWrapper->append($this->formControl);
+                        $this->formWrapper->append($this->formControlActualRenderable);
                         $this->formWrapper->append($formLabel);
                     }else{
                         $this->formWrapper->append($formLabel);
-                        $this->formWrapper->append($this->formControl);
+                        $this->formWrapper->append($this->formControlActualRenderable);
                     }
 
                 }
@@ -296,14 +264,82 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
     }
 
-    protected function createFormControl(): mixed
+    public function onBeforeValidateForm(): void
+    {
+        parent::onBeforeValidateForm();
+
+        if($this->formControlUpdater !== null){
+            call_user_func($this->formControlUpdater, $this, $this->formControl);
+        }
+
+    }
+
+    public function onNotValidateForm(): void
+    {
+        parent::onNotValidateForm();
+
+        if($this->formControlUpdater !== null){
+            call_user_func($this->formControlUpdater, $this, $this->formControl);
+        }
+    }
+
+    public function onAfterValidateForm(): void
+    {
+        parent::onAfterValidateForm();
+
+        if($this->hidden !== true){
+
+            $invalidFeedback = null;
+            if($this->isValid() === false){
+                if($this->getInvalidText() !== null){
+                    $invalidText = TS::renderAuto($this->getInvalidText(), $this->overwrittenLanguage);
+                    $invalidFeedback = new Div(function (Div $it) use ($invalidText) {
+                        $it->addClass("invalid-feedback");
+                        $it->append($invalidText);
+                    });
+                }
+                if($this->formControl !== null){
+                    $this->formControl->addClass("is-invalid");
+                }
+            }else if($this->isValid() === true){
+                if($this->formControl !== null){
+                    $this->formControl->addClass("is-valid");
+                }
+            }
+
+            $formText = null;
+            if($this->formText !== null){
+                if($this->formText instanceof HtmlElementNode){
+                    $formText = $this->formText;
+                    $formText->addClass("form-text");
+                }else{
+                    $formText = new Div(function (Div $it){
+                        $it->addClass("form-text");
+                        $it->append($this->formText);
+                    });
+                }
+
+            }
+
+            if($invalidFeedback){
+                $this->formWrapper->append($invalidFeedback);
+            }
+
+            if($formText){
+                $this->formWrapper->append($formText);
+            }
+
+        }
+    }
+
+    protected function createFormControl(): void
     {
 
         if($this->customFormControl !== null){
             if(is_callable($this->customFormControl)){
-                return call_user_func($this->customFormControl, $this);
+                $this->formControl = call_user_func($this->customFormControl, $this);
             }else{
-                return $this->customFormControl;
+                $this->formControl = $this->customFormControl;
             }
         }
 
@@ -311,60 +347,63 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
         $formExt = $this->getFormExt();
         $validateExt = $this->getValidateExt();
 
-        $formControl = null;
+        $this->formControl = null;
 
         $finalLanguage = TSLang::pushAndGetLangWithOverwritten($this->overwrittenLanguage); // TODO Active get finalLanguage
 
         if($this->hasOverriddenEnum)
         {
             // If there is an enum, create a select
-            $formControl = $this->createSelectFormControl($finalLanguage, $formExt, $validateExt);
+            $this->formControl = $this->createSelectFormControl($finalLanguage, $formExt, $validateExt);
 
         }else {
 
             if ($attr instanceof Attr_Bool) {
 
-                $formControl = new FormControl_CheckBox(function (FormControl_CheckBox $it) {
+                $this->formControl = new FormControl_CheckBox(function (FormControl_CheckBox $it) {
                     $it->setId($this->getFullFieldName());
                     $it->setName($this->getFullFieldName());
-                    if ($this->hasValue())
-                        $it->setValue($this->getValue());
-
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->isDisabled())
-                        $it->setDisabled();
+                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
 
+                        if ($it->hasValue())
+                            $formControl->setValue($this->getValue());
+
+                        if ($it->isDisabled())
+                            $formControl->setDisabled();
+                    };
                 });
 
             } else if ($attr instanceof Attr_String) {
 
                 if ($validateExt instanceof AttrExt_Validate_String && $validateExt->hasEnum()) {
 
-                    $formControl = $this->createSelectFormControl($finalLanguage, $formExt, $validateExt);
+                    $this->formControl = $this->createSelectFormControl($finalLanguage, $formExt, $validateExt);
 
                 } else if ($formExt instanceof AttrExt_Form_String && $formExt->isPassword()) {
 
-                    $formControl = new FormControl_Password(function (FormControl_Password $it) {
+                    $this->formControl = new FormControl_Password(function (FormControl_Password $it) {
                         $it->setId($this->getFullFieldName());
                         $it->setName($this->getFullFieldName());
                         $it->autocomplete(false);
-                        if ($this->hasValue())
-                            $it->setValue($this->getValue());
-
                         if ($this->hidden === true)
                             $it->convertToHidden();
 
-                        if ($this->isDisabled())
-                            $it->setDisabled();
+                        $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
 
-                        // TODO ask form for default value
+                            if ($it->hasValue())
+                                $formControl->setValue($this->getValue());
+
+                            if ($it->isDisabled())
+                                $formControl->setDisabled();
+                        };
                     });
 
                 } else {
 
-                    $formControl = new FormControl_Text(function (FormControl_Text $it) use ($formExt, $finalLanguage) {
+                    $this->formControl = new FormControl_Text(function (FormControl_Text $it) use ($formExt, $finalLanguage) {
                         $it->setId($this->getFullFieldName());
                         $it->setName($this->getFullFieldName());
                         $it->autocomplete(false);
@@ -374,18 +413,20 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                             if ($inputType !== null)
                                 $it->setInputType($inputType);
                         }
-
-                        if ($this->hasValue())
-                            $it->setValue($this->getValue());
-
                         if ($this->getPlaceholder() != null)
                             $it->setPlaceholder(TS::unwrap($this->getPlaceholder(), $finalLanguage));
 
                         if ($this->hidden === true)
                             $it->convertToHidden();
 
-                        if ($this->isDisabled())
-                            $it->setDisabled();
+                        $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+
+                            if ($it->hasValue())
+                                $formControl->setValue($this->getValue());
+
+                            if ($it->isDisabled())
+                                $formControl->setDisabled();
+                        };
 
                     });
 
@@ -393,12 +434,9 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
 
             } else if ($attr instanceof Attr_Int) {
 
-                $formControl = new FormControl_Number(function (FormControl_Number $it) use ($validateExt) {
+                $this->formControl = new FormControl_Number(function (FormControl_Number $it) use ($validateExt) {
                     $it->setId($this->getFullFieldName());
                     $it->setName($this->getFullFieldName());
-                    if ($this->hasValue()) {
-                        $it->setValue($this->getValue());
-                    }
 
                     if ($validateExt instanceof AttrExt_Validate_Int) {
                         $it->min($validateExt->getMin());
@@ -408,14 +446,20 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->isDisabled())
-                        $it->setDisabled();
 
+                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+
+                        if ($it->hasValue())
+                            $formControl->setValue($this->getValue());
+
+                        if ($it->isDisabled())
+                            $formControl->setDisabled();
+                    };
                 });
 
             } else if ($attr instanceof Attr_Decimal) {
 
-                $formControl = new FormControl_Number(function (FormControl_Number $it) use ($attr) {
+                $this->formControl = new FormControl_Number(function (FormControl_Number $it) use ($attr) {
                     $it->setId($this->getFullFieldName());
                     $it->setName($this->getFullFieldName());
                     $decimals = $attr->getDecimals();
@@ -425,18 +469,20 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->hasValue()) {
-                        $it->setValue($attr->stringValue($this->getValue()));
-                    }
+                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) use ($attr) {
 
-                    if ($this->isDisabled())
-                        $it->setDisabled();
+                        if ($it->hasValue())
+                            $formControl->setValue($attr->stringValue($this->getValue()));
+
+                        if ($it->isDisabled())
+                            $formControl->setDisabled();
+                    };
 
                 });
 
             } else if ($attr instanceof Attr_Date) {
 
-                $formControl = new BSFormControl_Datetime(function (BSFormControl_Datetime $it) use ($formExt) {
+                $this->formControl = new BSFormControl_Datetime(function (BSFormControl_Datetime $it) use ($formExt) {
                     $it->setId($this->getFullFieldName());
                     $it->setName($this->getFullFieldName());
                     $it->setOnlyDate();
@@ -445,23 +491,26 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                         $it->setShowYearsFirst();
                     }
 
-                    if ($this->hasValue()) {
-                        $datetime = $this->getValue();
-                        if ($datetime !== null)
-                            $it->setValue(date_format($datetime, "Y-m-d"));
-                    }
-
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->isDisabled())
-                        $it->setDisabled();
+                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+
+                        if ($it->hasValue()) {
+                            $datetime = $it->getValue();
+                            if ($datetime !== null)
+                                $formControl->setValue(date_format($datetime, "Y-m-d"));
+                        }
+
+                        if ($it->isDisabled())
+                            $formControl->setDisabled();
+                    };
 
                 });
 
             } else if ($attr instanceof Attr_DateTime) {
 
-                $formControl = new BSFormControl_Datetime(function (BSFormControl_Datetime $it) use ($formExt) {
+                $this->formControl = new BSFormControl_Datetime(function (BSFormControl_Datetime $it) use ($formExt) {
                     $it->setId($this->getFullFieldName());
                     $it->setName($this->getFullFieldName());
 
@@ -469,31 +518,38 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                         $it->setShowYearsFirst();
                     }
 
-                    if ($this->hasValue()) {
-                        $datetime = $this->getValue();
-                        if ($datetime !== null)
-                            $it->setValue(date_format($datetime, "Y-m-d H:i:s"));
-                    }
-
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->isDisabled())
-                        $it->setDisabled();
+                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+
+                        if ($it->hasValue()) {
+                            $datetime = $it->getValue();
+                            if ($datetime !== null)
+                                $formControl->setValue(date_format($datetime, "Y-m-d H:i:s"));
+                        }
+
+                        if ($it->isDisabled())
+                            $formControl->setDisabled();
+                    };
 
                 });
 
             } else if ($attr instanceof Attr_File) {
 
-                $formControl = new FormControl_File(function (FormControl_File $it) {
+                $this->formControl = new FormControl_File(function (FormControl_File $it) {
                     $it->setId($this->getFullFieldName());
                     $it->setName($this->getFullFieldName());
 
                     if ($this->hidden === true)
                         $it->convertToHidden();
 
-                    if ($this->isDisabled())
-                        $it->setDisabled();
+                    $this->formControlUpdater = function (BSFormAttr $it, FormControl $formControl) {
+
+                        if ($it->isDisabled())
+                            $formControl->setDisabled();
+
+                    };
 
                 });
 
@@ -501,7 +557,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
         }
 
         if(count($this->inputGroupBefore) > 0 || count($this->inputGroupAfter) > 0){
-            return new Div(function (Div $it) use ($formControl) {
+            $this->formControlActualRenderable = new Div(function (Div $it) {
                 $it->addClass("input-group");
 
                 foreach ($this->inputGroupBefore as $input){
@@ -515,7 +571,7 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                     }
                 }
 
-                $it->append($formControl);
+                $it->append($this->formControl);
 
                 foreach ($this->inputGroupAfter as $input){
                     if(is_string($input) || $input instanceof TS){
@@ -529,14 +585,14 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
                 }
 
             });
+        }else{
+            $this->formControlActualRenderable = $this->formControl;
         }
 
-        foreach ($this->inputFieldExtensions as $inputFieldExtension){
-            $inputFieldExtension->_setElementComponent($formControl);
-            $inputFieldExtension->apply();
+        foreach ($this->formControlExtensions as $formControlExtension){
+            $formControlExtension->_setElementComponent($this->formControl);
+            $formControlExtension->apply();
         }
-
-        return $formControl;
 
     }
 
@@ -550,7 +606,6 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
     }
 
     /**
-     * @param bool|null $isValid
      * @param string|null $finalLanguage
      * @param AttrExt_Form|null $formExt
      * @param AttrExt_Validate|null $validateExt
@@ -672,9 +727,9 @@ class BSFormAttr extends AbstractHtmlElementNodeFormAttr
         });
     }
 
-    public function addExtensionToInputField(HtmlElementNodeExtension $extension): self
+    public function addExtensionToFormControl(HtmlElementNodeExtension $extension): self
     {
-        $this->inputFieldExtensions[] = $extension;
+        $this->formControlExtensions[] = $extension;
         return $this;
     }
 

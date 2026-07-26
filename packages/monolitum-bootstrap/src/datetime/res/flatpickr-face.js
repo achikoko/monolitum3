@@ -4,10 +4,12 @@ window.monolitum_flatpickr = function (
     component_id_str,
     is_only_date_bool,
     show_years_first_bool,
-    current_value_str,
+    // current_value_str,
     locale_str,
     simple_locale_str
 ) {
+    const element = document.getElementById(component_id_str);
+    const current_value_str = element.getAttribute("value");
 
     // Build YYYY-MM-DD from LOCAL parts (see note on why not toISOString)
     function toLocalYMD(date) {

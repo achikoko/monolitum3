@@ -28,6 +28,11 @@ use monolitum\model\ValidatedValue;
 
 class Form extends HtmlElementNode
 {
+    /**
+     * Seamen notice: Developer sets the attributes to validate locally in the Form.
+     * When form is validating, setValidateAttrsIntoValidator() gets called and then those attributes are copied into the validator.
+     */
+    use Trait_Form_Validate_Attrs;
 
     private const SUFFIX_CSRF_TOKEN = "csrf_token";
     public const GLOBALS_CONTEXT_ID = "form";
@@ -225,22 +230,6 @@ class Form extends HtmlElementNode
             $this->csrfTokenIsValid = $currentToken === strval($validated->getValue());
 
         }
-    }
-
-    /**
-     * @param string ...$attrsIds
-     */
-    public function validate_all_except(string ...$attrsIds): void
-    {
-        $this->validator->validate_all_except(...$attrsIds);
-    }
-
-    /**
-     * @param string ...$attrsIds
-     */
-    public function validate_only(?string ...$attrsIds): void
-    {
-        $this->validator->validate_only(...$attrsIds);
     }
 
     /**
@@ -467,7 +456,7 @@ class Form extends HtmlElementNode
         $valueInDefaultValues = null;
 
         if($this->isValidating()){
-            if($this->validator->isAttrInValidateList($attr)){
+            if($this->validator->isValidatable($attr)){
                 $validatedValue = $this->validator->getValidatedValue($attr);
                 if($validatedValue->isWellFormat()){
                     return $validatedValue;
@@ -630,7 +619,7 @@ class Form extends HtmlElementNode
         }
 
         foreach ($this->formAttrs as $value){
-            $value->onBeforeBuildForm();
+            $value->onCheckForm();
         }
 
         if($this->isValidating() && !$this->notValidate){
@@ -650,8 +639,10 @@ class Form extends HtmlElementNode
                     }
                 }
 
-                if($submitFound !== null){
-                    $this->setValidateAttrsIntoValidator($submitFound);
+                $this->setValidateAttrsIntoValidator($submitFound);
+
+                foreach ($this->formAttrs as $value){
+                    $value->onBeforeValidateForm();
                 }
 
                 $this->validator->_validateAll();
@@ -677,6 +668,10 @@ class Form extends HtmlElementNode
 
                 $this->setValidateAttrsIntoValidator(null);
 
+                foreach ($this->formAttrs as $value){
+                    $value->onBeforeValidateForm();
+                }
+
                 $this->validator->_validateAll();
 
                 // Execute validation callback
@@ -689,10 +684,16 @@ class Form extends HtmlElementNode
 
             }
 
-        }
+            foreach ($this->formAttrs as $value){
+                $value->onAfterValidateForm();
+            }
 
-        foreach ($this->formAttrs as $value){
-            $value->onAfterBuildForm();
+        }else{
+
+            foreach ($this->formAttrs as $value){
+                $value->onNotValidateForm();
+            }
+
         }
 
         if($this->linkOrPath !== null){
