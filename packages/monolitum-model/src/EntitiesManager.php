@@ -154,7 +154,7 @@ class EntitiesManager extends MNode implements EntityPersister
         return $face->_executeUpdateEntity($entity);
     }
 
-    public function _executeDeleteEntity(Entity $entity): int
+    public function _executeDeleteEntity(Entity $entity): array
     {
         /** @var EntityPersister $face */
         $face = Find::push(EntityPersister::class)->getResponse();

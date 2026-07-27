@@ -213,30 +213,6 @@ class DatabaseManager extends MNode implements EntityPersister
     }
 
     /**
-     * @param class-string|Model $entityModel
-     * @return Insert
-     */
-    public function newInsert(string|Model $entityModel): Insert
-    {
-        return new Insert($this, $this->entitiesManager->getModel($entityModel));
-    }
-
-    public function newUpdate(string|Model $entityModel): Update
-    {
-        return new Update($this, $this->entitiesManager->getModel($entityModel));
-    }
-
-    public function newDelete(string|Model $entityModel): Delete
-    {
-        return new Delete($this, $this->entitiesManager->getModel($entityModel));
-    }
-
-    public function _notifyChanged(Entity $entity, Attr $attr)
-    {
-
-    }
-
-    /**
      * @param string[] $array
      * @return string
      * @noinspection SqlNoDataSourceInspection
@@ -365,7 +341,7 @@ class DatabaseManager extends MNode implements EntityPersister
      */
     public function executeUpdate(Delete|Update|Insert $query): array
     {
-        $model = $query->model;
+        $model = $this->entitiesManager->getModel($query->model);
 
         $values = [];
         if($query instanceof Update){
@@ -472,24 +448,13 @@ class DatabaseManager extends MNode implements EntityPersister
             if($count > 0)
                 $sql .= ",";
 
-            if($value instanceof Color){
-                $values[] = $value->getHexValue();
-                $placeholder = "?";
+            $attr = $model->getAttr($attrName);
+            if($attr instanceof DatabaseableAttr){
+                $values[] = $attr->getValueForQuery($value);
+                $placeholder = $attr->getInsertUpdatePlaceholder();
             }else{
-                $model = $query->model;
-                if($model !== null){
-                    $attr = $model->getAttr($attrName);
-                    if($attr instanceof DatabaseableAttr){
-                        $values[] = $attr->getValueForQuery($value);
-                        $placeholder = $attr->getInsertUpdatePlaceholder();
-                    }else{
-                        $values[] = $value;
-                        $placeholder = "?";
-                    }
-                }else{
-                    $values[] = $value;
-                    $placeholder = "?";
-                }
+                $values[] = $value;
+                $placeholder = "?";
             }
 
             $sql .= "`" . $attrName . "` = " . $placeholder;
@@ -1217,7 +1182,7 @@ class DatabaseManager extends MNode implements EntityPersister
 
         $model = $entity->getModel();
 
-        $query = $this->newInsert($model);
+        $query = Insert::of($model);
 
         // TODO check autoincrement is null and rest of ids are not null
 
@@ -1239,7 +1204,7 @@ class DatabaseManager extends MNode implements EntityPersister
             }
         }
 
-        return $query->execute();
+        return $query->execute($this);
 
     }
 
@@ -1247,7 +1212,7 @@ class DatabaseManager extends MNode implements EntityPersister
     {
         $model = $entity->getModel();
 
-        $query = $this->newUpdate($model);
+        $query = Update::of($model);
 
         foreach ($entity->getUpdateAttrs() as $attrName => $value){
             $attr = $model->getAttr($attrName);
@@ -1261,18 +1226,18 @@ class DatabaseManager extends MNode implements EntityPersister
         $ids = $this->generate_ids_filter($entity);
         $query->filter($ids);
 
-        return $query->execute();
+        return $query->execute($this);
 
     }
 
-    public function _executeDeleteEntity(Entity $entity): int
+    public function _executeDeleteEntity(Entity $entity): array
     {
-        $query = $this->newDelete($entity->getModel());
+        $query = Delete::of($entity->getModel());
 
         $ids = $this->generate_ids_filter($entity);
         $query->filter($ids);
 
-        return $query->execute();
+        return $query->execute($this);
     }
 
     public function _notifyEntityChanged(Entity $entity): void

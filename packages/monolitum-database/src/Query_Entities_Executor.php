@@ -13,6 +13,7 @@ class Query_Entities_Executor extends Query_Entities
     {
         parent::__construct($model, true);
     }
+
     public function execute(?DatabaseManager $databaseManager = null): Query_Result
     {
         if($databaseManager === null){

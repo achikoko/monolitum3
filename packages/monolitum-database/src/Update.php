@@ -11,9 +11,9 @@ class Update extends AbstractInsertUpdate
      */
     private array $filter;
 
-    public function __construct(DatabaseManager $manager, Model $model)
+    public function __construct(string|Model $model)
     {
-        parent::__construct($manager, $model);
+        parent::__construct($model);
     }
 
     /**
@@ -31,11 +31,20 @@ class Update extends AbstractInsertUpdate
     }
 
     /**
+     * @param DatabaseManager|null $databaseManager
      * @return int[]
      */
-    public function execute(): array
+    public function execute(?DatabaseManager $databaseManager = null): array
     {
-        return $this->manager->executeUpdate($this);
+        if($databaseManager === null){
+            $databaseManager = DatabaseManager::findSelf();
+        }
+        return $databaseManager->executeUpdate($this);
+    }
+
+    public static function of(string|Model $model): Update
+    {
+        return new Update($model);
     }
 
 }

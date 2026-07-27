@@ -12,7 +12,7 @@ class Delete
      */
     private array $filter;
 
-    public function __construct(public readonly DatabaseManager $manager, public readonly Model $model)
+    public function __construct(public readonly string|Model $model)
     {
 
     }
@@ -27,14 +27,26 @@ class Delete
         return $this;
     }
 
-    public function execute(): int
+    /**
+     * @param DatabaseManager|null $databaseManager
+     * @return int[]
+     */
+    public function execute(?DatabaseManager $databaseManager = null): array
     {
-        return $this->manager->executeUpdate($this)[0];
+        if($databaseManager === null){
+            $databaseManager = DatabaseManager::findSelf();
+        }
+        return $databaseManager->executeUpdate($this);
     }
 
     public function getFilter(): array
     {
         return $this->filter;
+    }
+
+    public static function of(string|Model $model): Delete
+    {
+        return new Delete($model);
     }
 
 }

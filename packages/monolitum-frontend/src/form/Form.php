@@ -706,6 +706,9 @@ class Form extends HtmlElementNode
 
         }else{
 
+            // Set to validator only for display purposes
+            $this->setValidateAttrsIntoValidator(null);
+
             foreach ($this->formAttrs as $value){
                 $value->onNotValidateForm();
             }

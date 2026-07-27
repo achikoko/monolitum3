@@ -26,6 +26,6 @@ interface EntityPersister
      * @param Entity $entity
      * @return int[]
      */
-    public function _executeDeleteEntity(Entity $entity): int;
+    public function _executeDeleteEntity(Entity $entity): array;
 
 }

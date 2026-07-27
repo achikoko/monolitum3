@@ -13,7 +13,7 @@ class AbstractInsertUpdate
      */
     private array $values = [];
 
-    public function __construct(public readonly DatabaseManager $manager, public readonly Model $model)
+    public function __construct(public readonly string|Model $model)
     {
 
     }

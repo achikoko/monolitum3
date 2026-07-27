@@ -1,9 +1,10 @@
 <?php
 namespace monolitum\model;
 
+use monolitum\database\DatabaseableAttr;
 use monolitum\model\values\Color;
 
-class Attr_Color extends AbstractAttr
+class Attr_Color extends AbstractAttr implements DatabaseableAttr
 {
 
     #[\Override]
@@ -35,5 +36,27 @@ class Attr_Color extends AbstractAttr
         return "";
     }
 
+    function getDDLType(): string
+    {
+        return "VARCHAR(32)";
+    }
+
+    function getInsertUpdatePlaceholder(): string
+    {
+        return "?";
+    }
+
+    function getValueForQuery(mixed $rawValue): mixed
+    {
+        if($rawValue instanceof Color){
+            return $rawValue->getHexValue();
+        }
+        return $rawValue;
+    }
+
+    function parseValue(mixed $dbValue): mixed
+    {
+        return Color::fromHex($dbValue);
+    }
 }
 

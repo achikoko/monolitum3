@@ -3,7 +3,7 @@
 namespace monolitum\backend\params;
 
 use monolitum\core\panic\DevPanic;
-use monolitum\database\DatabaseManager;
+use monolitum\database\Insert;
 use monolitum\model\Entity;
 use monolitum\model\EntityPersister;
 use monolitum\model\Model;
@@ -37,7 +37,7 @@ readonly class ParamsProvider_DatabaseGlobals_Persister implements EntityPersist
 
         foreach($entity->getUpdateAttrs() as $attrName => $value){
             $attr = $this->model->getAttr($attrName);
-            DatabaseManager::findSelf()->newInsert($this->param->model)
+            Insert::of($this->param->model)
                 ->upsert()
                 ->addValue($this->param->key, $prefix . $attrName)
                 ->addValue($this->param->value, $attr->stringValue($value))

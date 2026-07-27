@@ -38,7 +38,7 @@ trait Trait_From_Attr
 
     protected bool $userSetInvalid = false;
 
-    protected TS|string|HtmlElementNode|null $overwrittenInvalidText = null;
+    protected TS|string|HtmlElementNode|array|null $overwrittenInvalidText = null;
 
     /// ////////////////////
     /// Overridden VALUE
@@ -92,10 +92,10 @@ trait Trait_From_Attr
     }
 
     /**
-     * @param string|HtmlElementNode|TS|null $string
-     * @return $this
+     * @param HtmlElementNode|string|TS|array|null $string
+     * @return void
      */
-    public function setOverrideInvalid(HtmlElementNode|string|TS|null $string=null): void
+    public function setOverrideInvalid(HtmlElementNode|string|TS|array|null $string=null): void
     {
         $this->userSetInvalid = true;
         $this->overwrittenInvalidText = $string;
@@ -198,7 +198,7 @@ trait Trait_From_Attr
         if($formDisablePolicy !== null){
             switch($formDisablePolicy){
                 case DisablePolicy::DISABLE_ALL: return true;
-                case DisablePolicy::DISABLE_ONLY_NOT_VALIDATED: {
+                case DisablePolicy::DISABLE_ONLY_NOT_VALIDATABLE: {
                     if(!$this->form->getValidator()->isValidatable($this->attr)){
                         return true;
                     }
@@ -210,9 +210,9 @@ trait Trait_From_Attr
 
     /**
      * Returns if the value that user set is invalid.
-     * @return string|TS|HtmlElementNode|null
+     * @return HtmlElementNode|string|TS|array|null
      */
-    protected function getInvalidText(): HtmlElementNode|string|TS|null
+    protected function getInvalidText(): HtmlElementNode|string|TS|array|null
     {
         if($this->form->getValidationDisplay() == ValidationDisplayType::NOT_AT_ALL)
             return null;
