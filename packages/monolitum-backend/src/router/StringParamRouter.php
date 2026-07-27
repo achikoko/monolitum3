@@ -75,13 +75,11 @@ class StringParamRouter extends AbstractConstantRouter {
                 // If managed to build, this child will remain into the children list, so it will be executed.
                 $this->buildAndAppendChild($selected);
             }else if(is_callable($selected)){
-                $c = $selected;
-                $c();
+                call_user_func($selected);
             }
 
             if($this->onSelected != null){
-                $s = $this->onSelected;
-                $s($selected);
+                call_user_func($this->onSelected, $selected);
             }
 
         }
