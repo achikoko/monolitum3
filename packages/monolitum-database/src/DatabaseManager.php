@@ -234,7 +234,9 @@ class DatabaseManager extends MNode implements EntityPersister
             $ids = [];
             $autoIncrement = null;
 
-            $sql .= "CREATE TABLE " . $this->prefix . $id . "(\n";
+            $sql .= "CREATE TABLE " . $this->getTableName($id) . "(";
+
+            $sqlForeignKeys = "";
 
             foreach ($model->getAttrs() as $attr) {
 
@@ -259,7 +261,7 @@ class DatabaseManager extends MNode implements EntityPersister
                     $ids[] = $attr;
                 }
 
-                $sql .= "\t" . $attr->getId();
+                $sql .= "\n\t" . $attr->getId();
 
                 if($attr instanceof Attr_Int){
                     $sql .= " INT";
@@ -302,11 +304,17 @@ class DatabaseManager extends MNode implements EntityPersister
                     throw new DevPanic("Not recognized type");
                 }
 
-                $sql .= ",\n";
+                if($dbExt->getForeignModel() != null){
+                    $foreignModel = $this->entitiesManager->getModel($dbExt->getForeignModel());
+                    if($foreignModel->id == "")
+                        throw new DevPanic("Id is null");
+
+                    $sqlForeignKeys .= ",\n\tFOREIGN KEY (" . $attr->getId() . ") REFERENCES " . $this->getTableName($foreignModel->id) . "(" . $foreignModel->getAttr($dbExt->getForeignAttr())->getId() . ")";
+                }
 
             }
 
-            $sql .= "\tPRIMARY KEY(";
+            $sql .= ",\n\tPRIMARY KEY (";
 
             $first = true;
             if($autoIncrement != null){
@@ -321,12 +329,16 @@ class DatabaseManager extends MNode implements EntityPersister
                 }
                 $sql .= $id->getId();
             }
-            $sql .= ")\n";
+            $sql .= ")";
+
+            if(!empty($sqlForeignKeys)){
+                $sql .= $sqlForeignKeys;
+            }
 
             $default_charset = 'utf8mb4';
             $default_collation = 'utf8mb4_general_ci';
 
-            $sql .= ") CHARSET " . $default_charset
+            $sql .= "\n) CHARSET " . $default_charset
                 . " COLLATE " . $default_collation
                 . " ENGINE MyISAM;\n\n";
 
@@ -1243,6 +1255,11 @@ class DatabaseManager extends MNode implements EntityPersister
     public function _notifyEntityChanged(Entity $entity): void
     {
         // TODO: Implement _notifyEntityChanged() method.
+    }
+
+    private function getTableName(?string $id)
+    {
+        return $this->prefix . $id;
     }
 
 }
