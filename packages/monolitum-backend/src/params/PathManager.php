@@ -158,7 +158,7 @@ class PathManager extends MNode
                             continue;
 
                         if(!$querySign){
-                            $url .= '/?';
+                            $url .= '?';
                             $querySign = true;
                         }else{
                             $url .= '&';
