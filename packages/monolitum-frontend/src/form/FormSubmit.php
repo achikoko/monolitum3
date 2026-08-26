@@ -24,6 +24,7 @@ abstract class FormSubmit extends AbstractTextNode
 
     protected ?HrefResolver $linkResolver = null;
 
+    /** @var Closure|null (Form, ?string) -> void */
     private ?Closure $onValidated = null;
 
     public function __construct(HtmlElement $element, ?Closure $builder = null)
@@ -66,6 +67,10 @@ abstract class FormSubmit extends AbstractTextNode
         $this->link = $link;
     }
 
+    /**
+     * @param Closure|null $onValidated (Form $form, ?string $action) -> void
+     * @return void
+     */
     public function setOnValidated(?Closure $onValidated): void
     {
         $this->onValidated = $onValidated;

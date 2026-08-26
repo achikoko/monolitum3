@@ -115,7 +115,11 @@ class Monolitum
 
     public static function execute(MNode $node): void
     {
-        self::getInstance() ->run($node);
+//        try {
+            self::getInstance()->run($node);
+//        }catch (\Throwable $exception){
+//            echo $exception->getMessage();
+//        }
         // TODO: check for panics
     }
 
