@@ -190,17 +190,18 @@ class DataTable extends HtmlElementNode
             $iterator = call_user_func($this->rowRetriever, $this);
 
             if ($this->sortedColumnManualSorter !== null){
-                $finalArray = [];
-                foreach ($iterator as $entity){
-                    $finalArray[] = $entity;
+                if(!is_array($iterator)){
+                    $finalArray = iterator_to_array($iterator);
+                }else{
+                    $finalArray = $iterator;
                 }
                 usort($finalArray, fn($left, $right) => $this->sortedColumnManualSorter->compare($left, $right));
             }else{
                 $finalArray = $iterator;
             }
 
-            if($iterator instanceof MClosableIterator){
-                while ($iterator->hasNext()){
+            if($finalArray instanceof MClosableIterator){
+                while ($finalArray->hasNext()){
                     $entity = $iterator->nextConsume();
                     $row = $this->createRow(count($this->rowComponents), $entity);
                     if($this->onConfigureRow !== null){
@@ -209,9 +210,9 @@ class DataTable extends HtmlElementNode
                     }
                     $this->rowComponents[] = $row;
                 }
-                $iterator->close();
-            }else if(is_array($iterator)){
-                foreach ($iterator as $item) {
+                $finalArray->close();
+            } else {
+                foreach ($finalArray as $item) {
                     $row = $this->createRow(count($this->rowComponents), $item);
                     if($this->onConfigureRow !== null){
                         $onConfigureRowCallable = $this->onConfigureRow;
