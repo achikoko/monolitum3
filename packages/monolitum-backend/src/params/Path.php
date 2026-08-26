@@ -122,5 +122,10 @@ class Path
         return self::from();
     }
 
+    public function isEqual(Path $path): bool
+    {
+        return $this->strings === $path->strings;
+    }
+
 
 }

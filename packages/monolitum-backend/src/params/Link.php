@@ -220,10 +220,14 @@ class Link
         return new Link($path);
     }
 
-    public static function fromPopHistory(Link|Path|null $fallbackPath = null): Link
+    /**
+     * Sets the base path. HistoryManager will pop items from history until path matches and then will use the parameters in history to build the final url.
+     * @param Path $path
+     * @return Link
+     */
+    public static function fromPopHistory(Path $path): Link
     {
-        $h = HistoryManager::findSelf();
-        return $h->getTopHistory($fallbackPath)->setPopHistory();
+        return Link::from($path)->setPopHistory();
     }
 
     public function pushAndRedirect(): void

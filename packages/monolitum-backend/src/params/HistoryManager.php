@@ -6,6 +6,7 @@ use Closure;
 use monolitum\core\MNode;
 use monolitum\core\MObject;
 use monolitum\core\Monolitum;
+use monolitum\core\panic\DevPanic;
 use monolitum\model\Model;
 
 class HistoryManager extends MNode
@@ -35,23 +36,6 @@ class HistoryManager extends MNode
     {
         $this->writeAsParam = $paramName;
         return $this;
-    }
-
-    /**
-     * @param Link $fallbackLink
-     * @return Link
-     */
-    public function getTopHistory(Link|Path $fallbackLink): Link
-    {
-        if($fallbackLink instanceof Path) {
-            $fallbackLink = new Link($fallbackLink);
-        }
-
-        if(sizeof($this->linkStack) > 0){
-            return $this->linkStack[count($this->linkStack) - 1];
-        }else{
-            return $fallbackLink;
-        }
     }
 
     /**
@@ -93,8 +77,7 @@ class HistoryManager extends MNode
                         break;
                     case Link::HISTORY_BEHAVIOR_PUSH:
                         {
-                            $copiedLink = $object->link->copy();
-                            $copiedLink->removeParams($this->writeAsParam);
+                            // Create the new history parameter for this link
 
                             $myPushParams = [];
 
@@ -123,6 +106,9 @@ class HistoryManager extends MNode
                             $linkStackCopy = $this->linkStack;
                             $linkStackCopy[] = Link::from(Path::fromRelative())->addParams($myPushParams);
 
+                            $copiedLink = $object->link->copy();
+                            $copiedLink->removeParams($this->writeAsParam);
+
                             $hValue = $this->writeHistory($linkStackCopy);
                             if (strlen($hValue) > 0) {
                                 $copiedLink->addParams([
@@ -139,8 +125,20 @@ class HistoryManager extends MNode
 
                                 // TODO check that path is equal to the backup link
                                 $linkStackCopy = $this->linkStack;
-                                $copiedLink = $linkStackCopy[sizeof($linkStackCopy) - 1]->copy();
-                                unset($linkStackCopy[sizeof($linkStackCopy) - 1]);
+
+                                for($i = sizeof($linkStackCopy)-1; $i >= 0; $i--) {
+                                    if(!$linkStackCopy[$i]->getPath()->isEqual($object->link->getPath())){
+                                        unset($linkStackCopy[$i]);
+                                    }else{
+                                        $copiedLink = $linkStackCopy[$i]->copy();
+                                        unset($linkStackCopy[$i]);
+                                        break;
+                                    }
+                                }
+                                if($copiedLink === null){
+                                    // TODO default the path
+                                    throw new DevPanic("Pop path does not match the history");
+                                }
 
                                 $hValue = $this->writeHistory($linkStackCopy);
                                 if (strlen($hValue) > 0) {
