@@ -23,7 +23,7 @@ interface LinkHook
      * @param HtmlElement|null $element If $preferredMode == LinkHookMode::MODIFY_RECEIVER. The element that will be received to be modified.
      * @return LinkHookMode|null The response and final decision of the hook. If null, the hook is not compatible with the receiver.
      */
-    public function buildLinkHook(Renderable_Node $triggerComponent, LinkHookMode $preferredMode, array $extra, HtmlElement $element = null): ?LinkHookMode;
+    public function buildLinkHook(Renderable_Node $triggerComponent, LinkHookMode $preferredMode, array $extra, ?HtmlElement $element = null): ?LinkHookMode;
 
     /**
      * Called only if $preferredMode == LinkHookMode::MODIFY_RECEIVER.

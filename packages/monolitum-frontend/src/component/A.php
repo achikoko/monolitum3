@@ -63,7 +63,7 @@ class A extends AbstractTextNode
             if($this->finalLinkHookMode !== null){
                 switch ($this->finalLinkHookMode) {
                     case LinkHookMode::MODIFY_RECEIVER:
-                        $this->href->renderLinkHookIntoElement($this, $this->getElement());
+                        $this->href->renderLinkHookIntoElement($this, [], $this->getElement());
                         break;
                     case LinkHookMode::RENDER_JAVASCRIPT:
                         $javascriptCode = $this->href->renderLinkHookIntoJavascript($this, []);

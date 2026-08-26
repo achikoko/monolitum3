@@ -234,7 +234,7 @@ class BSButton extends AbstractTextNode
                 if($this->finalLinkHookMode !== null){
                     switch ($this->finalLinkHookMode) {
                         case LinkHookMode::MODIFY_RECEIVER:
-                            $this->linkHook->renderLinkHookIntoElement($this, $a);
+                            $this->linkHook->renderLinkHookIntoElement($this, [], $a);
                             break;
                         case LinkHookMode::RENDER_JAVASCRIPT:
                             $javascriptCode = $this->linkHook->renderLinkHookIntoJavascript($this, []);

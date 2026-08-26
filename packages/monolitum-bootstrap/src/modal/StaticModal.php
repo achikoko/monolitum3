@@ -100,10 +100,10 @@ class StaticModal extends Renderable_Node implements HasModalId
 
     /**
      * @param string $modalId
-     * @param Renderable $contentElement
+     * @param Renderable|array $contentElement
      * @return HtmlElement
      */
-    public static function createModalElement(string $modalId, HtmlElement $contentElement): HtmlElement
+    public static function createModalElement(string $modalId, Renderable|array $contentElement): HtmlElement
     {
         $modal = new HtmlElement("div");
         $modal->setId($modalId);
@@ -115,7 +115,7 @@ class StaticModal extends Renderable_Node implements HasModalId
             $modalChild = new HtmlElement("div");
             $modalChild->addClass("modal-dialog", "modal-dialog-centered");
 
-            $contentElement->renderTo($modalChild);
+            Renderable_Node::renderRenderedTo($contentElement, $modalChild);
 
             $modal->addChildElement($modalChild);
         }

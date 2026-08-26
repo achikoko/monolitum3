@@ -3,6 +3,8 @@
 namespace monolitum\bootstrap\modal;
 
 use monolitum\frontend\Renderable;
+use monolitum\frontend\Renderable_Node;
+use monolitum\i18n\TS;
 
 trait ModalTitleTrait
 {
@@ -14,6 +16,6 @@ trait ModalTitleTrait
         $this->title = $title;
     }
 
-    abstract public function buildRenderable(Renderable $active): Renderable;
+    abstract public function buildRenderable(Renderable_Node|Renderable|string|TS|array $renderable): Renderable_Node|Renderable;
 
 }

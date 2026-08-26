@@ -6,6 +6,7 @@ use monolitum\core\util\ListUtils;
 use monolitum\frontend\html\HtmlElement;
 use monolitum\frontend\Renderable;
 use monolitum\frontend\Renderable_Node;
+use monolitum\i18n\TS;
 
 trait ModalHeaderTrait
 {
@@ -19,7 +20,7 @@ trait ModalHeaderTrait
         return $this;
     }
 
-    abstract public function buildRenderable(Renderable $active): Renderable;
+    abstract public function buildRenderable(Renderable_Node|Renderable|string|TS|array $renderable): Renderable_Node|Renderable;
 
     private function createModalHeaderElement(): ?HtmlElement
     {

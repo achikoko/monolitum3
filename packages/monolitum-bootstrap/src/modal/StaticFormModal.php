@@ -63,7 +63,7 @@ class StaticFormModal extends Form implements HasModalId
     use ModalIdTrait;
 
     /**
-     * @param Form_Validator|null $validator
+     * @param Form_Validator $validator
      * @param string $formId
      * @param Closure|null $builder
      */
