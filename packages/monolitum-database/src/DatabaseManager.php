@@ -238,6 +238,7 @@ class DatabaseManager extends MNode implements EntityPersister
 
             $sqlForeignKeys = "";
 
+            $first = true;
             foreach ($model->getAttrs() as $attr) {
 
                 /** @var AttrExt_DB $dbExt */
@@ -261,6 +262,7 @@ class DatabaseManager extends MNode implements EntityPersister
                     $ids[] = $attr;
                 }
 
+                if($first) $first = false; else $sql .= ",";
                 $sql .= "\n\t" . $attr->getId();
 
                 if($attr instanceof Attr_Int){
@@ -330,6 +332,10 @@ class DatabaseManager extends MNode implements EntityPersister
                 $sql .= $id->getId();
             }
             $sql .= ")";
+
+            if($autoIncrement == null && empty($ids)){
+                throw new DevPanic("The model `$id` has not a primary key.");
+            }
 
             if(!empty($sqlForeignKeys)){
                 $sql .= $sqlForeignKeys;
