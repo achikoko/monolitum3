@@ -41,11 +41,16 @@ abstract class Entity
         return $this->model;
     }
 
-    public function getAttr($attr)
+    public function getAttr(Attr|string $attr): Attr
     {
         if(is_string($attr))
             $attr = $this->model->getAttr($attr);
         return $attr;
+    }
+
+    public function hasAttr(Attr|string $attr): bool
+    {
+        return $this->model->hasAttr($attr);
     }
 
     /**
@@ -90,12 +95,27 @@ abstract class Entity
         }
     }
 
-    public function getJoinedSingleEntity(int $joinIndex = 0): ?Entity
+    /**
+     * @param int|class-string $joinIndex
+     * @return Entity|null
+     */
+    public function getJoinedSingleEntity(int|string $joinIndex = 0): ?Entity
     {
-        if(isset($this->joinedEntities[$joinIndex])) {
-            $array = $this->joinedEntities[$joinIndex];
-            if(sizeof($array) > 0) {
-                return $array[0];
+        if(is_int($joinIndex)) {
+            if (isset($this->joinedEntities[$joinIndex])) {
+                $array = $this->joinedEntities[$joinIndex];
+                if (sizeof($array) > 0) {
+                    return $array[0];
+                }
+            }
+        }else{
+            foreach ($this->joinedEntities as $joinedEntitiesArray) {
+                if (sizeof($joinedEntitiesArray) > 0) {
+                    $firstJoinedEntity = $joinedEntitiesArray[0];
+                    if($firstJoinedEntity->getModel()->getInstantiableClass() == $joinIndex){
+                        return $firstJoinedEntity;
+                    }
+                }
             }
         }
         return null;

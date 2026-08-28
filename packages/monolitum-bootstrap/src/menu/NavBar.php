@@ -14,7 +14,6 @@ use monolitum\core\panic\DevPanic;
 use monolitum\frontend\component\A;
 use monolitum\frontend\component\Div;
 use monolitum\frontend\component\Img;
-use monolitum\frontend\component\Li;
 use monolitum\frontend\component\Span;
 use monolitum\frontend\component\Ul;
 use monolitum\frontend\css\CSSSize;
@@ -336,14 +335,13 @@ class NavBar extends HtmlElementNode implements Menu_Item_Holder
                             //<span class="navbar-text">
                             $span = new Span();
                             $span->addClass("navbar-text");
-                            $span->append($this->rightComponent);
+                            $span->append($item);
                             $this->leftItemsUl->append($span);
 
+                        }else if($item instanceof Menu_Item){
+                            $item->addClass("nav-item");
+                            $this->leftItemsUl->append($item);
                         }else{
-
-                            $li = new Li();
-                            $li->addClass("nav-item");
-                            $li->append($item);
                             $this->leftItemsUl->append($item);
                         }
 
@@ -363,14 +361,27 @@ class NavBar extends HtmlElementNode implements Menu_Item_Holder
                             {
                                 foreach ($this->rightComponent as $item) {
                                     //$li = $this->createMenuItemLi($item, false, true);
-                                    if (is_string($item)) {
+//                                    if (is_string($item)) {
+//                                        //<span class="navbar-text">
+//                                        $span = new Span();
+//                                        $span->addClass("navbar-text");
+//                                        $span->append($this->rightComponent);
+//                                        $this->rightItemsUl->append($span);
+//
+//                                    } else {
+//                                        $this->rightItemsUl->append($item);
+//                                    }
+
+                                    if(is_string($item)){
                                         //<span class="navbar-text">
                                         $span = new Span();
                                         $span->addClass("navbar-text");
-                                        $span->append($this->rightComponent);
+                                        $span->append($item);
                                         $this->rightItemsUl->append($span);
-
-                                    } else {
+                                    }else if($item instanceof Menu_Item){
+                                        $item->addClass("nav-item");
+                                        $this->rightItemsUl->append($item);
+                                    }else{
                                         $this->rightItemsUl->append($item);
                                     }
 

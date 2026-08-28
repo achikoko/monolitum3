@@ -3,7 +3,6 @@
 namespace monolitum\auth\users;
 
 use monolitum\auth\AuthManager;
-use monolitum\auth\Session;
 use monolitum\database\Query;
 use monolitum\model\Entity;
 
@@ -22,7 +21,7 @@ class SimpleUsersController implements UsersController
         $this->usersModel->install($manager);
     }
 
-    public function loginByCredentials(string $username, string $password): ?Session
+    public function loginByCredentials(string $username, string $password): ?Entity
     {
 
         $userIterable = Query::newQuery($this->usersModel->getModel())
@@ -48,22 +47,23 @@ class SimpleUsersController implements UsersController
             if(!password_verify($password, $userPassword))
                 return null;
 
-            return new Session($user);
+            return $user;
         }
 
     }
 
-    public function getSessionString(Session $session): string
+    public function getSessionUserString(mixed $sessionUser): string
     {
-        return strval($session->user->getInt($this->usersModel->getAttrUserId()));
+        /** @var Entity $sessionUser */
+        return strval($sessionUser->getInt($this->usersModel->getAttrUserId()));
     }
 
-    public function recoverSession(mixed $session_string): ?Session
+    public function recoverSessionUser(mixed $sessionUserString): ?Entity
     {
 
         $userIterable = Query::newQuery($this->usersModel->getModel())
             ->filter([
-                $this->usersModel->getAttrUserId()->getId() => intval($session_string)
+                $this->usersModel->getAttrUserId()->getId() => intval($sessionUserString)
             ])
             ->store()
             ->execute();
@@ -74,22 +74,29 @@ class SimpleUsersController implements UsersController
         if($user == null)
             return null;
 
-        return new Session($user);
+        return $user;
     }
 
-    public function hasPermission(Session $session, string $permissionKey): bool
+    public function hasPermission(mixed $sessionUser, string $permissionKey): bool
     {
-        return $this->usersModel->hasPermission($session->user, $permissionKey);
+        /** @var Entity $sessionUser */
+        return $this->usersModel->hasPermission($sessionUser, $permissionKey);
     }
 
-    public function changePassword(Entity $user, string $plainPassword): bool
+    public function changePassword(mixed $sessionUser, string $plainPassword): bool
     {
-        $user->setValue($this->usersModel->getAttrPassword(), password_hash(
+        $sessionUser->setValue($this->usersModel->getAttrPassword(), password_hash(
             $plainPassword,
             PASSWORD_DEFAULT,
             array('cost' => 9)
         ));
         return true;
+    }
+
+    public function getUserId(mixed $sessionUser): ?int
+    {
+        /** @var Entity $sessionUser */
+        return $sessionUser->getInt($this->usersModel->getAttrUserId());
     }
 
 }

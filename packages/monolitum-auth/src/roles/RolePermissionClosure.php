@@ -1,14 +1,14 @@
 <?php
 
-namespace monolitum\auth\users;
+namespace monolitum\auth\roles;
 
 use Closure;
 
-readonly class PermissionClosure
+readonly class RolePermissionClosure
 {
     /**
      * @param string $permissionKey
-     * @param Closure $closure (AuthManager $manager, Entity $user) -> bool
+     * @param Closure $closure (AuthManager manager, Entity $user, Entity $global, Entity $specific) -> bool
      */
     public function __construct(
         public string $permissionKey,

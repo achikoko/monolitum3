@@ -3,20 +3,20 @@
 namespace monolitum\auth\users;
 
 use monolitum\auth\AuthManager;
-use monolitum\auth\Session;
-use monolitum\model\Entity;
 
 interface UsersController
 {
     public function install(AuthManager $manager): void;
 
-    public function loginByCredentials(string $username, string $password): ?Session;
+    public function loginByCredentials(string $username, string $password): mixed;
 
-    public function getSessionString(Session $session): string;
+    public function getSessionUserString(mixed $sessionUser): string;
 
-    public function recoverSession(mixed $session_string): ?Session;
+    public function recoverSessionUser(string $sessionUserString): mixed;
 
-    public function hasPermission(Session $session, string $permissionKey): bool;
+    public function hasPermission(mixed $sessionUser, string $permissionKey): bool;
 
-    public function changePassword(Entity $user, string $plainPassword): bool;
+    public function changePassword(mixed $sessionUser, string $plainPassword): bool;
+
+    public function getUserId(mixed $sessionUser): mixed;
 }
