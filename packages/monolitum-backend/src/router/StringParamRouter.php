@@ -43,10 +43,12 @@ class StringParamRouter extends AbstractConstantRouter {
         return $this;
     }
 
-    public function setValuesForRoute(MNode|callable $router, string... $values): self
+    public function setValuesForRoute(MNode|callable $router, ?string... $values): self
     {
         foreach ($values as $value) {
-            $this->map[$value] = $router;
+            if($value !== null){
+                $this->map[$value] = $router;
+            }
         }
         return $this;
     }
