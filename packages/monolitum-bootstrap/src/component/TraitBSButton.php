@@ -12,6 +12,13 @@ trait TraitBSButton
     private bool $outline = false;
     private bool $isLinkStyled = false;
     private ?bool $isLarge = null;
+    private ?bool $isClose = null;
+
+    public function close(bool $close = true): self
+    {
+        $this->isClose = $close;
+        return $this;
+    }
 
     public function noColor(): self
     {
@@ -52,7 +59,9 @@ trait TraitBSButton
 
     protected function styleButton(HtmlElement $buttonElement): void
     {
-        if($this->color != null){
+        if($this->isClose){
+            $buttonElement->addClass("btn-close");
+        }else if($this->color != null){
             if($this->outline)
                 $buttonElement->addClass("btn-outline-" . $this->color->getValue());
             else
