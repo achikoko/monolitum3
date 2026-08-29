@@ -12,6 +12,7 @@ class RedirectManager extends MNode
 {
 
     private ?Link $redirectLink = null;
+    private ?MNode $redirectLinkNode = null;
 
     private ?Request_SetResourceData $resourceData = null;
 
@@ -31,6 +32,7 @@ class RedirectManager extends MNode
             }else{
                 $this->redirectLink = $activePath;
             }
+            $this->redirectLinkNode = Monolitum::getInstance()->getCurrentBuildingNode();
             $this->resourceData = null;
 
             return true;
@@ -52,7 +54,7 @@ class RedirectManager extends MNode
         if($this->redirectLink !== null){
 
             $makeUrlString = new Request_MakeUrlString($this->redirectLink);
-            Monolitum::getInstance()->push($makeUrlString);
+            Monolitum::getInstance()->pushFrom($makeUrlString, $this->redirectLinkNode);
 
             $url = $makeUrlString->getUrl();
 

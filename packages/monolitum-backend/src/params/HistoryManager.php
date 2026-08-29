@@ -6,7 +6,6 @@ use Closure;
 use monolitum\core\MNode;
 use monolitum\core\MObject;
 use monolitum\core\Monolitum;
-use monolitum\core\panic\DevPanic;
 use monolitum\model\Model;
 
 class HistoryManager extends MNode
@@ -90,18 +89,7 @@ class HistoryManager extends MNode
                                 }
                             }
 
-                            $pushedParams = $object->getPushedParams();
-
-                            if ($pushedParams !== null) {
-                                foreach ($pushedParams as $paramId => $model) {
-                                    $paramValueActive = new Request_Parameter_ValidatedValue(Abstract_Request_ValidatedValue::TYPE_STRING, $model, $paramId);
-                                    Monolitum::getInstance()->pushFrom($paramValueActive, $this->getParent());
-                                    $validatedValue = $paramValueActive->getValidatedValue();
-                                    if ($validatedValue->isValid() && !$validatedValue->isNull()) {
-                                        $myPushParams[$paramId] = $validatedValue->getStrValue();
-                                    }
-                                }
-                            }
+                            $this->extractPushParameters($object, $myPushParams);
 
                             $linkStackCopy = $this->linkStack;
                             $linkStackCopy[] = Link::from(Path::fromRelative())->addParams($myPushParams);
@@ -137,7 +125,13 @@ class HistoryManager extends MNode
                                 }
                                 if($copiedLink === null){
                                     // TODO default the path
-                                    throw new DevPanic("Pop path does not match the history");
+//                                    throw new DevPanic("Pop path does not match the history");
+                                    $linkStackCopy = $this->linkStack;
+
+                                    $myPushParams = [];
+                                    $this->extractPushParameters($object, $myPushParams);
+
+                                    $copiedLink = $object->link->copy()->addParams($myPushParams);
                                 }
 
                                 $hValue = $this->writeHistory($linkStackCopy);
@@ -223,6 +217,27 @@ class HistoryManager extends MNode
             return $string;
         }else{
             return "";
+        }
+    }
+
+    /**
+     * @param Request_MakeUrlString $object
+     * @param array $myPushParams
+     * @return array
+     */
+    private function extractPushParameters(Request_MakeUrlString $object, array &$myPushParams): void
+    {
+        $pushedParams = $object->getPushedParams();
+
+        if ($pushedParams !== null) {
+            foreach ($pushedParams as $paramId => $model) {
+                $paramValueActive = new Request_Parameter_ValidatedValue(Abstract_Request_ValidatedValue::TYPE_STRING, $model, $paramId);
+                Monolitum::getInstance()->pushFrom($paramValueActive, $this->getParent());
+                $validatedValue = $paramValueActive->getValidatedValue();
+                if ($validatedValue->isValid() && !$validatedValue->isNull()) {
+                    $myPushParams[$paramId] = $validatedValue->getStrValue();
+                }
+            }
         }
     }
 
