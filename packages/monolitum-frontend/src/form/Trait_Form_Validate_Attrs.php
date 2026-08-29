@@ -15,6 +15,11 @@ trait Trait_Form_Validate_Attrs
      */
     protected array $validate_attrs = [];
 
+    public function validate_all(): void
+    {
+        $this->validate_all_except();
+    }
+
     /**
      * @param string ...$attrsIds
      * @return void
@@ -41,6 +46,8 @@ trait Trait_Form_Validate_Attrs
     {
         if($attr instanceof Attr)
             $attr = $attr->getId();
+        if(!$this->validate_attrs_hasBeenSet)
+            return false;
         $inArray = in_array($attr, $this->validate_attrs);
         if(!($this->validate_attrs_all ^ $inArray))
             return false;

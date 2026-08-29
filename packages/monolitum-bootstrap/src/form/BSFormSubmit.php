@@ -3,7 +3,6 @@ namespace monolitum\bootstrap\form;
 
 use Closure;
 use monolitum\bootstrap\component\TraitBSButton;
-use monolitum\bootstrap\values\BSColor;
 use monolitum\frontend\form\FormSubmit;
 use monolitum\frontend\html\HtmlElement;
 
@@ -31,6 +30,11 @@ class BSFormSubmit extends FormSubmit
         $name = $this->getFinalName();
         if(!empty($name)){
             $this->setAttribute("name", $name);
+        }
+
+        $disabled = $this->getFinalDisabled();
+        if($disabled){
+            $this->setAttribute("disabled", true);
         }
 
         // Method is the same as parent

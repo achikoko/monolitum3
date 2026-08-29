@@ -61,7 +61,8 @@ class Form extends HtmlElementNode
     private ?Closure $onValidated = null;
 
     /**
-     * Prevents the form to be validated. If this flag is enabled, the form is not validated. (The coming fields are kept, dough)
+     * Prevents the form to be validated. Overwriting any other configuration.
+     * If this flag is enabled, the form is not validated. (The coming fields are kept, dough)
      * @var bool
      */
     private ?bool $notValidate = null;
@@ -208,6 +209,11 @@ class Form extends HtmlElementNode
         return $this->validator->validateString($finalFieldName, $this->methodGET ? StandardProvider::GET : StandardProvider::POST);
     }
 
+    public function isNotValidate(): ?bool
+    {
+        return $this->notValidate;
+    }
+
     /**
      * @return void
      */
@@ -282,6 +288,11 @@ class Form extends HtmlElementNode
         return $this->validationDisplay;
     }
 
+    /**
+     * Prevents the form to be validated. Overwriting any other configuration.
+     * If this flag is enabled, the form is not validated. (The coming fields are kept, dough)
+     * @var bool
+     */
     public function setNotValidate(bool $notValidate=true): void
     {
         $this->notValidate = $notValidate;
@@ -377,6 +388,11 @@ class Form extends HtmlElementNode
             return null;
         $form = $formSubmit->getForm();
         return $form->getFormId() . "_submit__";
+    }
+
+    function _getSubmitDisabled(FormSubmit $formSubmit): ?bool
+    {
+        return $this->disablePolicy == DisablePolicy::DISABLE_ALL || $this->notValidate;
     }
 
     /**

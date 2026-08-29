@@ -191,9 +191,14 @@ trait Trait_From_Attr
      */
     protected function isDisabled(): bool
     {
+        if($this->form->isNotValidate()){
+            return true;
+        }
+
         if($this->disabled !== null){
             return $this->disabled;
         }
+
         $formDisablePolicy = $this->form->getDisablePolicy();
         if($formDisablePolicy !== null){
             switch($formDisablePolicy){
@@ -205,6 +210,7 @@ trait Trait_From_Attr
                 }
             }
         }
+
         return false;
     }
 

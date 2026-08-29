@@ -27,9 +27,17 @@ abstract class FormSubmit extends AbstractTextNode
     /** @var Closure|null (Form, ?string) -> void */
     private ?Closure $onValidated = null;
 
+    private ?bool $disabled = null;
+
     public function __construct(HtmlElement $element, ?Closure $builder = null)
     {
         parent::__construct($element, $builder);
+    }
+
+    public function setDisabled(bool $disabled=true): self
+    {
+        $this->disabled = $disabled;
+        return $this;
     }
 
     /**
@@ -57,6 +65,11 @@ abstract class FormSubmit extends AbstractTextNode
         $action = $this->getSubmitKey();
 
         return ($prefix !== null ? $prefix : "") .  ($action !== null ? $action : "");
+    }
+
+    public function getFinalDisabled(): bool
+    {
+        return $this->disabled || $this->form->_getSubmitDisabled($this);
     }
 
     /**
