@@ -5,6 +5,7 @@ namespace monolitum\frontend\component;
 use monolitum\frontend\AppendTextTrait;
 use monolitum\frontend\ConstructFromContentTrait;
 use monolitum\frontend\Renderable_Node;
+use monolitum\i18n\TS;
 
 class Text extends Renderable_Node
 {
@@ -17,11 +18,11 @@ class Text extends Renderable_Node
 //        $this->append($string);
 //    }
 
-//    public static function of(string $name): static
-//    {
-//        return new static(function(Text $it) use ($name) {
-//            $it->append($name);
-//        });
-//    }
+    public static function ofRichText(string|TS|array $richText): static
+    {
+        return new static(function(Text $it) use ($richText) {
+            $it->appendRichText($richText);
+        });
+    }
 
 }
