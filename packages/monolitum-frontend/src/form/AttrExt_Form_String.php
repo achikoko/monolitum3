@@ -6,8 +6,6 @@ class AttrExt_Form_String extends AttrExt_Form
 
     private bool $password = false;
 
-    private bool $html = false;
-
     private bool $searchable = false;
 
     private ?string $inputType = null;
@@ -15,12 +13,6 @@ class AttrExt_Form_String extends AttrExt_Form
     public function password(): self
     {
         $this->password = true;
-        return $this;
-    }
-
-    public function html(bool $html=true): self
-    {
-        $this->html = $html;
         return $this;
     }
 
@@ -39,11 +31,6 @@ class AttrExt_Form_String extends AttrExt_Form
     public function isPassword(): bool
     {
         return $this->password;
-    }
-
-    public function isHtml(): bool
-    {
-        return $this->html;
     }
 
     public function isSearchable(): bool
