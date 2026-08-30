@@ -488,9 +488,10 @@ class Form extends HtmlElementNode
             }
         }
 
+        $attrId = $attr instanceof Attr ? $attr->getId() : $attr;
         // `array_key_exists` because null values are also default values
-        if(array_key_exists($attr->getId(), $this->defaultValues)){
-            $valueInDefaultValues = $validatedValue = new ValidatedValue(true, true, $this->defaultValues[$attr->getId()]);
+        if(array_key_exists($attrId, $this->defaultValues)){
+            $valueInDefaultValues = $validatedValue = new ValidatedValue(true, true, $this->defaultValues[$attrId]);
         }else{
             $validatedValue = $this->validator->getDefaultValue($attr);
         }
