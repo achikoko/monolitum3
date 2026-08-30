@@ -147,7 +147,7 @@ class Pagination extends HtmlElementNode
         if($hasFirst){
             $ul->receive($this->makeItem(
                 $this->firstText !== null ? $this->firstText : "<<",
-                Link::from(Path::fromRelative())
+                Link::from(Path::current())
                     ->setCopyAllParams()
                     ->addParams([
                         $this->param_page => 0
@@ -158,7 +158,7 @@ class Pagination extends HtmlElementNode
         if($hasPrevious){
             $ul->receive($this->makeItem(
                 $this->prevText !== null ? $this->prevText : "<",
-                Link::from(Path::fromRelative())
+                Link::from(Path::current())
                     ->setCopyAllParams()
                     ->addParams([
                         $this->param_page => $this->page-1
@@ -185,7 +185,7 @@ class Pagination extends HtmlElementNode
         for($i = $first; $i <= $last; $i++){
             $ul->receive($this->makeItem(
                 strval($i),
-                Link::from(Path::fromRelative())
+                Link::from(Path::current())
                     ->setCopyAllParams()
                     ->addParams([
                         $this->param_page => $i
@@ -197,7 +197,7 @@ class Pagination extends HtmlElementNode
         if($hasNext){
             $ul->receive($this->makeItem(
                 $this->nextText !== null ? $this->nextText : ">",
-                Link::from(Path::fromRelative())
+                Link::from(Path::current())
                     ->setCopyAllParams()
                     ->addParams([
                         $this->param_page => $this->page+1
@@ -208,7 +208,7 @@ class Pagination extends HtmlElementNode
         if($hasLast){
             $ul->receive($this->makeItem(
                 $this->lastText !== null ? $this->lastText : ">>",
-                Link::from(Path::fromRelative())
+                Link::from(Path::current())
                     ->setCopyAllParams()
                     ->addParams([
                         $this->param_page => $max_pages
@@ -259,7 +259,7 @@ class Pagination extends HtmlElementNode
 
                 $it->setMethodGET();
                 $it->setDefaultValue($this->param_page, $this->page);
-                $it->setLink(Link::from(Path::fromRelative())->setCopyParamsExcept($this->param_page));
+                $it->setLink(Link::from(Path::current())->setCopyParamsExcept($this->param_page));
 
                 M(new Div(function (Div $it) {
 

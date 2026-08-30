@@ -92,7 +92,7 @@ class HistoryManager extends MNode
                             $this->extractPushParameters($object, $myPushParams);
 
                             $linkStackCopy = $this->linkStack;
-                            $linkStackCopy[] = Link::from(Path::fromRelative())->addParams($myPushParams);
+                            $linkStackCopy[] = Link::from(Path::current())->addParams($myPushParams);
 
                             $copiedLink = $object->link->copy();
                             $copiedLink->removeParams($this->writeAsParam);

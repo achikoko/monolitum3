@@ -32,6 +32,11 @@ class Path
         return $path;
     }
 
+    public static function current(): Path
+    {
+        return self::fromRelative(0);
+    }
+
     public static function fromRelative(int $back = 0, string ...$strings): Path
     {
 

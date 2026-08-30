@@ -162,7 +162,7 @@ class DataTable extends HtmlElementNode
 
         $baseLink = $this->sortable_base_link;
         if($baseLink === null)
-            $baseLink = Link::from(Path::fromRelative())->setCopyAllParams();
+            $baseLink = Link::from(Path::current())->setCopyAllParams();
 
         foreach ($this->columns as $column){
             $this->buildAndAppendChild($column);
