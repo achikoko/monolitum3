@@ -24,7 +24,11 @@ class CellRenderer_Attr implements CellRenderer
 {
     private ?string $format = null;
 
-    public function __construct(private readonly Attr|string $attr, private readonly ?Closure $valueProcessor)
+    private ?Closure $valueProcessor = null;
+    private ?Closure $valueGetter = null;
+    private Attr|string|Closure|null $renderAs = null;
+
+    public function __construct(private readonly Attr|string $attr)
     {
 
     }
@@ -33,6 +37,30 @@ class CellRenderer_Attr implements CellRenderer
     {
         $this->format = $format;
         return $this;
+    }
+
+    /**
+     * @param Closure|null $valueProcessor
+     */
+    public function setValueProcessor(?Closure $valueProcessor): void
+    {
+        $this->valueProcessor = $valueProcessor;
+    }
+
+    /**
+     * @param Closure|null $valueGetter
+     */
+    public function setValueGetter(?Closure $valueGetter): void
+    {
+        $this->valueGetter = $valueGetter;
+    }
+
+    /**
+     * @param Attr|string|null $renderAs
+     */
+    public function setRenderAs(Attr|string|null $renderAs): void
+    {
+        $this->renderAs = $renderAs;
     }
 
     /**
@@ -51,11 +79,11 @@ class CellRenderer_Attr implements CellRenderer
         if($entity == null){
             return new Reference();
         } else {
-            $attr = $entity->getAttr($this->attr);
+            $attr = $this->renderAs($entity);
             if($attr instanceof Attr_String){
                 /** @var AttrExt_Validate_String $extValidate */
                 $extValidate = $attr->findExtension(AttrExt_Validate_String::class);
-                $value = $this->processValue($entity, $entity->getString($attr));
+                $value = $this->processValue($entity, $this->getValueAsString($entity, $attr));
                 if($value === null){
                     return Text::of("");
                 }else if($extValidate !== null && $extValidate->hasEnum()){
@@ -66,16 +94,19 @@ class CellRenderer_Attr implements CellRenderer
                     return Text::of($value);
                 }
             }else if($attr instanceof Attr_Int){
-                return Text::of(strval($this->processValue($entity, $entity->getInt($attr))));
+                return Text::of(strval($this->processValue($entity, $this->getValueAsInt($entity, $attr))));
             }else if($attr instanceof Attr_Decimal){
-                return Text::of(strval($this->processValue($entity, $entity->getInt($attr) / pow(10, $attr->getDecimals()))));
-            }else if($attr instanceof Attr_Date || $attr instanceof Attr_DateTime){
-                $val = $this->processValue($entity, $entity->getDate($attr));
+                return Text::of(strval($this->processValue($entity, $this->getValueAsDecimalAsFloat($entity, $attr))));
+            }else if($attr instanceof Attr_Date){
+                $val = $this->processValue($entity, $this->getValueAsDate($entity, $attr));
                 return Text::of($val !== null ? TS::fromFormat($val, $this->format ?? "LL") : "");
+            }else if($attr instanceof Attr_DateTime){
+                $val = $this->processValue($entity, $this->getValueAsDateTime($entity, $attr));
+                return Text::of($val !== null ? TS::fromFormat($val, $this->format ?? "LLLL") : "");
             }else if($attr instanceof Attr_Bool){
                 $ch = new FormControl_CheckBox();
                 $ch->setDisabled();
-                $ch->setValue($this->processValue($entity, $entity->getBool($attr))); // TODO intermediate
+                $ch->setValue($this->processValue($entity, $this->getValueAsBool($entity, $attr))); // TODO intermediate
                 return $ch;
             }else{
                 throw new DevPanic("Not recognized col type");
@@ -91,9 +122,80 @@ class CellRenderer_Attr implements CellRenderer
         return $value;
     }
 
-    public static function of(Attr|string $attr, ?Closure $valueProcessor = null): static
+    private function getValueAsString(Entity $entity, Attr $attr)
     {
-        return new CellRenderer_Attr($attr, $valueProcessor);
+        if($this->valueGetter !== null){
+            return call_user_func($this->valueGetter, $entity);
+        }else{
+            return $entity->getString($attr);
+        }
+    }
+
+    private function getValueAsInt(Entity $entity, Attr $attr)
+    {
+        if($this->valueGetter !== null){
+            return call_user_func($this->valueGetter, $entity);
+        }else{
+            return $entity->getInt($attr);
+        }
+    }
+
+    private function getValueAsDecimalAsFloat(Entity $entity, Attr $attr)
+    {
+        if($this->valueGetter !== null){
+            return call_user_func($this->valueGetter, $entity);
+        }else{
+            return $entity->getDecimalAsFloat($attr);
+        }
+    }
+
+    private function getValueAsDate(Entity $entity, Attr $attr)
+    {
+        if($this->valueGetter !== null){
+            return call_user_func($this->valueGetter, $entity);
+        }else{
+            return $entity->getDate($attr);
+        }
+    }
+
+    private function getValueAsDateTime(Entity $entity, Attr $attr)
+    {
+        if($this->valueGetter !== null){
+            return call_user_func($this->valueGetter, $entity);
+        }else{
+            return $entity->getDateTime($attr);
+        }
+    }
+
+    private function getValueAsBool(Entity $entity, Attr $attr)
+    {
+        if($this->valueGetter !== null){
+            return call_user_func($this->valueGetter, $entity);
+        }else{
+            return $entity->getBool($attr);
+        }
+    }
+
+    public static function of(Attr|string $attr): static
+    {
+        return new CellRenderer_Attr($attr);
+    }
+
+    /**
+     * @param Entity $entity
+     * @return Attr
+     */
+    private function renderAs(Entity $entity): Attr
+    {
+        if($this->renderAs === null){
+            return $entity->getAttr($this->attr);
+        } if(is_string($this->renderAs)){
+            return $entity->getAttr($this->renderAs);
+        } else if(is_callable($this->renderAs)){
+            return call_user_func($this->valueGetter, $entity);
+        } else{
+            return $this->renderAs;
+        }
     }
 
 }
