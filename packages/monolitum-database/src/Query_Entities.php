@@ -68,9 +68,9 @@ class Query_Entities extends Query
         return $this->limitMany;
     }
 
-    public function sort(string|Attr $attr, bool $desc = false, ?bool $promoteToGlobalDesc = null): self
+    public function sort(string|Attr $attr, bool $desc = false, ?bool $promoteToGlobalSorting = null): self
     {
-        $this->sortedAttrs[] = new Query_Sort_Tuple($attr, $desc, $promoteToGlobalDesc);
+        $this->sortedAttrs[] = new Query_Sort_Tuple($attr, $desc, $promoteToGlobalSorting);
         return $this;
     }
 
@@ -118,7 +118,7 @@ class Query_Entities extends Query
     function hasPromotedSortingRecursive(): bool
     {
         foreach ($this->getSortedAttrs() as $attr) {
-            if($attr->promoteToGlobalDesc !== null)
+            if($attr->promoteToGlobalSorting !== null)
                 return true;
         }
         foreach ($this->getJoins() as $join) {

@@ -39,18 +39,18 @@ class Request_MakeUrlString implements MObject
          * if true, all params are set alone.
          * Alone params help POST forms to add hidden data into it.
          */
-        public readonly bool $obtainParamsAlone = false
+        public readonly bool $obtainParamsAlone = false,
     ) {
 
     }
 
-    public function setWriteAsParam(false|string|null $writeAsParam): self
+    public function setWritePathAsParam(bool|string|null $writePathAsParam): self
     {
-        $this->writeAsParam = $writeAsParam;
+        $this->writeAsParam = $writePathAsParam;
         return $this;
     }
 
-    public function getWriteAsParam(): false|string|null
+    public function getWriteAsParam(): bool|string|null
     {
         return $this->writeAsParam;
     }

@@ -6,7 +6,7 @@ use monolitum\model\Attr;
 
 readonly class Query_Sort_Tuple
 {
-    function __construct(public string|Attr $attr, public bool $desc, public ?bool $promoteToGlobalDesc = null)
+    function __construct(public string|Attr $attr, public bool $desc, public ?bool $promoteToGlobalSorting = null)
     {
 
     }

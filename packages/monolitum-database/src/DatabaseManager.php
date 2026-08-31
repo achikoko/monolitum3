@@ -1055,7 +1055,7 @@ class DatabaseManager extends MNode implements EntityPersister
                         $sql .= ", ";
                     $sql .= "`" . $tableAlias
                         . "`.`" . self::_computeAttrName($sortedAttr->attr)
-                        . "` " . (($sortedAttr->promoteToGlobalDesc !== null ? $sortedAttr->promoteToGlobalDesc : $sortedAttr->desc) ? "DESC " : "ASC ");
+                        . "` " . (($sortedAttr->promoteToGlobalSorting !== null ? $sortedAttr->promoteToGlobalSorting : $sortedAttr->desc) ? "DESC " : "ASC ");
 //                }
             }
         }

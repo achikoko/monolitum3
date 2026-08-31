@@ -160,7 +160,7 @@ class HistoryManager extends MNode
 
             $newRequest = new Request_MakeUrlString($copiedLink, $object->obtainParamsAlone);
             $newRequest->setAloneParamValues($object->getAloneParamValues());
-            $newRequest->setWriteAsParam($object->getWriteAsParam());
+            $newRequest->setWritePathAsParam($object->getWriteAsParam());
 
             Monolitum::getInstance()->pushFrom($newRequest, $this->getParent());
 
@@ -206,7 +206,7 @@ class HistoryManager extends MNode
                     $string .= " ";
                 }
                 $requestMakeUrl = new Request_MakeUrlString($link);
-                $requestMakeUrl->setWriteAsParam(false);
+                $requestMakeUrl->setWritePathAsParam(false);
                 $requestMakeUrl->setAppendUrlPrefix(false);
                 Monolitum::getInstance()->pushFrom($requestMakeUrl, $this->getParent());
                 $string .= urlencode($requestMakeUrl->getUrl());
