@@ -39,6 +39,11 @@ class Link
         }
     }
 
+    public static function fromCurrent(): Link
+    {
+        return self::from(Path::current())->setCopyAllParams();
+    }
+
     public static function fromUrl(string $url): Link
     {
 
