@@ -185,6 +185,12 @@ class AuthManager extends MNode implements CSRFTokenProvider
         return $this->sessionRole;
     }
 
+    public function getSessionUser(): mixed
+    {
+        $this->requireLogin();
+        return $this->sessionUser;
+    }
+
     public function isCSRFSystemAvailable(): bool
     {
         // We can send the session cookie at any time, so we are available
@@ -281,10 +287,19 @@ class AuthManager extends MNode implements CSRFTokenProvider
 
     }
 
-    private function isLoggedIn(): bool
+    public function isLoggedIn(): bool
     {
-        if(!session_id())
+
+        // Check if a session cookie exists (without starting the session)
+        $sessionName = session_name(); // Default: 'PHPSESSID'
+
+        if (!isset($_COOKIE[$sessionName])) {
+            // No session cookie - no previous session exists
+            // Send error page without calling session_start()
             return false;
+        }
+
+        $this->sessionStartOrFail();
 
         if(!isset($_SESSION['session_user']) || $_SESSION['session_user'] == null)
             return false;
