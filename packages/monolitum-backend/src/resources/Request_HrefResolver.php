@@ -5,6 +5,7 @@ namespace monolitum\backend\resources;
 use monolitum\backend\params\Link;
 use monolitum\backend\params\Path;
 use monolitum\core\MObject;
+use monolitum\core\Monolitum;
 use monolitum\core\panic\DevPanic;
 
 class Request_HrefResolver implements MObject
@@ -15,6 +16,7 @@ class Request_HrefResolver implements MObject
     private bool $setParamsAlone = false;
 
     private bool $prependHost = false;
+    private ?bool $pathAsParam = null;
 
     /**
      * @param Link|Path $link
@@ -66,4 +68,30 @@ class Request_HrefResolver implements MObject
     {
         $this->setParamsAlone = $setParamsAlone;
     }
+
+    /**
+     * Overrides the PathManager configuration to put or not the path in a parameter.
+     * @param false $false
+     * @return void
+     */
+    public function setPathAsParam(?bool $pathAsParam): self
+    {
+        $this->pathAsParam = $pathAsParam;
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getPathAsParam(): ?bool
+    {
+        return $this->pathAsParam;
+    }
+
+    public function pushSelf(): self
+    {
+        Monolitum::getInstance()->push($this);
+        return $this;
+    }
+
 }

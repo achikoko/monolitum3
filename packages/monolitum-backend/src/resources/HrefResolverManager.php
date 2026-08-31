@@ -34,6 +34,9 @@ class HrefResolverManager extends MNode
     {
 
         $active = new Request_MakeUrlString($param->link, $param->obtainParamsAlone);
+        if($param->pathAsParam !== null){
+            $active->setWritePathAsParam($param->pathAsParam);
+        }
         Monolitum::getInstance()->pushFrom($active, $param->callerNode);
         $param->setAloneParamValues($active->getAloneParamValues());
         if($param->isPrependHost){
@@ -50,7 +53,7 @@ class HrefResolverManager extends MNode
                 throw new DevPanic("Prepend host requested but not configured");
             }
             $object->setHrefResolver(new HrefResolver_Impl(
-                $this, $object->link, $object->isSetParamsAlone(), $object->isPrependHost(),
+                $this, $object->link, $object->isSetParamsAlone(), $object->isPrependHost(), $object->getPathAsParam(),
                 Monolitum::getInstance()->getCurrentBuildingNode()));
             return true;
         }

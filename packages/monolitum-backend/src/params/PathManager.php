@@ -3,18 +3,20 @@
 namespace monolitum\backend\params;
 
 use Closure;
+use monolitum\backend\resources\HrefResolver;
 use monolitum\core\MNode;
 use monolitum\core\MObject;
 use monolitum\core\Monolitum;
+use monolitum\core\panic\DevPanic;
 use monolitum\model\ValidatedValue;
 
 class PathManager extends MNode
 {
 
-    private string|false $writeAsParam = false;
+    private ?string $pathParam = null;
+    private bool $useParamByDefault = false;
 
     private array $currentPath = [];
-
     private int $nextIdx = 0;
 
     public function __construct(
@@ -25,9 +27,10 @@ class PathManager extends MNode
         parent::__construct($builder);
     }
 
-    public function setWriteAsParam(string $paramName): PathManager
+    public function setPathParam(string $pathParam, bool $useByDefault = true): PathManager
     {
-        $this->writeAsParam = $paramName;
+        $this->pathParam = $pathParam;
+        $this->useParamByDefault = $useByDefault;
         return $this;
     }
 
@@ -87,8 +90,14 @@ class PathManager extends MNode
         }else if($object instanceof Request_MakeUrlString) {
 
             $writeAsParam = $object->getWriteAsParam();
-            if($writeAsParam === null)
-                $writeAsParam = $this->writeAsParam;
+            if($writeAsParam === null) {
+                $writeAsParam = $this->useParamByDefault ? $this->pathParam : null;
+            }else if($writeAsParam === true){
+                if($this->pathParam === null){
+                    new DevPanic("Path requested to be in a param, but manager does not define a param.");
+                }
+                $writeAsParam = $this->pathParam;
+            }
 
             $isAppendUrlPrefix = $object->isAppendUrlPrefix();
             $priorityParamsAlone = [];
@@ -143,6 +152,10 @@ class PathManager extends MNode
                     unset($paramsAlone[$key]);
                 }
 
+                if(!$writeAsParam && $this->pathParam && isset($paramsAlone[$this->pathParam])){
+                    unset($paramsAlone[$this->pathParam]);
+                }
+
                 foreach($object->link->getAddParams() as $key => $value){
                     $paramsAlone[$key] = $value;
                 }
@@ -156,6 +169,10 @@ class PathManager extends MNode
                     foreach ($paramsAlone as $key => $value){
                         if($key === $writeAsParam || $value === null)
                             continue;
+
+                        if($value instanceof HrefResolver){
+                            $value = $value->resolve();
+                        }
 
                         if(!$querySign){
                             $url .= '?';

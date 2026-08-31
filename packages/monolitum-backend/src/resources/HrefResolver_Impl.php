@@ -19,6 +19,7 @@ class HrefResolver_Impl implements HrefResolver
         public readonly Link|Path           $link,
         public readonly bool                $obtainParamsAlone,
         public readonly bool                $isPrependHost,
+        public readonly ?bool               $pathAsParam,
         public readonly MNode               $callerNode)
     {
 
